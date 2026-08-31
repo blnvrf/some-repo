@@ -756,32 +756,62 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 // ── MATH ────────────────────────────────────────────────
-// Timing philosophy: every beat finishes before the next one
-// starts. The gaps are deliberate. If a transition feels
-// rushed, widen the gap rather than slowing the tween.
+// Replaces the MATH block in ea.js
+//
+// The three stack items now run ONE AT A TIME with a hold
+// between each, rather than stacking and pushing. Each fades
+// in, sits, fades out, then the next arrives.
 //
 // Designer:
-//   math_track     height 700vh
-//   math_field     absolute, inset 0, z-index 2, two image
-//                  layers, data-math-field all and lit
-//   math_caption   Div, absolute, top 50%, left 50%, width auto,
-//                  flex column, background colour, padding,
-//                  z-index 3, NO transform
+//   section_math   data-math-scene, position relative, bg #0d1117
+//   math_track     data-math-track, position relative, height 900vh
+//   math_sticky    sticky, top 0, height 100svh, width 100%,
+//                  overflow hidden, bg #0d1117
+//
+//   padding-global   absolute, inset 0, z-index 1, flex, centered
+//     container-large  width 100%
+//       math_stack     data-math-stack, position relative,
+//                      width 100%, height 100%,
+//                      flex, centered
+//         math_title / math_copy / math_quote
+//           each data-math-item
+//           each position ABSOLUTE, top 50%, left 50%,
+//           width 100%, transform translate(-50%, -50%)
+//           They stack on top of each other now, not in flow,
+//           because only one is ever visible.
+//
+//   math_field     absolute, inset 0, z-index 2
+//     math_field-lyr        data-math-field="all"
+//     math_field-lyr is-lit data-math-field="lit"
+//       math_field-img      Image, 100%/100%, object-fit cover
+//
+//   math_caption   Div, data-math-caption
+//                  position absolute, top 50%,
+//                  LEFT 0, WIDTH 100%, MAX-WIDTH NONE,
+//                  text-align center,
+//                  background-color #0d1117,
+//                  padding 2.5vh 1.5vw, z-index 3
+//                  NO transform.
+//                  Full-width band. If it is width auto it
+//                  hugs the text and dots show beside it.
 //     math_caption-head  data-math-head, placeholder text needed
 //     math_caption-sub   data-math-sub, placeholder text needed
-//   math_burst     absolute, top 50%, left 50%, 6px circle,
-//                  z-index 4, NO transform
-//   math_end       absolute, inset 0, z-index 5, centered
 //
-//   Exports: dots-all and dots-lit, identical canvas,
-//   identical dot positions, nine lit dots dead centre.
+//   math_burst     data-math-burst, absolute, top 50%, left 50%,
+//                  6px circle, z-index 4, NO transform
+//
+//   math_end       data-math-end, absolute, inset 0, z-index 5,
+//                  flex column centered, pointer-events none
+//
+//   NOTE: once the background turns orange the dot images must
+//   be dark dots on transparent, not orange, or they vanish.
 
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-math-scene]").forEach(function (sec) {
     var mq = gsap.utils.selector(sec);
 
     var track = mq("[data-math-track]")[0];
-    var stack = mq("[data-math-stack]")[0];
+    var sticky = track ? track.firstElementChild : null;
     var items = mq("[data-math-item]");
     var field = mq("[data-math-field]");
     var fieldAll = mq('[data-math-field="all"]');
@@ -792,13 +822,23 @@ document.addEventListener("DOMContentLoaded", function () {
     var burst = mq("[data-math-burst]");
     var end = mq("[data-math-end]");
 
-    if (!track || !items.length) return;
+    if (!track || !sticky || !items.length) return;
 
-    var STEP = 0.16;
-    var BURST = 420;
-    var CAP_TOP = "8vh";
-    var FIELD_REST = 0;
-    var XFADE = 0.40;
+    // ── how long each stack item holds ────────────────────
+    // one entry per data-math-item, in order.
+    // title, copy, quote.
+    var HOLDS = [0.70, 0.80, 0.90];
+
+    // ── config ────────────────────────────────────────────
+    var FADE = 0.14;      // stack item fade duration
+    var GAP = 0.26;       // empty frame after the last item
+    var BURST = 420;      // scale for a 6px dot to cover 1440px
+    var CAP_TOP = "0vh";  // flush to the top edge, no gap
+    var FIELD_REST = 0;   // field lands flush
+    var XFADE = 0.40;     // dot image cross-fade
+
+    var INK = "#0d1117";
+    var ORANGE = "#d85a30";
 
     var CAPTION_1 = "People who do not exist yet";
     var SUB_1 = "10^58 potential future lives";
@@ -806,12 +846,15 @@ document.addEventListener("DOMContentLoaded", function () {
     var SUB_2 = "Everyone alive today";
 
     gsap.matchMedia().add("(min-width: 992px)", function () {
-      gsap.set(items, { opacity: 0, y: 24, display: "none" });
-      gsap.set(stack, { opacity: 1 });
+      // ── starting states ─────────────────────────────────
+      gsap.set(sticky, { backgroundColor: INK });
+      gsap.set(items, { opacity: 0 });
       gsap.set(field, { opacity: 0, yPercent: 100 });
       gsap.set(fieldAll, { opacity: 1 });
       gsap.set(fieldLit, { opacity: 0 });
-      gsap.set(caption, { opacity: 0, xPercent: -50, yPercent: -50 });
+      gsap.set(caption, {
+        opacity: 0, yPercent: -50, backgroundColor: INK
+      });
       gsap.set(burst, { opacity: 0, scale: 1, xPercent: -50, yPercent: -50 });
       gsap.set(end, { opacity: 0 });
 
@@ -824,24 +867,29 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
 
-      // display toggles because a hidden item in normal flow
-      // still holds its space, and nothing would push
+      // ── 1-3. one item at a time, with holds between ─────
+      // positions accumulate so each item can have its own
+      // length. no stacking, no pushing.
+      var at = 0;
+
       items.forEach(function (item, i) {
-        var at = i * STEP;
-        tl.set(item, { display: "block" }, at);
+        var span = HOLDS[i] !== undefined ? HOLDS[i] : 0.70;
+
         tl.to(item, {
-          opacity: 1, y: 0,
-          duration: 0.14, ease: "power2.out"
+          opacity: 1, duration: FADE, ease: "power2.out"
         }, at);
+
+        tl.to(item, {
+          opacity: 0, duration: FADE, ease: "power2.in"
+        }, at + span - FADE);
+
+        at += span;
       });
 
-      var afterStack = items.length * STEP;
+      // gap: empty frame
 
-      tl.to(stack, {
-        opacity: 0, duration: 0.16, ease: "power1.in"
-      }, afterStack + 0.10);
-
-      var capAt = afterStack + 0.44;
+      // ── 4. caption 1 arrives in the centre ──────────────
+      var capAt = at + GAP;
 
       tl.set(capHead, { innerText: CAPTION_1 }, capAt - 0.01);
       tl.set(capSub, { innerText: SUB_1 }, capAt - 0.01);
@@ -850,10 +898,12 @@ document.addEventListener("DOMContentLoaded", function () {
         opacity: 1, duration: 0.18, ease: "power2.out"
       }, capAt);
 
-      // the field rises and pushes the caption up. both move
-      // on the same ease and overlap, so it reads as contact
-      // even though they never touch.
-      var fieldAt = afterStack + 0.80;
+      // gap: caption sits alone, centred
+
+      // ── 5. the field rises and pushes the caption up ────
+      // both move on the same ease and overlap in time, so it
+      // reads as contact even though they never touch
+      var fieldAt = capAt + 0.40;
 
       tl.to(field, {
         opacity: 1, yPercent: FIELD_REST,
@@ -865,17 +915,35 @@ document.addEventListener("DOMContentLoaded", function () {
         duration: 0.34, ease: "power2.out"
       }, fieldAt + 0.06);
 
-      var litAt = afterStack + 1.50;
+      // ── 6. the page turns orange once the bar is set ────
+      var turnAt = fieldAt + 0.44;
+
+      tl.to(sticky, {
+        backgroundColor: ORANGE, duration: 0.22, ease: "none"
+      }, turnAt);
+
+      tl.to(caption, {
+        backgroundColor: ORANGE, color: INK,
+        duration: 0.22, ease: "none"
+      }, turnAt);
+
+      // gap: the full field holds on orange
+
+      // ── 7. slow cross-fade, instant text swap ───────────
+      var litAt = turnAt + 0.60;
 
       tl.to(fieldLit, { opacity: 1, duration: XFADE, ease: "none" }, litAt);
       tl.to(fieldAll, { opacity: 0, duration: XFADE, ease: "none" }, litAt + 0.06);
 
-      // text swaps in one frame at 80% through the cross-fade,
-      // so the caption background never leaves the screen
+      // swaps in one frame at 80% through the cross-fade, so
+      // the caption bar never leaves the screen
       tl.set(capHead, { innerText: CAPTION_2 }, litAt + XFADE * 0.8);
       tl.set(capSub, { innerText: SUB_2 }, litAt + XFADE * 0.8);
 
-      var burstAt = afterStack + 2.36;
+      // gap: the lit field holds
+
+      // ── 8. the dot expands and takes the screen ─────────
+      var burstAt = litAt + 0.86;
 
       tl.to(burst, { opacity: 1, duration: 0.06 }, burstAt);
 
@@ -891,7 +959,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
-
 
 // ── OPTIMIZED WORLD ─────────────────────────────────────
 // Strict sequence, nothing overlaps. One beat cycle:

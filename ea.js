@@ -343,53 +343,52 @@ document.addEventListener("DOMContentLoaded", function () {
 // ── PIG SCALE ───────────────────────────────────────────
 // Replaces the PIG SCALE block in ea.js
 //
-// The copy sits centred in the full frame for the first four
-// beats. When the pig arrives it slides down to make room for
-// the figures above it, and stays there.
+// Each line gets its own hold time from the HOLDS array, so
+// the opening statement can sit far longer than the rest.
+// Positions accumulate rather than being i * STEP.
 //
-// PACING: STEP and pig_track height must move together. If you
-// double STEP, double the track height, or the whole thing
-// just plays faster to fit the same scroll distance.
-//   STEP 0.34  ->  pig_track 900vh
-//   STEP 0.45  ->  pig_track 1200vh
+// The copy sits centred in the full frame for the first five
+// lines. When the figures arrive it slides down to make room
+// for them, and stays there.
+//
+// PACING: total timeline length is the sum of HOLDS. Track
+// height must scale with it. Current sum is about 4.3, so:
+//   pig_track 1200vh
+// If you lengthen a hold, raise the track by the same ratio.
 //
 // Designer:
-//   pig_track     height 900vh
+//   pig_track     height 1200vh
 //   pig_sticky    sticky, top 0, height 100svh, overflow hidden
-//   pig_bg        position absolute, inset 0, z-index 0
 //
-//   pig_scale     position relative, z-index 1,
-//                 display flex, align-items flex-end,
-//                 justify-content center, gap 4vw,
-//                 padding-left 5vw, padding-right 5vw
-//     pig_side    flex 0 0 26vw, flex column, align-items center
-//                 combos is-human and is-pig
-//     pig_herd    display flex, flex-wrap wrap, width 100%,
-//                 height auto, gap 2%
-//     pig_fig-img height auto, NO object-fit, NO max-height
+//   pig_scale     position relative, z-index 1, display flex,
+//                 align-items center, justify-content center,
+//                 gap 4vw, padding 0 5vw
+//     pig_side    flex 0 0 26vw on the BASE class, not the
+//                 combos, or the two sides differ in width.
+//                 flex column, align-items center, gap 2vh
+//       pig_stage width 100%, height 46vh, display flex,
+//                 align-items center, justify-content center
+//                 Same class both sides. This is what makes
+//                 the two columns identical, so the counts
+//                 below them line up and the = sits on their
+//                 shared centre line.
+//         pig_fig-img   max-height 100%, width auto, height auto
+//         pig_herd      data-pig-herd, display flex,
+//                       flex-wrap wrap, align-items center,
+//                       align-content center,
+//                       justify-content center,
+//                       width 100%, height 100%, gap 2%
+//       pig_count  text-align center
+//     pig_op      align-self center
 //
 //   padding-global  position ABSOLUTE, inset 0, z-index 1,
 //                   width 100%, height 100%
-//                   Must be absolute, not a flex child. As a
-//                   flex child it takes the leftover space
-//                   under pig_scale and the copy is already
-//                   pinned low, so there is nothing to drop.
 //     container-large  height 100%
 //       pig_stack      data-pig-stack, position relative,
 //                      height 100%, flex, centered
 //         pig_line     data-pig-line, position absolute,
 //                      width 100%, text-align center
 //           pig_line-txt  data-pig-txt, display block
-//
-//   Exactly TWO pig_fig-img inside pig_herd in the Designer:
-//   the seed, and one carrying the is-stack combo so the
-//   class publishes. The script clones the rest to 10.
-//
-//   Check before debugging:
-//     console.log(
-//       document.querySelectorAll("[data-pig-stack]").length,
-//       document.querySelectorAll("[data-pig-line]").length,
-//       document.querySelectorAll("[data-pig-txt]").length);
 //
 //   NO opacity values anywhere in this section.
 
@@ -413,12 +412,14 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!seed) return;
 
     // ── one entry per copy line, in order ─────────────────
+    // pigs 0 for the first five, so the copy stays centred
+    // through the whole setup and only drops at line 6
     var BEATS = [
       { pigs: 0,  human: false },  //  1  religion of Silicon Valley
       { pigs: 0,  human: false },  //  2  here are its tenets
       { pigs: 0,  human: false },  //  3  Effective:
       { pigs: 0,  human: false },  //  4  Altruism:
-      { pigs: 1,  human: true  },  //  5  who can argue against
+      { pigs: 0,  human: false },  //  5  who can argue against
       { pigs: 1,  human: true  },  //  6  what does that look like
       { pigs: 2,  human: true  },  //  7  0.51 math
       { pigs: 2,  human: true  },  //  8  not so fast
@@ -427,12 +428,28 @@ document.addEventListener("DOMContentLoaded", function () {
       { pigs: 10, human: true  }   // 11  spare
     ];
 
+    // ── how long each line holds, in timeline units ───────
+    // one entry per line. the opening statement gets three
+    // times the rest. add or remove entries to match BEATS.
+    var HOLDS = [
+      1.00,   //  1  the opening statement, sits a long time
+      0.34,   //  2
+      0.40,   //  3
+      0.40,   //  4
+      0.44,   //  5  the question, slightly longer
+      0.34,   //  6
+      0.46,   //  7  the 0.51 math, longest of the rest
+      0.34,   //  8
+      0.40,   //  9
+      0.40,   // 10
+      0.40    // 11
+    ];
+
     // ── config ────────────────────────────────────────────
-    var STEP = 0.34;         // scroll distance per line
     var FADE = 0.14;         // text fade duration
-    var HOLD = 0.16;         // figure fade duration
-    var TEXT_LOW = "34vh";   // how far the copy drops once the
-                             // figures arrive. raise if they overlap.
+    var FIG = 0.16;          // figure fade duration
+    var DROP = 0.34;         // how long the copy takes to move
+    var TEXT_LOW = "34vh";   // how far the copy drops
 
     // ── build the herd to 10 total ────────────────────────
     var HERD_TARGET = 10;
@@ -453,10 +470,10 @@ document.addEventListener("DOMContentLoaded", function () {
       if (stack) gsap.set(stack, { y: 0 });
 
       // grid locked to its ten-pig arrangement, never reflows.
-      // hidden pigs are display none, so every smaller count
-      // is a subset of the same layout.
+      // 18% plus the 2% gap gives five per row, so ten wrap
+      // as two rows of five and centre as a block.
       gsap.set(herdBox, { flexWrap: "wrap" });
-      gsap.set(herd, { width: "31%", height: "auto" });
+      gsap.set(herd, { width: "18%", height: "auto" });
 
       var tl = gsap.timeline({
         scrollTrigger: {
@@ -467,18 +484,18 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
 
+      // positions accumulate, so each line can have its own
+      // length rather than sharing one fixed step
+      var at = 0;
+
       lines.forEach(function (line, i) {
-        var at = i * STEP;
+        var span = HOLDS[i] !== undefined ? HOLDS[i] : 0.34;
         var txt = line.querySelector("[data-pig-txt]");
         var beat = BEATS[i] || BEATS[BEATS.length - 1];
         var prev = i > 0 ? BEATS[i - 1] : { pigs: 0, human: false };
         var last = i === lines.length - 1;
 
-        // ── copy: fades out BEFORE the next fades in ─────
-        // the fade-out finishes exactly as the next beat
-        // starts, so two lines are never on screen together.
-        // the gap between FADE ending and the next beat is
-        // the line's hold time.
+        // ── copy: out before the next comes in ───────────
         if (txt) {
           gsap.set(txt, { opacity: 0 });
 
@@ -489,33 +506,33 @@ document.addEventListener("DOMContentLoaded", function () {
           if (!last) {
             tl.to(txt, {
               opacity: 0, duration: FADE, ease: "power1.in"
-            }, at + STEP - FADE);
+            }, at + span - FADE);
           }
         }
 
-        // ── the copy drops once, when the pig first shows ─
+        // ── the copy drops once, as the figures arrive ───
         if (stack && beat.pigs > 0 && prev.pigs === 0) {
           tl.to(stack, {
             y: TEXT_LOW,
-            duration: 0.24,
+            duration: DROP,
             ease: "power2.inOut"
           }, at);
         }
 
-        // ── figures: absolute state at every beat ───────
+        // ── figures: absolute state at every beat ────────
         tl.to(human, {
           opacity: beat.human ? 1 : 0,
-          duration: HOLD, ease: "none"
+          duration: FIG, ease: "none"
         }, at);
 
         tl.to(op, {
           opacity: beat.human && beat.pigs > 0 ? 1 : 0,
-          duration: HOLD, ease: "none"
+          duration: FIG, ease: "none"
         }, at);
 
         tl.to(pigSide, {
           opacity: beat.pigs > 0 ? 1 : 0,
-          duration: HOLD, ease: "none"
+          duration: FIG, ease: "none"
         }, at);
 
         herd.forEach(function (pig, idx) {
@@ -525,20 +542,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
           tl.to(pig, {
             opacity: idx < beat.pigs ? 1 : 0,
-            duration: HOLD, ease: "none"
+            duration: FIG, ease: "none"
           }, at + idx * 0.01);
         });
 
         if (pigCount) {
           tl.to(pigCount, {
-            duration: HOLD,
+            duration: FIG,
             snap: { innerText: 1 },
             innerText: beat.pigs,
             ease: "none"
           }, at);
         }
 
-        // ── torn quote on the final beat ────────────────
+        // ── torn quote on the final beat ─────────────────
         if (last && quote.length) {
           tl.fromTo(quote,
             { opacity: 0, y: 60, rotate: -8 },
@@ -549,6 +566,8 @@ document.addEventListener("DOMContentLoaded", function () {
             at
           );
         }
+
+        at += span;
       });
     });
   });

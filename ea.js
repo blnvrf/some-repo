@@ -182,7 +182,7 @@ document.addEventListener("DOMContentLoaded", function () {
         tl.to(bgDark, { opacity: 1, duration: 0.6, ease: "none" }, 0.5);
 
         tl.to(band, {
-          backgroundColor: "#0d1117",
+          backgroundColor: "#080331",
           duration: 0.6, ease: "none"
         }, 0.5);
 

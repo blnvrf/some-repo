@@ -213,8 +213,8 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             f.to(fig, {
-              y: gsap.utils.random(-8, -14),
-              rotate: gsap.utils.random(-1.6, 1.6),
+              y: gsap.utils.random(-16, -28),
+              rotate: gsap.utils.random(-3.2, 3.2),
               duration: gsap.utils.random(2.4, 3.6)
             }, i * 0.4);
 

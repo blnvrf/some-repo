@@ -597,55 +597,31 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 // ── MATH ────────────────────────────────────────────────
-// Replaces the MATH block in ea.js
-//
 // Timing philosophy: every beat finishes before the next one
 // starts. The gaps are deliberate. If a transition feels
 // rushed, widen the gap rather than slowing the tween.
 //
 // Designer:
-//   section_math   data-math-scene, position relative, bg #0d1117
-//   math_track     data-math-track, position relative, height 700vh
-//   math_sticky    sticky, top 0, height 100svh, width 100%,
-//                  overflow hidden, bg #0d1117
-//
-//   padding-global   absolute, inset 0, z-index 1, flex, centered
-//     container-large  width 100%
-//       math_stack     data-math-stack, flex column, centered, gap 4vh
-//         math_title / math_copy / math_quote, each data-math-item
-//
-//   math_field     absolute, inset 0, z-index 2
-//     math_field-lyr        data-math-field="all", absolute, inset 0
-//     math_field-lyr is-lit data-math-field="lit", absolute, inset 0
-//       math_field-img      Image, 100%/100%, object-fit cover
-//
-//   math_caption   Div, data-math-caption
-//                  position absolute, top 50%, LEFT 0, WIDTH 100%,
-//                  max-width none, text-align center,
-//                  background-color #0d1117, padding 2.5vh 1.5vw,
+//   math_track     height 700vh
+//   math_field     absolute, inset 0, z-index 2, two image
+//                  layers, data-math-field all and lit
+//   math_caption   Div, absolute, top 50%, left 50%, width auto,
+//                  flex column, background colour, padding,
 //                  z-index 3, NO transform
-//                  Full-width band. Lands flush at the top edge,
-//                  so no dots show above or beside it.
 //     math_caption-head  data-math-head, placeholder text needed
 //     math_caption-sub   data-math-sub, placeholder text needed
+//   math_burst     absolute, top 50%, left 50%, 6px circle,
+//                  z-index 4, NO transform
+//   math_end       absolute, inset 0, z-index 5, centered
 //
-//   math_burst     data-math-burst, absolute, top 50%, left 50%,
-//                  6px circle, z-index 4, NO transform
-//
-//   math_end       data-math-end, absolute, inset 0, z-index 5,
-//                  flex column centered, pointer-events none
-//
-//   NOTE: once the background turns orange the dot images need
-//   to be dark dots on transparent, not orange. Otherwise they
-//   disappear. Ask Diego to re-export dots-all and dots-lit
-//   with #0d1117 dots.
+//   Exports: dots-all and dots-lit, identical canvas,
+//   identical dot positions, nine lit dots dead centre.
 
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-math-scene]").forEach(function (sec) {
     var mq = gsap.utils.selector(sec);
 
     var track = mq("[data-math-track]")[0];
-    var sticky = track ? track.firstElementChild : null;
     var stack = mq("[data-math-stack]")[0];
     var items = mq("[data-math-item]");
     var field = mq("[data-math-field]");
@@ -657,17 +633,13 @@ document.addEventListener("DOMContentLoaded", function () {
     var burst = mq("[data-math-burst]");
     var end = mq("[data-math-end]");
 
-    if (!track || !sticky || !items.length) return;
+    if (!track || !items.length) return;
 
-    // ── config ────────────────────────────────────────────
-    var STEP = 0.16;      // scroll distance per stack item
-    var BURST = 420;      // scale for a 6px dot to cover 1440px
-    var CAP_TOP = "0vh";  // flush to the top edge, no gap
-    var FIELD_REST = 0;   // field lands flush, centre dots centred
-    var XFADE = 0.40;     // how long the two dot images cross-fade
-
-    var INK = "#0d1117";
-    var ORANGE = "#d85a30";
+    var STEP = 0.16;
+    var BURST = 420;
+    var CAP_TOP = "8vh";
+    var FIELD_REST = 0;
+    var XFADE = 0.40;
 
     var CAPTION_1 = "People who do not exist yet";
     var SUB_1 = "10^58 potential future lives";
@@ -675,18 +647,12 @@ document.addEventListener("DOMContentLoaded", function () {
     var SUB_2 = "Everyone alive today";
 
     gsap.matchMedia().add("(min-width: 992px)", function () {
-      // ── starting states, all owned here ─────────────────
-      gsap.set(sticky, { backgroundColor: INK });
       gsap.set(items, { opacity: 0, y: 24, display: "none" });
       gsap.set(stack, { opacity: 1 });
       gsap.set(field, { opacity: 0, yPercent: 100 });
       gsap.set(fieldAll, { opacity: 1 });
       gsap.set(fieldLit, { opacity: 0 });
-      gsap.set(caption, {
-        opacity: 0,
-        yPercent: -50,
-        backgroundColor: INK
-      });
+      gsap.set(caption, { opacity: 0, xPercent: -50, yPercent: -50 });
       gsap.set(burst, { opacity: 0, scale: 1, xPercent: -50, yPercent: -50 });
       gsap.set(end, { opacity: 0 });
 
@@ -699,7 +665,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
 
-      // ── 1-3. title, copy, quote stack in and push down ──
       // display toggles because a hidden item in normal flow
       // still holds its space, and nothing would push
       items.forEach(function (item, i) {
@@ -713,14 +678,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
       var afterStack = items.length * STEP;
 
-      // ── 4. the stack clears, nothing else happens ───────
       tl.to(stack, {
         opacity: 0, duration: 0.16, ease: "power1.in"
       }, afterStack + 0.10);
 
-      // gap: empty frame
-
-      // ── 5. caption 1 arrives in the centre ──────────────
       var capAt = afterStack + 0.44;
 
       tl.set(capHead, { innerText: CAPTION_1 }, capAt - 0.01);
@@ -730,11 +691,9 @@ document.addEventListener("DOMContentLoaded", function () {
         opacity: 1, duration: 0.18, ease: "power2.out"
       }, capAt);
 
-      // gap: caption sits alone, centred
-
-      // ── 6. the field rises and pushes the caption up ────
-      // both move on the same ease and overlap in time, so it
-      // reads as contact even though they never touch
+      // the field rises and pushes the caption up. both move
+      // on the same ease and overlap, so it reads as contact
+      // even though they never touch.
       var fieldAt = afterStack + 0.80;
 
       tl.to(field, {
@@ -747,39 +706,17 @@ document.addEventListener("DOMContentLoaded", function () {
         duration: 0.34, ease: "power2.out"
       }, fieldAt + 0.06);
 
-      // ── 7. the page turns orange once the bar is set ────
-      // caption background goes with it, or you get a dark
-      // bar floating on orange
-      var turnAt = fieldAt + 0.44;
-
-      tl.to(sticky, {
-        backgroundColor: ORANGE,
-        duration: 0.22, ease: "none"
-      }, turnAt);
-
-      tl.to(caption, {
-        backgroundColor: ORANGE,
-        color: INK,
-        duration: 0.22, ease: "none"
-      }, turnAt);
-
-      // gap: the full field holds on orange
-
-      // ── 8. slow cross-fade, instant text swap ───────────
-      var litAt = afterStack + 1.60;
+      var litAt = afterStack + 1.50;
 
       tl.to(fieldLit, { opacity: 1, duration: XFADE, ease: "none" }, litAt);
       tl.to(fieldAll, { opacity: 0, duration: XFADE, ease: "none" }, litAt + 0.06);
 
       // text swaps in one frame at 80% through the cross-fade,
-      // so the caption bar never leaves the screen
+      // so the caption background never leaves the screen
       tl.set(capHead, { innerText: CAPTION_2 }, litAt + XFADE * 0.8);
       tl.set(capSub, { innerText: SUB_2 }, litAt + XFADE * 0.8);
 
-      // gap: the lit field holds
-
-      // ── 9. the dot expands and takes the screen ─────────
-      var burstAt = afterStack + 2.46;
+      var burstAt = afterStack + 2.36;
 
       tl.to(burst, { opacity: 1, duration: 0.06 }, burstAt);
 
@@ -792,9 +729,6 @@ document.addEventListener("DOMContentLoaded", function () {
       tl.to(end, {
         opacity: 1, duration: 0.18, ease: "power1.out"
       }, burstAt + 0.44);
-
-      // the final frame holds to the end of the track.
-      // raise math_track above 700vh to lengthen it.
     });
   });
 });

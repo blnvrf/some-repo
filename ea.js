@@ -341,23 +341,51 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 // ── PIG SCALE ───────────────────────────────────────────
+// Replaces the PIG SCALE block in ea.js
+//
+// The copy sits centred in the full frame for the first four
+// beats. When the pig arrives it slides down to make room for
+// the figures above it, and stays there.
+//
 // Designer:
 //   pig_track     height 500vh
-//   pig_sticky    sticky, top 0, height 100svh, flex column,
-//                 overflow hidden
+//   pig_sticky    sticky, top 0, height 100svh, overflow hidden
 //   pig_bg        position absolute, inset 0, z-index 0
-//   pig_scale     position relative, z-index 1
-//   pig_side      flex 0 0 26vw, flex column, align-items center
-//   pig_herd      display flex, width 100%, height auto, gap 2%
-//   pig_fig-img   height auto, no object-fit, no max-height
-//   pig_stack     position relative, height 100%, flex, centered
-//   pig_line      position absolute, width 100%, text-align center
+//
+//   pig_scale     position relative, z-index 1,
+//                 display flex, align-items flex-end,
+//                 justify-content center, gap 4vw,
+//                 padding-left 5vw, padding-right 5vw
+//     pig_side    flex 0 0 26vw, flex column, align-items center
+//                 combos is-human and is-pig
+//     pig_herd    display flex, flex-wrap wrap, width 100%,
+//                 height auto, gap 2%
+//     pig_fig-img height auto, NO object-fit, NO max-height
+//
+//   padding-global  position ABSOLUTE, inset 0, z-index 1,
+//                   width 100%, height 100%
+//                   (absolute, not a flex child, so the copy
+//                    can centre in the full viewport and then
+//                    be moved independently)
+//     container-large  height 100%
+//       pig_stack      data-pig-stack, position relative,
+//                      height 100%, flex, centered
+//         pig_line     data-pig-line, position absolute,
+//                      width 100%, text-align center
+//           pig_line-txt  data-pig-txt, display block
+//
+//   Exactly TWO pig_fig-img inside pig_herd in the Designer:
+//   the seed, and one carrying the is-stack combo so the
+//   class publishes. The script clones the rest to 10.
+//
+//   NO opacity values anywhere in this section.
 
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-pig]").forEach(function (sec) {
     var pq = gsap.utils.selector(sec);
 
     var track = pq("[data-pig-track]")[0];
+    var stack = pq("[data-pig-stack]")[0];
     var lines = pq("[data-pig-line]");
     var human = pq("[data-pig-human]");
     var op = pq("[data-pig-op]");
@@ -371,25 +399,29 @@ document.addEventListener("DOMContentLoaded", function () {
     var seed = herdBox.querySelector("img");
     if (!seed) return;
 
-    // one entry per copy line, in order
+    // ── one entry per copy line, in order ─────────────────
     var BEATS = [
-      { pigs: 0,  human: false },
-      { pigs: 0,  human: false },
-      { pigs: 0,  human: false },
-      { pigs: 0,  human: false },
-      { pigs: 1,  human: true  },
-      { pigs: 1,  human: true  },
-      { pigs: 2,  human: true  },
-      { pigs: 2,  human: true  },
-      { pigs: 10, human: true  },
-      { pigs: 10, human: true  },
-      { pigs: 10, human: true  }
+      { pigs: 0,  human: false },  //  1  religion of Silicon Valley
+      { pigs: 0,  human: false },  //  2  here are its tenets
+      { pigs: 0,  human: false },  //  3  Effective:
+      { pigs: 0,  human: false },  //  4  Altruism:
+      { pigs: 1,  human: true  },  //  5  who can argue against
+      { pigs: 1,  human: true  },  //  6  what does that look like
+      { pigs: 2,  human: true  },  //  7  0.51 math
+      { pigs: 2,  human: true  },  //  8  not so fast
+      { pigs: 10, human: true  },  //  9  five to ten pigs
+      { pigs: 10, human: true  },  // 10  it's logical
+      { pigs: 10, human: true  }   // 11  spare
     ];
 
-    var STEP = 0.14;
-    var HOLD = 0.14;
-    var FADE = 0.1;
+    // ── config ────────────────────────────────────────────
+    var STEP = 0.14;         // spacing between beats
+    var HOLD = 0.14;         // figure fade duration
+    var FADE = 0.10;         // text fade duration
+    var TEXT_LOW = "22vh";   // how far the copy drops once the
+                             // figures arrive. raise if they overlap.
 
+    // ── build the herd to 10 total ────────────────────────
     var HERD_TARGET = 10;
     var existing = herdBox.querySelectorAll("img").length;
 
@@ -402,12 +434,14 @@ document.addEventListener("DOMContentLoaded", function () {
     var herd = gsap.utils.toArray(herdBox.querySelectorAll("img"));
 
     gsap.matchMedia().add("(min-width: 992px)", function () {
+      // ── starting states ─────────────────────────────────
       gsap.set([human, op, pigSide, quote], { opacity: 0 });
       gsap.set(herd, { opacity: 0, display: "none" });
+      gsap.set(stack, { y: 0 });
 
       // grid locked to its ten-pig arrangement, never reflows.
-      // hidden pigs are display none so every smaller count is
-      // a subset of the same layout.
+      // hidden pigs are display none, so every smaller count
+      // is a subset of the same layout.
       gsap.set(herdBox, { flexWrap: "wrap" });
       gsap.set(herd, { width: "31%", height: "auto" });
 
@@ -424,8 +458,10 @@ document.addEventListener("DOMContentLoaded", function () {
         var at = i * STEP;
         var txt = line.querySelector("[data-pig-txt]");
         var beat = BEATS[i] || BEATS[BEATS.length - 1];
+        var prev = i > 0 ? BEATS[i - 1] : { pigs: 0, human: false };
         var last = i === lines.length - 1;
 
+        // ── copy: straight crossfade ────────────────────
         if (txt) {
           gsap.set(txt, { opacity: 0 });
 
@@ -440,6 +476,16 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         }
 
+        // ── the copy drops once, when the pig first shows ─
+        if (stack && beat.pigs > 0 && prev.pigs === 0) {
+          tl.to(stack, {
+            y: TEXT_LOW,
+            duration: 0.20,
+            ease: "power2.inOut"
+          }, at);
+        }
+
+        // ── figures: absolute state at every beat ───────
         tl.to(human, {
           opacity: beat.human ? 1 : 0,
           duration: HOLD, ease: "none"
@@ -475,6 +521,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }, at);
         }
 
+        // ── torn quote on the final beat ────────────────
         if (last && quote.length) {
           tl.fromTo(quote,
             { opacity: 0, y: 60, rotate: -8 },

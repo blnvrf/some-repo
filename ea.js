@@ -201,6 +201,36 @@ document.addEventListener("DOMContentLoaded", function () {
 
         tl.to({}, { duration: 1.1 }, 1.12);
 
+                // ── figure float ──────────────────────────────────
+        // own timeline, never scrubbed. paused off screen.
+        if (motionOk) {
+          allFigures.forEach(function (fig, i) {
+            var f = gsap.timeline({
+              repeat: -1,
+              yoyo: true,
+              paused: true,
+              defaults: { ease: "sine.inOut" }
+            });
+
+            f.to(fig, {
+              y: gsap.utils.random(-8, -14),
+              rotate: gsap.utils.random(-1.6, 1.6),
+              duration: gsap.utils.random(2.4, 3.6)
+            }, i * 0.4);
+
+            loops.push(f);
+
+            ScrollTrigger.create({
+              trigger: track,
+              start: "top bottom",
+              end: "bottom top",
+              onToggle: function (self) {
+                self.isActive ? f.play() : f.pause();
+              }
+            });
+          });
+        }
+
         return function () {
           loops.forEach(function (t) { t.kill(); });
           if (host) host.innerHTML = "";

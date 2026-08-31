@@ -758,9 +758,9 @@ document.addEventListener("DOMContentLoaded", function () {
 // ── MATH ────────────────────────────────────────────────
 // Replaces the MATH block in ea.js
 //
-// The three stack items now run ONE AT A TIME with a hold
-// between each, rather than stacking and pushing. Each fades
-// in, sits, fades out, then the next arrives.
+// The three stack items run one at a time. Each rises into
+// the centre, holds, then lifts away as the next arrives.
+// No orange turn. The section stays dark throughout.
 //
 // Designer:
 //   section_math   data-math-scene, position relative, bg #0d1117
@@ -771,14 +771,12 @@ document.addEventListener("DOMContentLoaded", function () {
 //   padding-global   absolute, inset 0, z-index 1, flex, centered
 //     container-large  width 100%
 //       math_stack     data-math-stack, position relative,
-//                      width 100%, height 100%,
-//                      flex, centered
+//                      width 100%, height 100%, flex, centered
 //         math_title / math_copy / math_quote
 //           each data-math-item
 //           each position ABSOLUTE, top 50%, left 50%,
-//           width 100%, transform translate(-50%, -50%)
-//           They stack on top of each other now, not in flow,
-//           because only one is ever visible.
+//           width 100%, NO transform. GSAP owns the centring
+//           via xPercent and yPercent so it can move them.
 //
 //   math_field     absolute, inset 0, z-index 2
 //     math_field-lyr        data-math-field="all"
@@ -788,12 +786,9 @@ document.addEventListener("DOMContentLoaded", function () {
 //   math_caption   Div, data-math-caption
 //                  position absolute, top 50%,
 //                  LEFT 0, WIDTH 100%, MAX-WIDTH NONE,
-//                  text-align center,
-//                  background-color #0d1117,
-//                  padding 2.5vh 1.5vw, z-index 3
-//                  NO transform.
-//                  Full-width band. If it is width auto it
-//                  hugs the text and dots show beside it.
+//                  text-align center, background-color #0d1117,
+//                  padding 2.5vh 1.5vw, z-index 3, NO transform
+//                  Full-width band, or dots show beside it.
 //     math_caption-head  data-math-head, placeholder text needed
 //     math_caption-sub   data-math-sub, placeholder text needed
 //
@@ -802,16 +797,12 @@ document.addEventListener("DOMContentLoaded", function () {
 //
 //   math_end       data-math-end, absolute, inset 0, z-index 5,
 //                  flex column centered, pointer-events none
-//
-//   NOTE: once the background turns orange the dot images must
-//   be dark dots on transparent, not orange, or they vanish.
 
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-math-scene]").forEach(function (sec) {
     var mq = gsap.utils.selector(sec);
 
     var track = mq("[data-math-track]")[0];
-    var sticky = track ? track.firstElementChild : null;
     var items = mq("[data-math-item]");
     var field = mq("[data-math-field]");
     var fieldAll = mq('[data-math-field="all"]');
@@ -822,23 +813,23 @@ document.addEventListener("DOMContentLoaded", function () {
     var burst = mq("[data-math-burst]");
     var end = mq("[data-math-end]");
 
-    if (!track || !sticky || !items.length) return;
+    if (!track || !items.length) return;
 
     // ── how long each stack item holds ────────────────────
-    // one entry per data-math-item, in order.
-    // title, copy, quote.
+    // one entry per data-math-item, in order:
+    // title, copy, quote
     var HOLDS = [0.70, 0.80, 0.90];
 
     // ── config ────────────────────────────────────────────
-    var FADE = 0.14;      // stack item fade duration
-    var GAP = 0.26;       // empty frame after the last item
+    var IN = 0.20;        // how long an item takes to rise in
+    var OUT = 0.18;       // how long it takes to lift away
+    var RISE = 60;        // px travelled on the way in
+    var LIFT = -70;       // px travelled on the way out
+    var GAP = 0.30;       // empty frame after the last item
     var BURST = 420;      // scale for a 6px dot to cover 1440px
     var CAP_TOP = "0vh";  // flush to the top edge, no gap
     var FIELD_REST = 0;   // field lands flush
     var XFADE = 0.40;     // dot image cross-fade
-
-    var INK = "#0d1117";
-    var ORANGE = "#d85a30";
 
     var CAPTION_1 = "People who do not exist yet";
     var SUB_1 = "10^58 potential future lives";
@@ -847,14 +838,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
     gsap.matchMedia().add("(min-width: 992px)", function () {
       // ── starting states ─────────────────────────────────
-      gsap.set(sticky, { backgroundColor: INK });
-      gsap.set(items, { opacity: 0 });
+      // xPercent and yPercent do the centring so GSAP can
+      // move the items without a CSS transform fighting it
+      gsap.set(items, {
+        opacity: 0,
+        xPercent: -50,
+        yPercent: -50,
+        y: RISE
+      });
       gsap.set(field, { opacity: 0, yPercent: 100 });
       gsap.set(fieldAll, { opacity: 1 });
       gsap.set(fieldLit, { opacity: 0 });
-      gsap.set(caption, {
-        opacity: 0, yPercent: -50, backgroundColor: INK
-      });
+      gsap.set(caption, { opacity: 0, yPercent: -50 });
       gsap.set(burst, { opacity: 0, scale: 1, xPercent: -50, yPercent: -50 });
       gsap.set(end, { opacity: 0 });
 
@@ -867,21 +862,29 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
 
-      // ── 1-3. one item at a time, with holds between ─────
+      // ── 1-3. one item at a time, rise then lift ─────────
       // positions accumulate so each item can have its own
-      // length. no stacking, no pushing.
+      // length. it rises into place, holds, then lifts away
+      // in the same direction, so the sequence reads as one
+      // continuous upward flow.
       var at = 0;
 
       items.forEach(function (item, i) {
         var span = HOLDS[i] !== undefined ? HOLDS[i] : 0.70;
 
         tl.to(item, {
-          opacity: 1, duration: FADE, ease: "power2.out"
+          opacity: 1,
+          y: 0,
+          duration: IN,
+          ease: "power3.out"
         }, at);
 
         tl.to(item, {
-          opacity: 0, duration: FADE, ease: "power2.in"
-        }, at + span - FADE);
+          opacity: 0,
+          y: LIFT,
+          duration: OUT,
+          ease: "power2.in"
+        }, at + span - OUT);
 
         at += span;
       });
@@ -915,22 +918,10 @@ document.addEventListener("DOMContentLoaded", function () {
         duration: 0.34, ease: "power2.out"
       }, fieldAt + 0.06);
 
-      // ── 6. the page turns orange once the bar is set ────
-      var turnAt = fieldAt + 0.44;
+      // gap: the full field holds
 
-      tl.to(sticky, {
-        backgroundColor: ORANGE, duration: 0.22, ease: "none"
-      }, turnAt);
-
-      tl.to(caption, {
-        backgroundColor: ORANGE, color: INK,
-        duration: 0.22, ease: "none"
-      }, turnAt);
-
-      // gap: the full field holds on orange
-
-      // ── 7. slow cross-fade, instant text swap ───────────
-      var litAt = turnAt + 0.60;
+      // ── 6. slow cross-fade, instant text swap ───────────
+      var litAt = fieldAt + 0.90;
 
       tl.to(fieldLit, { opacity: 1, duration: XFADE, ease: "none" }, litAt);
       tl.to(fieldAll, { opacity: 0, duration: XFADE, ease: "none" }, litAt + 0.06);
@@ -942,7 +933,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // gap: the lit field holds
 
-      // ── 8. the dot expands and takes the screen ─────────
+      // ── 7. the dot expands and takes the screen ─────────
       var burstAt = litAt + 0.86;
 
       tl.to(burst, { opacity: 1, duration: 0.06 }, burstAt);
@@ -959,7 +950,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
-
 // ── OPTIMIZED WORLD ─────────────────────────────────────
 // Strict sequence, nothing overlaps. One beat cycle:
 //   0.00  head fades in

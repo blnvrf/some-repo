@@ -141,8 +141,8 @@ document.addEventListener("DOMContentLoaded", function () {
               ease: "none",
               scrollTrigger: {
                 trigger: group,
-                start: "bottom bottom+=40%",
-                end: "bottom bottom-=10%",
+                start: "bottom bottom",
+                end: "bottom top+=25%",
                 scrub: 0.6
               }
             });

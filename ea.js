@@ -925,7 +925,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var litAt = fieldAt + 4.0;
 
       tl.to(fieldLit, { opacity: 1, duration: XFADE, ease: "none" }, litAt);
-      tl.to(fieldAll, { opacity: 0, duration: XFADE, ease: "none" }, litAt + 0.06);
+      tl.to(fieldAll, { opacity: 0, duration: XFADE, ease: "none" }, litAt + 1);
 
       // swaps in one frame at 80% through the cross-fade, so
       // the caption bar never leaves the screen

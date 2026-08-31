@@ -922,7 +922,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // gap: the full field holds
 
       // ── 6. slow cross-fade, instant text swap ───────────
-            var litAt = fieldAt + 2.40;
+      var litAt = fieldAt + 4.0;
 
       tl.to(fieldLit, { opacity: 1, duration: XFADE, ease: "none" }, litAt);
       tl.to(fieldAll, { opacity: 0, duration: XFADE, ease: "none" }, litAt + 0.06);

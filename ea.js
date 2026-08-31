@@ -970,18 +970,17 @@ document.addEventListener("DOMContentLoaded", function () {
 // those scrub rather than play, so scrolling through one drags
 // the element back and forth instead of hitting it once.
 //
-// COLOURS live in the Designer, on each block:
-//   data-opt-bg   the background the sticky turns to
-//   data-opt-fg   the text colour for that block
+// COLOURS
+//   intro     #ecefde  (also set on opt_sticky in the Designer)
+//   block 1   #fe6249  orange
+//   block 2   #0e37e2  blue
+//   block 3   #fe6249  orange
+//   block 4   #0e37e2  blue
 //
-//   intro     #ecefde   (also set on opt_sticky in Designer)
-//   block 1   #0e37e2   text #ecefde
-//   block 2   #fe6249   text #ecefde
-//   block 3   #ecefde   text #0d1117
-//   block 4   #0e37e2   text #ecefde
-//
-//   opt_head and opt_copy must have NO colour of their own in
-//   the Designer, or they will not inherit from the block.
+//   Text is #0d1117 throughout, set once in the Designer on
+//   opt_head and opt_copy. The script does not touch colour.
+//   Check block 2 and 4 for contrast: black on a deep blue is
+//   tight at body size.
 //
 // Designer:
 //   section_opt      data-opt-scene, position relative
@@ -991,7 +990,7 @@ document.addEventListener("DOMContentLoaded", function () {
 //
 //         opt_stage      position absolute, inset 0, z-index 1
 //
-//           opt_block    data-opt-block, data-opt-bg, data-opt-fg
+//           opt_block    data-opt-block, data-opt-bg
 //                        position absolute, inset 0,
 //                        display flex, flex-direction column,
 //                        justify-content center, padding 0 12vw,
@@ -1032,8 +1031,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // ── config ────────────────────────────────────────────
     var INTRO_BG = "#ecefde";   // the cream the section opens on
-    var INTRO_FG = "#0d1117";   // intro text colour
-    var FALLBACK_FG = "#ecefde";
 
     var BEAT = 1.08;            // scroll distance per block
     var INTRO_OUT = 0.34;       // when the intro title leaves
@@ -1046,13 +1043,10 @@ document.addEventListener("DOMContentLoaded", function () {
       // blocks sit in place at full size. only their contents
       // animate in. the block itself moves only on the throw.
       gsap.set(sticky, { backgroundColor: INTRO_BG });
-      gsap.set(intro, { opacity: 1, y: 0, color: INTRO_FG });
+      gsap.set(intro, { opacity: 1, y: 0 });
       gsap.set(blocks, { opacity: 0, x: 0, y: 0, rotate: 0, scale: 1 });
 
       blocks.forEach(function (b) {
-        gsap.set(b, {
-          color: b.getAttribute("data-opt-fg") || FALLBACK_FG
-        });
         gsap.set(b.querySelector("[data-opt-head]"), { opacity: 0, y: 30 });
         gsap.set(b.querySelector("[data-opt-copy]"), { opacity: 0, y: 30 });
         gsap.set(b.querySelector("[data-opt-quote]"), { opacity: 0 });

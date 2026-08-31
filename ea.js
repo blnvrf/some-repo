@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
          var SWAP_AT = 0.62;
-         
+
         swaps.forEach(function (swap, i) {
           var out = swap.querySelector('[data-word="out"]');
           var inn = swap.querySelector('[data-word="in"]');
@@ -198,6 +198,8 @@ document.addEventListener("DOMContentLoaded", function () {
           opacity: 1, duration: 0.25,
           ease: "power2.out", stagger: 0.08
         }, 0.85);
+
+        tl.to({}, { duration: 1.1 }, 1.12);
 
         return function () {
           loops.forEach(function (t) { t.kill(); });

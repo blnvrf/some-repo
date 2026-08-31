@@ -347,8 +347,14 @@ document.addEventListener("DOMContentLoaded", function () {
 // beats. When the pig arrives it slides down to make room for
 // the figures above it, and stays there.
 //
+// PACING: STEP and pig_track height must move together. If you
+// double STEP, double the track height, or the whole thing
+// just plays faster to fit the same scroll distance.
+//   STEP 0.34  ->  pig_track 900vh
+//   STEP 0.45  ->  pig_track 1200vh
+//
 // Designer:
-//   pig_track     height 500vh
+//   pig_track     height 900vh
 //   pig_sticky    sticky, top 0, height 100svh, overflow hidden
 //   pig_bg        position absolute, inset 0, z-index 0
 //
@@ -422,9 +428,9 @@ document.addEventListener("DOMContentLoaded", function () {
     ];
 
     // ── config ────────────────────────────────────────────
-    var STEP = 0.14;         // spacing between beats
-    var HOLD = 0.14;         // figure fade duration
-    var FADE = 0.10;         // text fade duration
+    var STEP = 0.34;         // scroll distance per line
+    var FADE = 0.14;         // text fade duration
+    var HOLD = 0.16;         // figure fade duration
     var TEXT_LOW = "34vh";   // how far the copy drops once the
                              // figures arrive. raise if they overlap.
 
@@ -470,7 +476,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // ── copy: fades out BEFORE the next fades in ─────
         // the fade-out finishes exactly as the next beat
-        // starts, so two lines are never on screen together
+        // starts, so two lines are never on screen together.
+        // the gap between FADE ending and the next beat is
+        // the line's hold time.
         if (txt) {
           gsap.set(txt, { opacity: 0 });
 
@@ -489,7 +497,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (stack && beat.pigs > 0 && prev.pigs === 0) {
           tl.to(stack, {
             y: TEXT_LOW,
-            duration: 0.20,
+            duration: 0.24,
             ease: "power2.inOut"
           }, at);
         }
@@ -518,7 +526,7 @@ document.addEventListener("DOMContentLoaded", function () {
           tl.to(pig, {
             opacity: idx < beat.pigs ? 1 : 0,
             duration: HOLD, ease: "none"
-          }, at + idx * 0.008);
+          }, at + idx * 0.01);
         });
 
         if (pigCount) {
@@ -536,7 +544,7 @@ document.addEventListener("DOMContentLoaded", function () {
             { opacity: 0, y: 60, rotate: -8 },
             {
               opacity: 1, y: 0, rotate: -2,
-              duration: 0.22, ease: "power3.out"
+              duration: 0.26, ease: "power3.out"
             },
             at
           );

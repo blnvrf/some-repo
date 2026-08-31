@@ -922,7 +922,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // gap: the full field holds
 
       // ── 6. slow cross-fade, instant text swap ───────────
-      var litAt = fieldAt + 0.90;
+            var litAt = fieldAt + 1.60;
 
       tl.to(fieldLit, { opacity: 1, duration: XFADE, ease: "none" }, litAt);
       tl.to(fieldAll, { opacity: 0, duration: XFADE, ease: "none" }, litAt + 0.06);
@@ -935,7 +935,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // gap: the lit field holds
 
       // ── 7. the dot expands and takes the screen ─────────
-      var burstAt = litAt + 0.86;
+      var burstAt = litAt + 1.30;
 
       tl.to(burst, { opacity: 1, duration: 0.06 }, burstAt);
 

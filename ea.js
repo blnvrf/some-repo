@@ -952,23 +952,72 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 // ── OPTIMIZED WORLD ─────────────────────────────────────
-// Strict sequence, nothing overlaps. One beat cycle:
-//   0.00  head fades in
-//   0.02  copy fades in
-//   0.46  quote slapped on
-//   0.64  whole block thrown up and left, ends 0.84
-//   0.86  block hidden, frame empty
-//   0.88  background turns, ends 1.06
-//   1.08  next block starts
+// Replaces the OPTIMIZED WORLD block in ea.js
 //
-// Designer: opt_track height 1200vh.
-// Background colours live in data-opt-bg on each block.
-// Check after duplicating a block:
-//   document.querySelectorAll("[data-opt-block]").forEach(
-//     function(b,i){ console.log(i,
-//       !!b.querySelector("[data-opt-head]"),
-//       !!b.querySelector("[data-opt-copy]"),
-//       !!b.querySelector("[data-opt-quote]")); });
+// Strict sequence, nothing overlaps. One beat cycle:
+//   +0.00   head fades in
+//   +0.02   copy fades in
+//   +0.46   quote slapped on
+//   +0.64   whole block thrown up and left, ends +0.84
+//   +0.86   block hidden, frame empty
+//   +0.88   background turns, ends +1.06
+//   +1.08   next block starts
+//
+// The head, copy and quote all live inside opt_block, so the
+// throw takes them together as one object.
+//
+// No yoyo or repeat tweens in here. On a scrubbed timeline
+// those scrub rather than play, so scrolling through one drags
+// the element back and forth instead of hitting it once.
+//
+// COLOURS live in the Designer, on each block:
+//   data-opt-bg   the background the sticky turns to
+//   data-opt-fg   the text colour for that block
+//
+//   intro     #ecefde   (also set on opt_sticky in Designer)
+//   block 1   #0e37e2   text #ecefde
+//   block 2   #fe6249   text #ecefde
+//   block 3   #ecefde   text #0d1117
+//   block 4   #0e37e2   text #ecefde
+//
+//   opt_head and opt_copy must have NO colour of their own in
+//   the Designer, or they will not inherit from the block.
+//
+// Designer:
+//   section_opt      data-opt-scene, position relative
+//     opt_track      data-opt-track, position relative, height 1200vh
+//       opt_sticky   sticky, top 0, height 100svh, width 100%,
+//                    overflow hidden, background-color #ecefde
+//
+//         opt_stage      position absolute, inset 0, z-index 1
+//
+//           opt_block    data-opt-block, data-opt-bg, data-opt-fg
+//                        position absolute, inset 0,
+//                        display flex, flex-direction column,
+//                        justify-content center, padding 0 12vw,
+//                        transform-origin center center
+//                        NO transform. GSAP owns it.
+//             opt_head   Text Block, data-opt-head
+//             opt_copy   Text Block, data-opt-copy, max-width 44ch
+//             opt_quote  Div, data-opt-quote, position absolute,
+//                        top 54%, left 28%, width 52%, z-index 2
+//                        NO transform.
+//               opt_quote-img  Image, width 100%, height auto
+//
+//         opt_intro      data-opt-intro, position absolute, inset 0,
+//                        z-index 3, flex centered, padding 0 10vw
+//           opt_intro-txt  Heading H2
+//
+//   Webflow does not copy custom attributes onto duplicated
+//   children. Check after duplicating a block:
+//     document.querySelectorAll("[data-opt-block]").forEach(
+//       function(b,i){ console.log(i,
+//         b.getAttribute("data-opt-bg"),
+//         !!b.querySelector("[data-opt-head]"),
+//         !!b.querySelector("[data-opt-copy]"),
+//         !!b.querySelector("[data-opt-quote]")); });
+//
+//   NO opacity values anywhere in this section.
 
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-opt-scene]").forEach(function (sec) {
@@ -981,21 +1030,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!track || !sticky || !blocks.length) return;
 
-    var INTRO_BG = "#d85a30";
-    var BEAT = 1.08;
-    var INTRO_OUT = 0.34;
-    var FIRST = 0.72;
-    var SLAP = 0.46;
-    var THROW = 0.64;
+    // ── config ────────────────────────────────────────────
+    var INTRO_BG = "#ecefde";   // the cream the section opens on
+    var INTRO_FG = "#0d1117";   // intro text colour
+    var FALLBACK_FG = "#ecefde";
+
+    var BEAT = 1.08;            // scroll distance per block
+    var INTRO_OUT = 0.34;       // when the intro title leaves
+    var FIRST = 0.72;           // when block 1's head fades in
+    var SLAP = 0.46;            // when the quote lands, per block
+    var THROW = 0.64;           // when the block is thrown, per block
 
     gsap.matchMedia().add("(min-width: 992px)", function () {
+      // ── starting states ─────────────────────────────────
       // blocks sit in place at full size. only their contents
       // animate in. the block itself moves only on the throw.
       gsap.set(sticky, { backgroundColor: INTRO_BG });
-      gsap.set(intro, { opacity: 1, y: 0 });
+      gsap.set(intro, { opacity: 1, y: 0, color: INTRO_FG });
       gsap.set(blocks, { opacity: 0, x: 0, y: 0, rotate: 0, scale: 1 });
 
       blocks.forEach(function (b) {
+        gsap.set(b, {
+          color: b.getAttribute("data-opt-fg") || FALLBACK_FG
+        });
         gsap.set(b.querySelector("[data-opt-head]"), { opacity: 0, y: 30 });
         gsap.set(b.querySelector("[data-opt-copy]"), { opacity: 0, y: 30 });
         gsap.set(b.querySelector("[data-opt-quote]"), { opacity: 0 });
@@ -1010,11 +1067,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
 
+      // ── intro title holds, then clears ──────────────────
       tl.to(intro, {
         opacity: 0, y: -60,
         duration: 0.16, ease: "power2.in"
       }, INTRO_OUT);
 
+      // ── the four blocks, identical pattern each ─────────
       blocks.forEach(function (block, i) {
         var at = FIRST + i * BEAT;
 
@@ -1024,23 +1083,32 @@ document.addEventListener("DOMContentLoaded", function () {
         var bg = block.getAttribute("data-opt-bg") || INTRO_BG;
         var last = i === blocks.length - 1;
 
-        // background turns while the frame is empty
+        // ── background turns while the frame is empty ─────
+        // block 1: after the intro leaves
+        // blocks 2-4: after the previous block has gone
         tl.to(sticky, {
-          backgroundColor: bg, duration: 0.18, ease: "none"
+          backgroundColor: bg,
+          duration: 0.18, ease: "none"
         }, at - 0.20);
 
         tl.set(block, { opacity: 1 }, at - 0.02);
 
+        // ── head and copy arrive fast ────────────────────
         tl.to(head, {
-          opacity: 1, y: 0, duration: 0.10, ease: "power2.out"
+          opacity: 1, y: 0,
+          duration: 0.10, ease: "power2.out"
         }, at);
 
         tl.to(copy, {
-          opacity: 1, y: 0, duration: 0.10, ease: "power2.out"
+          opacity: 1, y: 0,
+          duration: 0.10, ease: "power2.out"
         }, at + 0.02);
 
-        // the slap. fast, oversized, off-angle, hard stop.
-        // anything slower than 0.07 reads as arriving.
+        // gap: a third of the beat to read it
+
+        // ── the slap ──────────────────────────────────────
+        // fast, oversized, off-angle, hard stop. anything
+        // slower than 0.07 reads as arriving, not landing.
         tl.fromTo(quote,
           { opacity: 0, scale: 1.45, rotate: -14, y: -40 },
           {
@@ -1053,6 +1121,11 @@ document.addEventListener("DOMContentLoaded", function () {
         // the head stays put and rides the throw with
         // everything else rather than fading on impact
 
+        // gap: sit with the quote on the copy
+
+        // ── the throw ─────────────────────────────────────
+        // head, copy and quote leave together as one object,
+        // tilted left. gone before the next colour turn.
         if (!last) {
           tl.to(block, {
             y: "-125vh", rotate: -14, scale: 0.9,
@@ -1062,10 +1135,12 @@ document.addEventListener("DOMContentLoaded", function () {
           tl.set(block, { opacity: 0 }, at + THROW + 0.22);
         }
       });
+
+      // the final block holds to the end of the track.
+      // raise opt_track above 1200vh to lengthen the holds.
     });
   });
 });
-
 
 // ── FTX ─────────────────────────────────────────────────
 // Six blocks, same component shape as the optimized world.

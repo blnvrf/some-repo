@@ -246,17 +246,46 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 // ── S03 STACK ───────────────────────────────────────────
+// Replaces the S03 block in ea.js
+//
+// Three lines advance one at a time. Each one arrives at
+// full size, then settles at its own smaller scale as the
+// next arrives, so the finished stack reads as a hierarchy
+// rather than three equal demoted lines.
+//
+// Designer:
+//   section_s03      data-s03
+//   s03_track        data-s03-track, position relative, height 300vh
+//   s03_sticky       sticky, top 0, height 100svh
+//   s03_stack        gap 0, line-height 0.95
+//   liberty_s03-line data-s03-line, margin-bottom -0.35em
+//                    (negative margin because a scaled-down line
+//                     keeps its original line box height, which
+//                     is what leaves the gaps)
+//   liberty_s03-kicker  data-s03-kicker
+//
+//   NO opacity values in the Designer. The script owns them.
 
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-s03]").forEach(function (sec) {
     var sq = gsap.utils.selector(sec);
+
     var track = sq("[data-s03-track]")[0];
     var lines = sq("[data-s03-line]");
     var kicker = sq("[data-s03-kicker]");
+
     if (!track || !lines.length) return;
 
-    var SMALL = 0.3;
-    var STEP = 0.25;
+    // ── config ────────────────────────────────────────────
+    // final scale for each line once it has been demoted.
+    // one entry per line, smallest first. the last line
+    // never demotes, so its value is unused.
+    var SIZES = [0.42, 0.62, 1];
+
+    // final opacity, following the same ramp
+    var FADES = [0.5, 0.72, 1];
+
+    var STEP = 0.25;   // scroll distance per line
 
     gsap.matchMedia().add("(min-width: 992px)", function () {
       gsap.set(lines, { transformOrigin: "left center" });
@@ -272,24 +301,38 @@ document.addEventListener("DOMContentLoaded", function () {
 
       lines.forEach(function (line, i) {
         var at = i * STEP;
+        var last = i === lines.length - 1;
 
+        // arrives at full size
         tl.fromTo(line,
           { opacity: 0, y: 24, scale: 1 },
-          { opacity: 1, y: 0, duration: 0.18, ease: "power2.out" },
+          {
+            opacity: 1, y: 0,
+            duration: 0.18,
+            ease: "power2.out"
+          },
           at
         );
 
-        if (i < lines.length - 1) {
+        // settles at its own size as the next one arrives
+        if (!last) {
           tl.to(line, {
-            scale: SMALL, opacity: 0.8,
-            duration: 0.18, ease: "power2.inOut"
+            scale: SIZES[i] !== undefined ? SIZES[i] : 0.5,
+            opacity: FADES[i] !== undefined ? FADES[i] : 0.6,
+            duration: 0.18,
+            ease: "power2.inOut"
           }, at + STEP);
         }
       });
 
+      // kicker lands after the last line
       tl.fromTo(kicker,
         { opacity: 0, y: 16 },
-        { opacity: 1, y: 0, duration: 0.18, ease: "power2.out" },
+        {
+          opacity: 1, y: 0,
+          duration: 0.18,
+          ease: "power2.out"
+        },
         lines.length * STEP
       );
     });

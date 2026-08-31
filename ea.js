@@ -364,9 +364,10 @@ document.addEventListener("DOMContentLoaded", function () {
 //
 //   padding-global  position ABSOLUTE, inset 0, z-index 1,
 //                   width 100%, height 100%
-//                   (absolute, not a flex child, so the copy
-//                    can centre in the full viewport and then
-//                    be moved independently)
+//                   Must be absolute, not a flex child. As a
+//                   flex child it takes the leftover space
+//                   under pig_scale and the copy is already
+//                   pinned low, so there is nothing to drop.
 //     container-large  height 100%
 //       pig_stack      data-pig-stack, position relative,
 //                      height 100%, flex, centered
@@ -377,6 +378,12 @@ document.addEventListener("DOMContentLoaded", function () {
 //   Exactly TWO pig_fig-img inside pig_herd in the Designer:
 //   the seed, and one carrying the is-stack combo so the
 //   class publishes. The script clones the rest to 10.
+//
+//   Check before debugging:
+//     console.log(
+//       document.querySelectorAll("[data-pig-stack]").length,
+//       document.querySelectorAll("[data-pig-line]").length,
+//       document.querySelectorAll("[data-pig-txt]").length);
 //
 //   NO opacity values anywhere in this section.
 
@@ -418,7 +425,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var STEP = 0.14;         // spacing between beats
     var HOLD = 0.14;         // figure fade duration
     var FADE = 0.10;         // text fade duration
-    var TEXT_LOW = "22vh";   // how far the copy drops once the
+    var TEXT_LOW = "34vh";   // how far the copy drops once the
                              // figures arrive. raise if they overlap.
 
     // ── build the herd to 10 total ────────────────────────
@@ -437,7 +444,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // ── starting states ─────────────────────────────────
       gsap.set([human, op, pigSide, quote], { opacity: 0 });
       gsap.set(herd, { opacity: 0, display: "none" });
-      gsap.set(stack, { y: 0 });
+      if (stack) gsap.set(stack, { y: 0 });
 
       // grid locked to its ten-pig arrangement, never reflows.
       // hidden pigs are display none, so every smaller count
@@ -461,7 +468,9 @@ document.addEventListener("DOMContentLoaded", function () {
         var prev = i > 0 ? BEATS[i - 1] : { pigs: 0, human: false };
         var last = i === lines.length - 1;
 
-        // ── copy: straight crossfade ────────────────────
+        // ── copy: fades out BEFORE the next fades in ─────
+        // the fade-out finishes exactly as the next beat
+        // starts, so two lines are never on screen together
         if (txt) {
           gsap.set(txt, { opacity: 0 });
 
@@ -472,7 +481,7 @@ document.addEventListener("DOMContentLoaded", function () {
           if (!last) {
             tl.to(txt, {
               opacity: 0, duration: FADE, ease: "power1.in"
-            }, at + STEP);
+            }, at + STEP - FADE);
           }
         }
 
@@ -536,7 +545,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
-
 
 // ── IDEOLOGY ────────────────────────────────────────────
 // Designer:

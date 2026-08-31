@@ -161,6 +161,8 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         });
 
+         var SWAP_AT = 0.62;
+         
         swaps.forEach(function (swap, i) {
           var out = swap.querySelector('[data-word="out"]');
           var inn = swap.querySelector('[data-word="in"]');
@@ -169,12 +171,12 @@ document.addEventListener("DOMContentLoaded", function () {
           tl.to(out, {
             yPercent: -110, opacity: 0,
             duration: 0.5, ease: "power2.inOut"
-          }, i * 0.25);
+          }, SWAP_AT);
 
           tl.to(inn, {
             yPercent: 0, opacity: 1,
             duration: 0.5, ease: "power2.inOut"
-          }, i * 0.25);
+          }, SWAP_AT);
         });
 
         tl.to(bgDark, { opacity: 1, duration: 0.6, ease: "none" }, 0.5);

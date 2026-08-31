@@ -906,6 +906,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // ── 5. the field rises and pushes the caption up ────
       // both move on the same ease and overlap in time, so it
       // reads as contact even though they never touch
+      
       var fieldAt = capAt + 0.40;
 
       tl.to(field, {

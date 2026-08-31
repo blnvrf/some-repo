@@ -922,10 +922,10 @@ document.addEventListener("DOMContentLoaded", function () {
       // gap: the full field holds
 
       // ── 6. slow cross-fade, instant text swap ───────────
-      var litAt = fieldAt + 4.0;
+      var litAt = fieldAt + 2.4;
 
       tl.to(fieldLit, { opacity: 1, duration: XFADE, ease: "none" }, litAt);
-      tl.to(fieldAll, { opacity: 0, duration: XFADE, ease: "none" }, litAt + 1);
+      tl.to(fieldAll, { opacity: 0, duration: XFADE, ease: "none" }, litAt + 2.4);
 
       // swaps in one frame at 80% through the cross-fade, so
       // the caption bar never leaves the screen

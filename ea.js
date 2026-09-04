@@ -172,15 +172,23 @@ var PRE = 1;
     bandColor: "#080331",
     figureStagger: 0.08, // second figure starts this much later
 
-    speckCount: 50,
+    speckCount: 220,
     speckColor: "#d85a30",
     speckStart: 0.35,    // fraction of track height where the
                          // flicker switches on
     floatX: [-8, 8],
     floatY: [-16, -28],  // px range of the figure drift
     floatRot: [-3.2, 3.2],
-    floatDur: [2.4, 3.6] // seconds. randomised per figure so
+    floatDur: [2.4, 3.6], // seconds. randomised per figure so
                          // they never sync up
+
+       
+speckColor: "#d85a30",
+speckSize: [1, 2],
+speckOpacity: [0.15, 0.65],
+speckFlashDur: [0.015, 0.05],
+speckDelay: [0.01, 0.12],
+speckInitialDelay: [0, 0.15],
   };
 
   var mm = gsap.matchMedia();
@@ -221,45 +229,96 @@ var PRE = 1;
         // one. repeat and yoyo inside a scrub do not play,
         // they scrub, so scrolling drags them back and forth
         // instead of animating them.
-        if (host && motionOk) {
-          var flick = gsap.timeline({ paused: true });
+       // ── RED DIGITAL NOISE ─────────────────────────────────────
 
-          for (var i = 0; i < CFG.speckCount; i++) {
-            var sp = document.createElement("span");
-            sp.style.cssText =
-              "position:absolute;display:block;background:" +
-              CFG.speckColor + ";opacity:0;will-change:opacity";
-            host.appendChild(sp);
+var speckTweens = [];
 
-            (function (el) {
-              function place() {
-                var d = gsap.utils.random(2, 4, 1);
-                gsap.set(el, {
-                  width: d,
-                  height: d,
-                  left: gsap.utils.random(0, 100) + "%",
-                  top: gsap.utils.random(0, 100) + "%"
-                });
-              }
+if (host) {
 
-              place();
+  for (var i = 0; i < CFG.speckCount; i++) {
 
-              // repeatRefresh re-rolls the delay every cycle
-              // and onRepeat moves the speck, so the pattern
-              // never visibly loops
-              flick.to(el, {
-                opacity: 1,
-                duration: 0.06,
-                repeat: -1,
-                repeatRefresh: true,
-                repeatDelay: gsap.utils.random(0.4, 5),
-                yoyo: true,
-                onRepeat: place
-              }, gsap.utils.random(0, 3));
-            })(sp);
-          }
+    var speck = document.createElement("span");
 
-          loops.push(flick);
+    speck.style.position = "absolute";
+    speck.style.display = "block";
+    speck.style.pointerEvents = "none";
+    speck.style.backgroundColor = CFG.speckColor;
+    speck.style.opacity = "0";
+
+    host.appendChild(speck);
+
+
+    (function (el) {
+
+      function place() {
+
+        var size = gsap.utils.random(
+          CFG.speckSize[0],
+          CFG.speckSize[1],
+          1
+        );
+
+        gsap.set(el, {
+          width: size,
+          height: size,
+
+          // random position across whole layer
+          left: gsap.utils.random(0, 100) + "%",
+          top: gsap.utils.random(0, 100) + "%"
+        });
+      }
+
+
+      // initial position
+      place();
+
+
+      var flick = gsap.to(el, {
+
+        opacity: function () {
+          return gsap.utils.random(
+            CFG.speckOpacity[0],
+            CFG.speckOpacity[1]
+          );
+        },
+
+        duration: function () {
+          return gsap.utils.random(
+            CFG.speckFlashDur[0],
+            CFG.speckFlashDur[1]
+          );
+        },
+
+        repeat: -1,
+        repeatRefresh: true,
+
+        repeatDelay: function () {
+          return gsap.utils.random(
+            CFG.speckDelay[0],
+            CFG.speckDelay[1]
+          );
+        },
+
+        yoyo: true,
+
+        // move somewhere new every flicker cycle
+        onRepeat: place,
+
+        delay: gsap.utils.random(
+          CFG.speckInitialDelay[0],
+          CFG.speckInitialDelay[1]
+        )
+      });
+
+
+      speckTweens.push(flick);
+      
+
+    })(speck);
+  }
+}
+
+          
 
           // switch the flicker on partway down the track and
           // off again when the section leaves, so it is not

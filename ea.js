@@ -69,7 +69,7 @@ var PRE = 1;
     statueDark: PRE + 0.55,
     swap: PRE + 0.62,
     statueLight: PRE + 0.70,
-    bits: PRE + 0.90,
+    bits: PRE + 1,
     specks: PRE + 0.75,
     figures: PRE + 0.85,
     hold: PRE + 1.12,
@@ -81,9 +81,9 @@ var PRE = 1;
     bg: 0.60,
     statueDark: 0.60,
     swap: 0.50,
-    statueLight: 0.05, // short: it only has to vanish behind
+    statueLight: 0.1, // short: it only has to vanish behind
                        // the dark one, which is already there
-    bits: 0.90,
+    bits: 0.750,
     specks: 0.40,
     figures: 0.35,
     hold: 3         // the pause. raise this AND the track

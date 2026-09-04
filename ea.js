@@ -423,6 +423,8 @@ ease: "rough({template:power2.out, strength:1, points:16, taper:out, randomize:t
               defaults: { ease: "sine.inOut" }
             });
 
+            var floatTarget = fig.querySelector(".liberty_figure-img");
+
             f.to(fig, {
               x: gsap.utils.random(CFG.floatX[0], CFG.floatX[1]),
               y: gsap.utils.random(CFG.floatY[0], CFG.floatY[1]),

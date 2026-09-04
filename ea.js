@@ -71,9 +71,9 @@ var PRE = 1;
     statueLight: PRE + 0.70,
     bits: PRE + 1,
     specks: PRE + 0.75,
-    figures: PRE + 0.85,
+    figures: PRE + 1.12,
     hold: PRE + 1.12,
-    statueSwap: PRE + 1.05
+    statueSwap: PRE + 1.1
   };
 
   // ══ HOW LONG THINGS TAKE ═════════════════════════════════
@@ -85,7 +85,7 @@ var PRE = 1;
                        // the dark one, which is already there
     bits: 0.750,
     specks: 0.40,
-    figures: 0.35,
+    figures: 0.5,
     hold: 3         // the pause. raise this AND the track
                        // height together, or it just speeds up
   };
@@ -303,12 +303,20 @@ var PRE = 1;
           }, BEATS.specks);
         }
 
-        tl.to(figures, {
-          opacity: 1,
-          duration: DUR.figures,
-          ease: "power2.out",
-          stagger: CFG.figureStagger
-        }, BEATS.figures);
+        figures.forEach(function (fig) {
+  var side = fig.getAttribute("data-figure");
+
+  gsap.set(fig, {
+    x: side === "left" ? "-100vw" : "100vw",
+    opacity: 0
+  });
+});
+
+tl.to(fig, {
+  x: 0,
+  opacity: 1,
+  duration: DUR.figures
+}, BEATS.figures);
 
         // ── the hold ──────────────────────────────────────
         // an empty tween on a dummy object. it occupies

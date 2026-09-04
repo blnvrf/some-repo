@@ -72,7 +72,8 @@ var PRE = 1;
     bits: PRE + 0.70,
     specks: PRE + 0.75,
     figures: PRE + 0.85,
-    hold: PRE + 1.12
+    hold: PRE + 1.12,
+    statueSwap: PRE + 1.05
   };
 
   // ══ HOW LONG THINGS TAKE ═════════════════════════════════
@@ -264,6 +265,7 @@ var PRE = 1;
         // dark comes up first and light leaves after, so the
         // body is covered before the head disappears. without
         // that overlap you see the background through it.
+        /*
         tl.to(statueDark, {
           opacity: 1,
           duration: DUR.statueDark,
@@ -275,7 +277,10 @@ var PRE = 1;
           duration: DUR.statueLight,
           ease: "none"
         }, BEATS.statueLight);
+*/
 
+        tl.set(statueDark, { opacity: 1 }, BEATS.statueSwap);
+        tl.set(statueLight, { opacity: 0 }, BEATS.statueSwap);
         // ── the corruption arrives ────────────────────────
         tl.to(bits, {
           opacity: 1,

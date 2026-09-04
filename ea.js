@@ -322,7 +322,7 @@ figures.forEach(function (fig, i) {
       y: 0,
       opacity: 1,
       duration: DUR.figures,
-      ease: "power2.out"
+ease: "rough({template:power2.out, strength:0.25, points:12, taper:out, randomize:true, clamp:true})"
     },
 
     BEATS.figures + i * CFG.figureStagger

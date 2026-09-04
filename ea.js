@@ -303,20 +303,29 @@ var PRE = 1;
           }, BEATS.specks);
         }
 
-        figures.forEach(function (fig) {
+figures.forEach(function (fig, i) {
   var side = fig.getAttribute("data-figure");
 
-  gsap.set(fig, {
-    x: side === "left" ? "-100vw" : "100vw",
-    opacity: 0
-  });
-});
+  tl.fromTo(
+    fig,
 
-tl.to(fig, {
-  x: 0,
-  opacity: 1,
-  duration: DUR.figures
-}, BEATS.figures);
+    // START
+    {
+      x: side === "left" ? -window.innerWidth : window.innerWidth,
+      opacity: 0
+    },
+
+    // END = Webflow position
+    {
+      x: 0,
+      opacity: 1,
+      duration: DUR.figures,
+      ease: "power3.out"
+    },
+
+    BEATS.figures + i * CFG.figureStagger
+  );
+});
 
         // ── the hold ──────────────────────────────────────
         // an empty tween on a dummy object. it occupies

@@ -100,249 +100,257 @@ text.innerHTML = chars.map(char => {
 });
 
 
-// ── LIBERTY ─────────────────────────────────────────────
-// Designer:
-//   liberty_track     height 200vh
-//   liberty_persist   sticky, top 0, height 100svh,
-//                     margin-bottom -100svh, z-index 20
-//   opacity 0 handled in JS for: bg-lyr is-dark,
-//   statue-lyr is-dark, bits-lyr, fx, both figures,
-//   both word is-in
+  document.addEventListener('DOMContentLoaded', function () {
+    // ── LIBERTY ─────────────────────────────────────────────
+    // Replaces the LIBERTY block in ea.js
+    //
+    // One scrubbed timeline. liberty_track is 240vh, the sticky
+    // pins inside it, and that scroll distance maps onto timeline
+    // positions 0 to TOTAL. Timeline units are not seconds: a
+    // duration of 0.6 occupies 0.6 out of TOTAL, so about a
+    // quarter of the section's scroll.
+    //
+    // Everything you would want to tune lives in BEATS and DUR
+    // below. Nothing else in this file needs editing to change
+    // the pacing.
 
-/*
-document.addEventListener("DOMContentLoaded", function () {
-// ── LIBERTY ─────────────────────────────────────────────
-// Replaces the LIBERTY block in ea.js
-//
-// One scrubbed timeline. liberty_track is 240vh, the sticky
-// pins inside it, and that scroll distance maps onto timeline
-// positions 0 to TOTAL. Timeline units are not seconds: a
-// duration of 0.6 occupies 0.6 out of TOTAL, so about a
-// quarter of the section's scroll.
-//
-// Everything you would want to tune lives in BEATS and DUR
-// below. Nothing else in this file needs editing to change
-// the pacing.
+    var scenes = gsap.utils.toArray('[data-liberty-scene]');
+    if (!scenes.length) return;
 
-  var scenes = gsap.utils.toArray("[data-liberty-scene]");
-  if (!scenes.length) return;
+    gsap.registerPlugin(ScrollTrigger);
 
-  gsap.registerPlugin(ScrollTrigger);
-
-  window.addEventListener("load", function () {
-    document.fonts.ready.then(function () {
-      ScrollTrigger.refresh();
+    window.addEventListener('load', function () {
+      document.fonts.ready.then(function () {
+        ScrollTrigger.refresh();
+      });
     });
-  });
 
-  // ══ WHEN THINGS HAPPEN ═══════════════════════════════════
-  // timeline positions. raise a number to make that beat
-  // start later. nothing here is relative, so moving one
-  // does not move the others.
-var PRE = 1;
+    // ══ WHEN THINGS HAPPEN ═══════════════════════════════════
+    // timeline positions. raise a number to make that beat
+    // start later. nothing here is relative, so moving one
+    // does not move the others.
+    var PRE = 1;
 
-  var BEATS = {
-    bg: PRE + 0.50,
-    statueDark: PRE + 0.55,
-    swap: PRE + 0.62,
-    statueLight: PRE + 0.70,
-    bits: PRE + 1,
-    specks: PRE + 0.75,
-    figures: PRE + 1.55,
-    hold: PRE + 1.12,
-    statueSwap: PRE + 1.1
-  };
+    var BEATS = {
+      bg: PRE + 0.5,
+      statueDark: PRE + 0.55,
+      swap: PRE + 0.62,
+      statueLight: PRE + 0.7,
+      bits: PRE + 1,
+      specks: PRE + 0.75,
+      figures: PRE + 1.55,
+      hold: PRE + 1.12,
+      statueSwap: PRE + 1.1,
+    };
 
-  // ══ HOW LONG THINGS TAKE ═════════════════════════════════
-  var DUR = {
-    bg: 0.60,
-    statueDark: 0.60,
-    swap: 0.50,
-    statueLight: 0.1, // short: it only has to vanish behind
-                       // the dark one, which is already there
-    bits: 0.750,
-    specks: 0.40,
-    figures: 0.75,
-    hold: 3         // the pause. raise this AND the track
-                       // height together, or it just speeds up
-  };
+    // ══ HOW LONG THINGS TAKE ═════════════════════════════════
+    var DUR = {
+      bg: 0.6,
+      statueDark: 0.6,
+      swap: 0.5,
+      statueLight: 0.1, // short: it only has to vanish behind
+      // the dark one, which is already there
+      bits: 0.75,
+      specks: 0.4,
+      figures: 0.75,
+      hold: 3, // the pause. raise this AND the track
+      // height together, or it just speeds up
+    };
 
-  // ══ EVERYTHING ELSE ══════════════════════════════════════
-  var CFG = {
-    scrub: 0.4,          // lag between scroll and animation
-    bandColor: "#080331",
-    figureStagger: 0.08, // second figure starts this much later
+    // ══ EVERYTHING ELSE ══════════════════════════════════════
+    var CFG = {
+      scrub: 0.4, // lag between scroll and animation
+      bandColor: '#080331',
+      figureStagger: 0.08, // second figure starts this much later
 
-    speckCount: 50,
-    speckColor: "#d85a30",
-    speckStart: 0.35,    // fraction of track height where the
-                         // flicker switches on
-floatX: [-8, 8],    // px range of the figure drift
-    floatY: [-16, -28],  // px range of the figure drift
-    floatRot: [-3.2, 3.2],
-    floatDur: [2.4, 3.6] // seconds. randomised per figure so
-                         // they never sync up
-  };
+      speckCount: 50,
+      speckColor: '#d85a30',
+      speckStart: 0.35, // fraction of track height where the
+      // flicker switches on
+      floatX: [-8, 8], // px range of the figure drift
+      floatY: [-16, -28], // px range of the figure drift
+      floatRot: [-3.2, 3.2],
+      floatDur: [2.4, 3.6], // seconds. randomised per figure so
+      // they never sync up
+    };
 
-  var mm = gsap.matchMedia();
+    var mm = gsap.matchMedia();
 
-  scenes.forEach(function (scene) {
-    var q = gsap.utils.selector(scene);
+    scenes.forEach(function (scene) {
+      var q = gsap.utils.selector(scene);
 
-    mm.add(
-      {
-        isDesktop: "(min-width: 992px)",
-        motionOk: "(prefers-reduced-motion: no-preference)"
-      },
-      function (context) {
-        if (!context.conditions.isDesktop) return;
-        var motionOk = context.conditions.motionOk;
+      mm.add(
+        {
+          isDesktop: '(min-width: 992px)',
+          motionOk: '(prefers-reduced-motion: no-preference)',
+        },
+        function (context) {
+          if (!context.conditions.isDesktop) return;
+          var motionOk = context.conditions.motionOk;
 
-        var track = q("[data-liberty-track]")[0];
-        var bgDark = q('[data-liberty="bg-dark"]');
-        var band = q('[data-liberty="band"]');
-        var statueLight = q('[data-liberty="light"]');
-        var statueDark = q('[data-liberty="dark"]');
-        var bits = q('[data-liberty="bits"]');
-        var swaps = q("[data-liberty-swap]");
-        var figures = q("[data-figure]");
-        var host = q("[data-liberty-static]")[0];
+          var track = q('[data-liberty-track]')[0];
+          var bgDark = q('[data-liberty="bg-dark"]');
+          var band = q('[data-liberty="band"]');
+          var statueLight = q('[data-liberty="light"]');
+          var statueDark = q('[data-liberty="dark"]');
+          var bits = q('[data-liberty="bits"]');
+          var swaps = q('[data-liberty-swap]');
+          var figures = q('[data-figure]');
+          var host = q('[data-liberty-static]')[0];
+          var sticky = q("[data-liberty-sticky]")[0];
 
-        if (!track) return;
+          if (!track) return;
 
-        // every looping timeline goes in here so the cleanup
-        // at the bottom can kill them on a resize
-        var loops = [];
+          // every looping timeline goes in here so the cleanup
+          // at the bottom can kill them on a resize
+          var loops = [];
 
-        // ══ 1. SPECKS ══════════════════════════════════════
-        // 50 spans injected into liberty_fx, each blinking on
-        // its own random schedule.
-        //
-        // This runs on a SEPARATE timeline, not the scrubbed
-        // one. repeat and yoyo inside a scrub do not play,
-        // they scrub, so scrolling drags them back and forth
-        // instead of animating them.
-        if (host && motionOk) {
-          var flick = gsap.timeline({ paused: true });
+          // ══ 1. SPECKS ══════════════════════════════════════
+          // 50 spans injected into liberty_fx, each blinking on
+          // its own random schedule.
+          //
+          // This runs on a SEPARATE timeline, not the scrubbed
+          // one. repeat and yoyo inside a scrub do not play,
+          // they scrub, so scrolling drags them back and forth
+          // instead of animating them.
+          if (host && motionOk) {
+            var flick = gsap.timeline({ paused: true });
 
-          for (var i = 0; i < CFG.speckCount; i++) {
-            var sp = document.createElement("span");
-            sp.style.cssText =
-              "position:absolute;display:block;background:" +
-              CFG.speckColor + ";opacity:0;will-change:opacity";
-            host.appendChild(sp);
+            for (var i = 0; i < CFG.speckCount; i++) {
+              var sp = document.createElement('span');
+              sp.style.cssText = 'position:absolute;display:block;background:' + CFG.speckColor + ';opacity:0;will-change:opacity';
+              host.appendChild(sp);
 
-            (function (el) {
-              function place() {
-                var d = gsap.utils.random(2, 4, 1);
-                gsap.set(el, {
-                  width: d,
-                  height: d,
-                  left: gsap.utils.random(0, 100) + "%",
-                  top: gsap.utils.random(0, 100) + "%"
-                });
-              }
+              (function (el) {
+                function place() {
+                  var d = gsap.utils.random(2, 4, 1);
+                  gsap.set(el, {
+                    width: d,
+                    height: d,
+                    left: gsap.utils.random(0, 100) + '%',
+                    top: gsap.utils.random(0, 100) + '%',
+                  });
+                }
 
-              place();
+                place();
 
-              // repeatRefresh re-rolls the delay every cycle
-              // and onRepeat moves the speck, so the pattern
-              // never visibly loops
-              flick.to(el, {
-                opacity: 1,
-                duration: 0.06,
-                repeat: -1,
-                repeatRefresh: true,
-                repeatDelay: gsap.utils.random(0.4, 5),
-                yoyo: true,
-                onRepeat: place
-              }, gsap.utils.random(0, 3));
-            })(sp);
-          }
-
-          loops.push(flick);
-
-          // switch the flicker on partway down the track and
-          // off again when the section leaves, so it is not
-          // burning frames through the rest of the page
-          ScrollTrigger.create({
-            trigger: track,
-            start: "top top-=" +
-              Math.round(track.offsetHeight * CFG.speckStart),
-            end: "bottom bottom",
-            onToggle: function (self) {
-              if (self.isActive) {
-                flick.play();
-              } else {
-                flick.pause();
-                gsap.set(host.children, { opacity: 0 });
-              }
+                // repeatRefresh re-rolls the delay every cycle
+                // and onRepeat moves the speck, so the pattern
+                // never visibly loops
+                flick.to(
+                  el,
+                  {
+                    opacity: 1,
+                    duration: 0.06,
+                    repeat: -1,
+                    repeatRefresh: true,
+                    repeatDelay: gsap.utils.random(0.4, 5),
+                    yoyo: true,
+                    onRepeat: place,
+                  },
+                  gsap.utils.random(0, 3),
+                );
+              })(sp);
             }
-          });
-        }
 
-        // ══ 2. THE MASTER TIMELINE ═════════════════════════
-        // scrubbed: its playhead is tied to scroll position
-        // rather than to time.
-        var tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: track,
-            start: "top top",
-            end: "bottom bottom",
-            scrub: CFG.scrub
+            loops.push(flick);
+
+            // switch the flicker on partway down the track and
+            // off again when the section leaves, so it is not
+            // burning frames through the rest of the page
+            ScrollTrigger.create({
+              trigger: track,
+              start: 'top top-=' + Math.round(track.offsetHeight * CFG.speckStart),
+              end: 'bottom bottom',
+              onToggle: function (self) {
+                if (self.isActive) {
+                  flick.play();
+                } else {
+                  flick.pause();
+                  gsap.set(host.children, { opacity: 0 });
+                }
+              },
+            });
           }
-        });
 
-        // ── word swaps ────────────────────────────────────
-        // each slot holds two words stacked on top of each
-        // other. the incoming one starts at yPercent 100,
-        // meaning one full self-height below, hidden by
-        // overflow: hidden on the slot.
-        //
-        // both travel upward, so it reads as one motion
-        // rather than two separate fades.
-        swaps.forEach(function (swap) {
-          var out = swap.querySelector('[data-word="out"]');
-          var inn = swap.querySelector('[data-word="in"]');
+          // ══ 2. THE MASTER TIMELINE ═════════════════════════
+          // scrubbed: its playhead is tied to scroll position
+          // rather than to time.
+          var tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: track,
+              start: 'top top',
+              end: 'bottom bottom',
+              scrub: CFG.scrub,
+            },
+          });
 
-          gsap.set(inn, { yPercent: 100, opacity: 0 });
+          // ── word swaps ────────────────────────────────────
+          // each slot holds two words stacked on top of each
+          // other. the incoming one starts at yPercent 100,
+          // meaning one full self-height below, hidden by
+          // overflow: hidden on the slot.
+          //
+          // both travel upward, so it reads as one motion
+          // rather than two separate fades.
+          swaps.forEach(function (swap) {
+            var out = swap.querySelector('[data-word="out"]');
+            var inn = swap.querySelector('[data-word="in"]');
 
-          tl.to(out, {
-            yPercent: -110,
-            opacity: 0,
-            duration: DUR.swap,
-            ease: "power2.inOut"
-          }, BEATS.swap);
+            gsap.set(inn, { yPercent: 100, opacity: 0 });
 
-          tl.to(inn, {
-            yPercent: 0,
-            opacity: 1,
-            duration: DUR.swap,
-            ease: "power2.inOut"
-          }, BEATS.swap);
-        });
+            tl.to(
+              out,
+              {
+                yPercent: -110,
+                opacity: 0,
+                duration: DUR.swap,
+                ease: 'power2.inOut',
+              },
+              BEATS.swap,
+            );
 
-        // ── the background turns ──────────────────────────
-        tl.to(bgDark, {
-          opacity: 1,
-          duration: DUR.bg,
-          ease: "none"
-        }, BEATS.bg);
+            tl.to(
+              inn,
+              {
+                yPercent: 0,
+                opacity: 1,
+                duration: DUR.swap,
+                ease: 'power2.inOut',
+              },
+              BEATS.swap,
+            );
+          });
 
-        // the band is not fading, its colour is tweening.
-        // it has mix-blend-mode multiply, so through the
-        // transition it multiplies with whatever is behind it.
-        tl.to(band, {
-          backgroundColor: CFG.bandColor,
-          duration: DUR.bg,
-          ease: "none"
-        }, BEATS.bg);
+          // ── the background turns ──────────────────────────
+          tl.to(
+            bgDark,
+            {
+              opacity: 1,
+              duration: DUR.bg,
+              ease: 'none',
+            },
+            BEATS.bg,
+          );
 
-        // ── the statue swaps ──────────────────────────────
-        // dark comes up first and light leaves after, so the
-        // body is covered before the head disappears. without
-        // that overlap you see the background through it.
-        /*
+          // the band is not fading, its colour is tweening.
+          // it has mix-blend-mode multiply, so through the
+          // transition it multiplies with whatever is behind it.
+          tl.to(
+            band,
+            {
+              backgroundColor: CFG.bandColor,
+              duration: DUR.bg,
+              ease: 'none',
+            },
+            BEATS.bg,
+          );
+
+          // ── the statue swaps ──────────────────────────────
+          // dark comes up first and light leaves after, so the
+          // body is covered before the head disappears. without
+          // that overlap you see the background through it.
+          /*
         tl.to(statueDark, {
           opacity: 1,
           duration: DUR.statueDark,
@@ -354,152 +362,199 @@ floatX: [-8, 8],    // px range of the figure drift
           duration: DUR.statueLight,
           ease: "none"
         }, BEATS.statueLight);
+*/
 
+          tl.set(statueDark, { opacity: 1 }, BEATS.statueSwap);
+          tl.set(statueLight, { opacity: 0 }, BEATS.statueSwap);
+          // ── the corruption arrives ────────────────────────
 
-        tl.set(statueDark, { opacity: 1 }, BEATS.statueSwap);
-        tl.set(statueLight, { opacity: 0 }, BEATS.statueSwap);
-        // ── the corruption arrives ────────────────────────
+          gsap.set(bits, {
+            yPercent: -100,
+            opacity: 0,
+          });
 
-        gsap.set(bits, {
-          yPercent: -100,
-          opacity: 0
-        });
+          tl.to(
+            bits,
+            {
+              yPercent: 0,
+              opacity: 1,
+              duration: DUR.bits,
+              ease: 'power3.out',
+            },
+            BEATS.bits,
+          );
 
-        tl.to(bits, {
-          yPercent: 0,
-          opacity: 1,
-          duration: DUR.bits,
-          ease: "power3.out"
-        }, BEATS.bits);
-
-
-                // ── the section clears itself ─────────────────────
-        // everything except the background fades out, so the
-        // liberty frame empties to a flat colour that matches
-        // the next section. no visible boundary.
-        // ── the section clears ────────────────────────────
-        // content fades out first, band included. the
-        // background then cuts instantly rather than fading,
-        // because the next section already has the identical
-        // image behind it and a fade would show as a dip.
+          // ── the section clears itself ─────────────────────
+          // everything except the background fades out, so the
+          // liberty frame empties to a flat colour that matches
+          // the next section. no visible boundary.
+          // ── the section clears ────────────────────────────
+          // content fades out first, band included. the
+          // background then cuts instantly rather than fading,
+          // because the next section already has the identical
+          // image behind it and a fade would show as a dip.
+                  // ── the section clears ────────────────────────────
+        // each element exits the way it entered, reversed.
+        // figures fly back out sideways, bits rise back up
+        // off the top, the band collapses to nothing, text
+        // just fades.
         var CLEAR = BEATS.hold + DUR.hold;
 
+        // figures fly back out the way they came in
+        figures.forEach(function (fig, i) {
+          var side = fig.getAttribute("data-figure");
+
+          tl.to(fig, {
+            x: side === "left"
+              ? -window.innerWidth
+              : window.innerWidth,
+            y: side === "left" ? 120 : 175,
+            opacity: 0,
+            duration: DUR.figures,
+            ease: "power2.in"
+          }, CLEAR + i * CFG.figureStagger);
+        });
+
+        // bits retreat upward, same path they came down
+        tl.to(bits, {
+          yPercent: -100,
+          opacity: 0,
+          duration: DUR.bits,
+          ease: "power3.in"
+        }, CLEAR);
+
+        // the band collapses to the bottom edge
+        tl.to(band, {
+          height: "0%",
+          duration: 0.40,
+          ease: "power2.inOut"
+        }, CLEAR + 0.10);
+
+        // statue and specks just fade
+        tl.to([statueDark, host], {
+          opacity: 0,
+          duration: 0.35,
+          ease: "power2.in"
+        }, CLEAR + 0.10);
+
+        // text fades last, so the words are the final thing
         tl.to([
-          statueDark,
-          statueLight,
-          bits,
-          figures,
-          host,
-          band,
           q("[data-liberty-swap]"),
           q("[data-liberty-slot-mid]")
         ], {
           opacity: 0,
-          duration: 0.40,
+          duration: 0.35,
           ease: "power2.in"
-        }, CLEAR);
+        }, CLEAR + 0.30);
 
-        // hard cut, no fade. by this point the pig section
-        // has covered the frame with the same image.
-        tl.set(bgDark, { opacity: 0 }, CLEAR + 0.55);
-        tl.set(q("[data-liberty='bg-light']"), { opacity: 0 }, CLEAR + 0.55);
-
-        if (host) {
-          tl.to(host, {
-            opacity: 1,
-            duration: DUR.specks,
-            ease: "none"
-          }, BEATS.specks);
-        }
-
-
-
-figures.forEach(function (fig, i) {
-
-  var side = fig.getAttribute("data-figure");
-
-  tl.fromTo(
-    fig,
-    {
-      x: side === "left"
-        ? -window.innerWidth
-        : window.innerWidth,
-
-      y: side === "left" ? 120 : 175,
-
-      opacity: 0
-    },
-    {
-      x: 0,
-      y: 0,
-      opacity: 1,
-      duration: DUR.figures,
-      ease: "power2.out"
-    },
-
-    BEATS.figures + i * CFG.figureStagger
-  );
-
-});
-
-        // ── the hold ──────────────────────────────────────
-        // an empty tween on a dummy object. it occupies
-        // timeline space and does nothing, which is what
-        // gives the finished frame time on screen.
-        tl.to({}, { duration: DUR.hold }, BEATS.hold);
-
-        // ══ 3. FIGURE FLOAT ════════════════════════════════
-        // separate timeline again, for the same reason as
-        // the specks. each figure gets its own random
-        // duration and offset so they never move in unison.
-        if (motionOk && figures.length) {
-          figures.forEach(function (fig, i) {
-            var f = gsap.timeline({
-              repeat: -1,
-              yoyo: true,
-              paused: true,
-              defaults: { ease: "sine.inOut" }
-            });
-
-var floatTarget = fig.querySelector(
-  '[data-inner-figure="true"]'
-);
-
-f.to(floatTarget, {
-  x: gsap.utils.random(CFG.floatX[0], CFG.floatX[1]),
-  y: gsap.utils.random(CFG.floatY[0], CFG.floatY[1]),
-  rotate: gsap.utils.random(CFG.floatRot[0], CFG.floatRot[1]),
-  duration: gsap.utils.random(CFG.floatDur[0], CFG.floatDur[1])
-}, i * 0.4);
-
-            loops.push(f);
-
-            ScrollTrigger.create({
-              trigger: track,
-              start: "top bottom",
-              end: "bottom top",
-              onToggle: function (self) {
-                self.isActive ? f.play() : f.pause();
-              }
-            });
+          // hard cut, no fade. by this point the pig section
+          // has covered the frame with the same image.
+		        // hide only once pig has covered the frame
+        var pig = document.querySelector("[data-pig]");
+        if (pig) {
+          ScrollTrigger.create({
+            trigger: pig,
+            start: "top top",
+            onEnter: function () { gsap.set(sticky, { opacity: 0 }); },
+            onLeaveBack: function () { gsap.set(sticky, { opacity: 1 }); }
           });
         }
 
-        // ══ CLEANUP ════════════════════════════════════════
-        // runs when the viewport drops below 992px. kills the
-        // looping timelines and empties the injected specks
-        // so a resize back up does not stack duplicates.
-        return function () {
-          loops.forEach(function (t) { t.kill(); });
-          if (host) host.innerHTML = "";
-        };
-      }
-    );
+          if (host) {
+            tl.to(
+              host,
+              {
+                opacity: 1,
+                duration: DUR.specks,
+                ease: 'none',
+              },
+              BEATS.specks,
+            );
+          }
+
+          figures.forEach(function (fig, i) {
+            var side = fig.getAttribute('data-figure');
+
+            tl.fromTo(
+              fig,
+              {
+                x: side === 'left' ? -window.innerWidth : window.innerWidth,
+
+                y: side === 'left' ? 120 : 175,
+
+                opacity: 0,
+              },
+              {
+                x: 0,
+                y: 0,
+                opacity: 1,
+                duration: DUR.figures,
+                ease: 'power2.out',
+              },
+
+              BEATS.figures + i * CFG.figureStagger,
+            );
+          });
+
+          // ── the hold ──────────────────────────────────────
+          // an empty tween on a dummy object. it occupies
+          // timeline space and does nothing, which is what
+          // gives the finished frame time on screen.
+          tl.to({}, { duration: DUR.hold }, BEATS.hold);
+
+          // ══ 3. FIGURE FLOAT ════════════════════════════════
+          // separate timeline again, for the same reason as
+          // the specks. each figure gets its own random
+          // duration and offset so they never move in unison.
+          if (motionOk && figures.length) {
+            figures.forEach(function (fig, i) {
+              var f = gsap.timeline({
+                repeat: -1,
+                yoyo: true,
+                paused: true,
+                defaults: { ease: 'sine.inOut' },
+              });
+
+              var floatTarget = fig.querySelector('[data-inner-figure="true"]');
+
+              f.to(
+                floatTarget,
+                {
+                  x: gsap.utils.random(CFG.floatX[0], CFG.floatX[1]),
+                  y: gsap.utils.random(CFG.floatY[0], CFG.floatY[1]),
+                  rotate: gsap.utils.random(CFG.floatRot[0], CFG.floatRot[1]),
+                  duration: gsap.utils.random(CFG.floatDur[0], CFG.floatDur[1]),
+                },
+                i * 0.4,
+              );
+
+              loops.push(f);
+
+              ScrollTrigger.create({
+                trigger: track,
+                start: 'top bottom',
+                end: 'bottom top',
+                onToggle: function (self) {
+                  self.isActive ? f.play() : f.pause();
+                },
+              });
+            });
+          }
+
+          // ══ CLEANUP ════════════════════════════════════════
+          // runs when the viewport drops below 992px. kills the
+          // looping timelines and empties the injected specks
+          // so a resize back up does not stack duplicates.
+          return function () {
+            loops.forEach(function (t) {
+              t.kill();
+            });
+            if (host) host.innerHTML = '';
+          };
+        },
+      );
+    });
   });
-
-  
-
-});
 
 
 // ── S03 STACK ───────────────────────────────────────────

@@ -172,10 +172,15 @@ var PRE = 1;
     bandColor: "#080331",
     figureStagger: 0.08, // second figure starts this much later
 
-    speckCount: 50,
-    speckColor: "#d85a30",
-    speckStart: 0.35,    // fraction of track height where the
-                         // flicker switches on
+speckCount: 220,
+speckColor: "#d85a30",
+speckStart: 0.35,
+
+speckSize: [1, 2],
+speckOpacity: [0.15, 0.65],
+speckFlashDur: [0.015, 0.05],
+speckDelay: [0.01, 0.12],
+speckInitialDelay: [0, 0.15],
     floatX: [-8, 8],
     floatY: [-16, -28],  // px range of the figure drift
     floatRot: [-3.2, 3.2],

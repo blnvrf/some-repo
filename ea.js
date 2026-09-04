@@ -68,6 +68,45 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
+document.addEventListener("DOMContentLoaded", function () {
+  const texts = document.querySelectorAll('[data-char-reveal="true"]');
+
+  texts.forEach((text) => {
+    const chars = [...text.textContent];
+
+    text.innerHTML = chars.map(char => {
+      if (char === " ") {
+        return `<span style="display:inline-block; width:0.3em;">&nbsp;</span>`;
+      }
+
+      return `
+        <span style="display:inline-block; overflow:hidden; vertical-align:bottom;">
+          <span class="char-reveal-inner" style="display:inline-block;">
+            ${char}
+          </span>
+        </span>
+      `;
+    }).join("");
+
+    const innerChars = text.querySelectorAll(".char-reveal-inner");
+
+    gsap.fromTo(
+      innerChars,
+      {
+        yPercent: 110,
+        opacity: 0
+      },
+      {
+        yPercent: 0,
+        opacity: 1,
+        duration: 0.5,
+        stagger: 0.025,
+        ease: "power3.out"
+      }
+    );
+  });
+});
+
 
 // ── LIBERTY ─────────────────────────────────────────────
 // Designer:

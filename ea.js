@@ -183,6 +183,17 @@ floatX: [-8, 8],    // px range of the figure drift
                          // they never sync up
   };
 
+          var bars = q("[data-blind-bar]");
+
+        gsap.set(bars, { scaleY: 0, transformOrigin: "bottom center" });
+
+        tl.to(bars, {
+          scaleY: 1,
+          duration: 0.30,
+          ease: "power2.inOut",
+          stagger: 0.05
+        }, BEATS.hold + DUR.hold - 0.5);
+
   var mm = gsap.matchMedia();
 
   scenes.forEach(function (scene) {
@@ -461,6 +472,8 @@ f.to(floatTarget, {
       }
     );
   });
+
+  
 
 });
 

@@ -223,6 +223,8 @@ var PRE = 1;
         // instead of animating them.
 // ── RED DIGITAL NOISE ─────────────────────────────────────
 
+// ══ 1. SPECKS ══════════════════════════════════════
+
 var speckTweens = [];
 
 if (host && motionOk) {
@@ -253,15 +255,12 @@ if (host && motionOk) {
         gsap.set(el, {
           width: size,
           height: size,
-
-          // random position across whole layer
           left: gsap.utils.random(0, 100) + "%",
           top: gsap.utils.random(0, 100) + "%"
         });
       }
 
 
-      // initial position
       place();
 
 
@@ -283,7 +282,6 @@ if (host && motionOk) {
 
         repeat: -1,
         repeatRefresh: true,
-        paused: true,
 
         repeatDelay: function () {
           return gsap.utils.random(
@@ -294,13 +292,14 @@ if (host && motionOk) {
 
         yoyo: true,
 
-        // move somewhere new every flicker cycle
         onRepeat: place,
 
         delay: gsap.utils.random(
           CFG.speckInitialDelay[0],
           CFG.speckInitialDelay[1]
-        )
+        ),
+
+        paused: true
       });
 
 
@@ -310,24 +309,45 @@ if (host && motionOk) {
     })(speck);
   }
 
-  ScrollTrigger.create({
-  trigger: track,
-  start: CFG.speckStart,
-  
-  onEnter: function () {
-    speckTweens.forEach(function (tween) {
-      tween.play();
-    });
-  },
 
-  onLeaveBack: function () {
-    speckTweens.forEach(function (tween) {
-      tween.pause(0);
-    });
-  }
-});
+  var speckTrigger = ScrollTrigger.create({
+
+    trigger: track,
+
+    start: "top 35%",
+    end: "bottom top",
+
+    onEnter: function () {
+      speckTweens.forEach(function (tween) {
+        tween.play();
+      });
+    },
+
+    onEnterBack: function () {
+      speckTweens.forEach(function (tween) {
+        tween.play();
+      });
+    },
+
+    onLeave: function () {
+      speckTweens.forEach(function (tween) {
+        tween.pause();
+      });
+    },
+
+    onLeaveBack: function () {
+      speckTweens.forEach(function (tween) {
+        tween.pause(0);
+      });
+    }
+
+  });
+
+  loops.push(speckTrigger);
 }
 
+
+// ══ 2. THE MASTER TIMELINE ═════════════════════════
         // ══ 2. THE MASTER TIMELINE ═════════════════════════
         // scrubbed: its playhead is tied to scroll position
         // rather than to time.

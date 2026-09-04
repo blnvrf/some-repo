@@ -430,6 +430,15 @@ tl.fromTo(
               paused: true,
               defaults: { ease: "sine.inOut" }
             });
+            
+var floatTarget = fig.querySelector('[data-inner-figure="true"]');
+
+f.to(floatTarget, {
+  x: gsap.utils.random(CFG.floatX[0], CFG.floatX[1]),
+  y: gsap.utils.random(CFG.floatY[0], CFG.floatY[1]),
+  rotate: gsap.utils.random(CFG.floatRot[0], CFG.floatRot[1]),
+  duration: gsap.utils.random(CFG.floatDur[0], CFG.floatDur[1])
+}, i * 0.4);
 
             f.to(fig, {
               x : gsap.utils.random(CFG.floatX[0], CFG.floatX[1]),

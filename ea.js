@@ -109,6 +109,7 @@ text.innerHTML = chars.map(char => {
 //   statue-lyr is-dark, bits-lyr, fx, both figures,
 //   both word is-in
 
+/*
 document.addEventListener("DOMContentLoaded", function () {
 // ── LIBERTY ─────────────────────────────────────────────
 // Replaces the LIBERTY block in ea.js
@@ -353,7 +354,7 @@ floatX: [-8, 8],    // px range of the figure drift
           duration: DUR.statueLight,
           ease: "none"
         }, BEATS.statueLight);
-*/
+
 
         tl.set(statueDark, { opacity: 1 }, BEATS.statueSwap);
         tl.set(statueLight, { opacity: 0 }, BEATS.statueSwap);
@@ -376,13 +377,32 @@ floatX: [-8, 8],    // px range of the figure drift
         // everything except the background fades out, so the
         // liberty frame empties to a flat colour that matches
         // the next section. no visible boundary.
+        // ── the section clears ────────────────────────────
+        // content fades out first, band included. the
+        // background then cuts instantly rather than fading,
+        // because the next section already has the identical
+        // image behind it and a fade would show as a dip.
         var CLEAR = BEATS.hold + DUR.hold;
 
-        tl.to(track.firstElementChild, {
+        tl.to([
+          statueDark,
+          statueLight,
+          bits,
+          figures,
+          host,
+          band,
+          q("[data-liberty-swap]"),
+          q("[data-liberty-slot-mid]")
+        ], {
           opacity: 0,
           duration: 0.40,
           ease: "power2.in"
         }, CLEAR);
+
+        // hard cut, no fade. by this point the pig section
+        // has covered the frame with the same image.
+        tl.set(bgDark, { opacity: 0 }, CLEAR + 0.55);
+        tl.set(q("[data-liberty='bg-light']"), { opacity: 0 }, CLEAR + 0.55);
 
         if (host) {
           tl.to(host, {
@@ -502,7 +522,7 @@ f.to(floatTarget, {
 //   liberty_s03-kicker  data-s03-kicker
 //
 //   NO opacity values in the Designer. The script owns them.
-
+*/
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-s03]").forEach(function (sec) {
     var sq = gsap.utils.selector(sec);

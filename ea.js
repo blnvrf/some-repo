@@ -176,7 +176,7 @@ var PRE = 1;
     speckColor: "#d85a30",
     speckStart: 0.35,    // fraction of track height where the
                          // flicker switches on
-
+    floatX: [-8, 8],
     floatY: [-16, -28],  // px range of the figure drift
     floatRot: [-3.2, 3.2],
     floatDur: [2.4, 3.6] // seconds. randomised per figure so
@@ -432,6 +432,7 @@ tl.fromTo(
             });
 
             f.to(fig, {
+              x : gsap.utils.random(CFG.floatX[0], CFG.floatX[1]),
               y: gsap.utils.random(CFG.floatY[0], CFG.floatY[1]),
               rotate: gsap.utils.random(CFG.floatRot[0], CFG.floatRot[1]),
               duration: gsap.utils.random(CFG.floatDur[0], CFG.floatDur[1])

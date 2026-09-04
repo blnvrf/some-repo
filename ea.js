@@ -47,7 +47,6 @@ document.addEventListener("DOMContentLoaded", function () {
 // below. Nothing else in this file needs editing to change
 // the pacing.
 
-document.addEventListener("DOMContentLoaded", function () {
   var scenes = gsap.utils.toArray("[data-liberty-scene]");
   if (!scenes.length) return;
 
@@ -346,7 +345,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     );
   });
-});
 });
 
 

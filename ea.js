@@ -440,7 +440,7 @@ f.to(floatTarget, {
   duration: gsap.utils.random(CFG.floatDur[0], CFG.floatDur[1])
 }, i * 0.4);
 
-          var bars = q("[data-blind-bar]");
+          var bars = q("[data-blind-panel]");
 
         gsap.set(bars, { scaleY: 0, transformOrigin: "bottom center" });
 

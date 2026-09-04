@@ -440,17 +440,6 @@ f.to(floatTarget, {
   duration: gsap.utils.random(CFG.floatDur[0], CFG.floatDur[1])
 }, i * 0.4);
 
-          var bars = q("[data-blind-panel]");
-
-        gsap.set(bars, { scaleY: 0, transformOrigin: "bottom center" });
-
-        tl.to(bars, {
-          scaleY: 1,
-          duration: 0.30,
-          ease: "power2.inOut",
-          stagger: 0.05
-        }, BEATS.hold + DUR.hold - 0.5);
-
             loops.push(f);
 
             ScrollTrigger.create({

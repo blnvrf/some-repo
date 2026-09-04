@@ -62,15 +62,17 @@ document.addEventListener("DOMContentLoaded", function () {
   // timeline positions. raise a number to make that beat
   // start later. nothing here is relative, so moving one
   // does not move the others.
+var PRE = 1;
+
   var BEATS = {
-    bg: 0.50,          // background image and band start turning
-    statueDark: 0.85,  // dark statue starts fading in
-    swap: 0.75,        // both word pairs swap
-    statueLight: 0.8, // light statue starts fading out
-    bits: 0.9,        // binary spray fades in
-    specks: 0.75,      // speck container fades in
-    figures: 0.95,     // both medallion figures pop
-    hold: 1        // nothing happens from here
+    bg: PRE + 0.50,
+    statueDark: PRE + 0.55,
+    swap: PRE + 0.62,
+    statueLight: PRE + 0.70,
+    bits: PRE + 0.70,
+    specks: PRE + 0.75,
+    figures: PRE + 0.85,
+    hold: PRE + 1.12
   };
 
   // ══ HOW LONG THINGS TAKE ═════════════════════════════════

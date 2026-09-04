@@ -381,27 +381,35 @@ var PRE = 1;
 
 figures.forEach(function (fig, i) {
   var side = fig.getAttribute("data-figure");
+var inner = fig.querySelector(".liberty_figure-img");
 
-  tl.fromTo(
-    fig,
+tl.fromTo(
+  fig,
+  {
+    x: side === "left" ? -window.innerWidth : window.innerWidth,
+    opacity: 0
+  },
+  {
+    x: 0,
+    opacity: 1,
+    duration: DUR.figures,
+    ease: "power2.out"
+  },
+  BEATS.figures
+);
 
-    // START
-    {
-      x: side === "left" ? -window.innerWidth : window.innerWidth,
-      y: side === "left" ? 120 : 175,
-      opacity: 0
-    },
-
-    // END = Webflow position
-    {
-      x: 0,
-      y: 0,
-      opacity: 1,
-      duration: DUR.figures,
-ease: "rough({template:power2.out, strength:1, points:16, taper:out, randomize:true, clamp:true})"    },
-
-    BEATS.figures + i * CFG.figureStagger
-  );
+tl.fromTo(
+  inner,
+  {
+    y: 120
+  },
+  {
+    y: 0,
+    duration: DUR.figures,
+    ease: "power2.out"
+  },
+  BEATS.figures
+);
 });
 
         // ── the hold ──────────────────────────────────────

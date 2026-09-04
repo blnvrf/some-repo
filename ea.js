@@ -23,6 +23,51 @@
 //     attribute counts in the console before debugging.
 // ============================================================
 
+// GLOBAL ANIMATIONS:
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  const texts = document.querySelectorAll('[data-word-reveal="true"]');
+
+  texts.forEach((text) => {
+
+    const words = text.textContent.trim().split(/\s+/);
+
+    text.innerHTML = words
+      .map(word => `
+        <span style="display:inline-block; overflow:hidden; vertical-align:bottom;">
+          <span class="word-reveal-inner" style="display:inline-block;">
+            ${word}
+          </span>
+        </span>
+      `)
+      .join(" ");
+
+    const innerWords = text.querySelectorAll(".word-reveal-inner");
+
+    gsap.fromTo(
+      innerWords,
+
+      {
+        yPercent: 110,
+        opacity: 0
+      },
+
+      {
+        yPercent: 0,
+        opacity: 1,
+
+        duration: 0.7,
+        stagger: 0.06,
+
+        ease: "power3.out"
+      }
+    );
+
+  });
+
+});
+
 
 // ── LIBERTY ─────────────────────────────────────────────
 // Designer:

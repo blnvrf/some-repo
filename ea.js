@@ -172,16 +172,11 @@ var PRE = 1;
     bandColor: "#080331",
     figureStagger: 0.08, // second figure starts this much later
 
-speckCount: 220,
-speckColor: "#d85a30",
-speckStart: 0.35,
-
-speckSize: [1, 2],
-speckOpacity: [0.15, 0.65],
-speckFlashDur: [0.015, 0.05],
-speckDelay: [0.01, 0.12],
-speckInitialDelay: [0, 0.15],
-    floatX: [-8, 8],
+    speckCount: 50,
+    speckColor: "#d85a30",
+    speckStart: 0.35,    // fraction of track height where the
+                         // flicker switches on
+floatX: [-8, 8],    // px range of the figure drift
     floatY: [-16, -28],  // px range of the figure drift
     floatRot: [-3.2, 3.2],
     floatDur: [2.4, 3.6] // seconds. randomised per figure so
@@ -226,113 +221,65 @@ speckInitialDelay: [0, 0.15],
         // one. repeat and yoyo inside a scrub do not play,
         // they scrub, so scrolling drags them back and forth
         // instead of animating them.
-// ── RED DIGITAL NOISE ─────────────────────────────────────
+        if (host && motionOk) {
+          var flick = gsap.timeline({ paused: true });
 
-// ══ 1. SPECKS ══════════════════════════════════════
+          for (var i = 0; i < CFG.speckCount; i++) {
+            var sp = document.createElement("span");
+            sp.style.cssText =
+              "position:absolute;display:block;background:" +
+              CFG.speckColor + ";opacity:0;will-change:opacity";
+            host.appendChild(sp);
 
-var speckTweens = [];
+            (function (el) {
+              function place() {
+                var d = gsap.utils.random(2, 4, 1);
+                gsap.set(el, {
+                  width: d,
+                  height: d,
+                  left: gsap.utils.random(0, 100) + "%",
+                  top: gsap.utils.random(0, 100) + "%"
+                });
+              }
 
-// ══ 1. SPECKS ══════════════════════════════════════
+              place();
 
-if (host && motionOk) {
+              // repeatRefresh re-rolls the delay every cycle
+              // and onRepeat moves the speck, so the pattern
+              // never visibly loops
+              flick.to(el, {
+                opacity: 1,
+                duration: 0.06,
+                repeat: -1,
+                repeatRefresh: true,
+                repeatDelay: gsap.utils.random(0.4, 5),
+                yoyo: true,
+                onRepeat: place
+              }, gsap.utils.random(0, 3));
+            })(sp);
+          }
 
-  var flick = gsap.timeline({ paused: true });
+          loops.push(flick);
 
-  for (var i = 0; i < CFG.speckCount; i++) {
+          // switch the flicker on partway down the track and
+          // off again when the section leaves, so it is not
+          // burning frames through the rest of the page
+          ScrollTrigger.create({
+            trigger: track,
+            start: "top top-=" +
+              Math.round(track.offsetHeight * CFG.speckStart),
+            end: "bottom bottom",
+            onToggle: function (self) {
+              if (self.isActive) {
+                flick.play();
+              } else {
+                flick.pause();
+                gsap.set(host.children, { opacity: 0 });
+              }
+            }
+          });
+        }
 
-    var sp = document.createElement("span");
-
-    sp.style.cssText =
-      "position:absolute;" +
-      "display:block;" +
-      "background:" + CFG.speckColor + ";" +
-      "opacity:0;" +
-      "pointer-events:none;" +
-      "will-change:opacity";
-
-    host.appendChild(sp);
-
-
-    (function (el) {
-
-      function place() {
-
-        // SMALL: 1–2px
-        var d = gsap.utils.random(1, 2, 1);
-
-        gsap.set(el, {
-          width: d,
-          height: d,
-          left: gsap.utils.random(0, 100) + "%",
-          top: gsap.utils.random(0, 100) + "%"
-        });
-      }
-
-
-      place();
-
-
-      flick.to(
-        el,
-        {
-          opacity: gsap.utils.random(0.25, 0.75),
-
-          // FAST flash
-          duration: gsap.utils.random(0.02, 0.05),
-
-          repeat: -1,
-
-          // MUCH shorter wait = noise
-          repeatDelay: gsap.utils.random(0.02, 0.15),
-
-          yoyo: true,
-
-          // jump somewhere else each cycle
-          onRepeat: place
-        },
-
-        // spread initial flashes slightly
-        gsap.utils.random(0, 0.4)
-      );
-
-    })(sp);
-  }
-
-
-  loops.push(flick);
-
-
-  ScrollTrigger.create({
-
-    trigger: track,
-
-    start:
-      "top top-=" +
-      Math.round(track.offsetHeight * CFG.speckStart),
-
-    end: "bottom bottom",
-
-    onToggle: function (self) {
-
-      if (self.isActive) {
-
-        flick.play();
-
-      } else {
-
-        flick.pause();
-
-        gsap.set(host.children, {
-          opacity: 0
-        });
-      }
-    }
-
-  });
-}
-
-
-// ══ 2. THE MASTER TIMELINE ═════════════════════════
         // ══ 2. THE MASTER TIMELINE ═════════════════════════
         // scrubbed: its playhead is tied to scroll position
         // rather than to time.
@@ -434,35 +381,27 @@ if (host && motionOk) {
 
 figures.forEach(function (fig, i) {
   var side = fig.getAttribute("data-figure");
-var inner = fig.querySelector(".liberty_figure-img");
 
-tl.fromTo(
-  fig,
-  {
-    x: side === "left" ? -window.innerWidth : window.innerWidth,
-    opacity: 0
-  },
-  {
-    x: 0,
-    opacity: 1,
-    duration: DUR.figures,
-    ease: "power2.out"
-  },
-  BEATS.figures
-);
+  tl.fromTo(
+    fig,
 
-tl.fromTo(
-  inner,
-  {
-    y: 120
-  },
-  {
-    y: 0,
-    duration: DUR.figures,
-    ease: "power2.out"
-  },
-  BEATS.figures
-);
+    // START
+    {
+      x: side === "left" ? -window.innerWidth : window.innerWidth,
+      y: side === "left" ? 120 : 175,
+      opacity: 0
+    },
+
+    // END = Webflow position
+    {
+      x: 0,
+      y: 0,
+      opacity: 1,
+      duration: DUR.figures,
+ease: "rough({template:power2.out, strength:1, points:16, taper:out, randomize:true, clamp:true})"    },
+
+    BEATS.figures + i * CFG.figureStagger
+  );
 });
 
         // ── the hold ──────────────────────────────────────
@@ -483,16 +422,13 @@ tl.fromTo(
               paused: true,
               defaults: { ease: "sine.inOut" }
             });
-            
 
-var floatTarget = fig.querySelector('[data-inner-figure="true"]');
-
-f.to(floatTarget, {
-  x: gsap.utils.random(CFG.floatX[0], CFG.floatX[1]),
-  y: gsap.utils.random(CFG.floatY[0], CFG.floatY[1]),
-  rotate: gsap.utils.random(CFG.floatRot[0], CFG.floatRot[1]),
-  duration: gsap.utils.random(CFG.floatDur[0], CFG.floatDur[1])
-}, i * 0.4);
+            f.to(fig, {
+              x: gsap.utils.random(CFG.floatX[0], CFG.floatX[1]),
+              y: gsap.utils.random(CFG.floatY[0], CFG.floatY[1]),
+              rotate: gsap.utils.random(CFG.floatRot[0], CFG.floatRot[1]),
+              duration: gsap.utils.random(CFG.floatDur[0], CFG.floatDur[1])
+            }, i * 0.4);
 
             loops.push(f);
 

@@ -1,5 +1,5 @@
 // ============================================================
-// EA SITE
+// EA SITE git log -1 --format=%h
 // Loaded via jsDelivr. Do not wrap this file in script tags.
 //
 // Webflow: Site Settings, Custom code, Before body tag:
@@ -182,17 +182,6 @@ floatX: [-8, 8],    // px range of the figure drift
     floatDur: [2.4, 3.6] // seconds. randomised per figure so
                          // they never sync up
   };
-
-          var bars = q("[data-blind-bar]");
-
-        gsap.set(bars, { scaleY: 0, transformOrigin: "bottom center" });
-
-        tl.to(bars, {
-          scaleY: 1,
-          duration: 0.30,
-          ease: "power2.inOut",
-          stagger: 0.05
-        }, BEATS.hold + DUR.hold - 0.5);
 
   var mm = gsap.matchMedia();
 
@@ -382,6 +371,7 @@ floatX: [-8, 8],    // px range of the figure drift
           ease: "power3.out"
         }, BEATS.bits);
 
+
         if (host) {
           tl.to(host, {
             opacity: 1,
@@ -389,6 +379,8 @@ floatX: [-8, 8],    // px range of the figure drift
             ease: "none"
           }, BEATS.specks);
         }
+
+
 
 figures.forEach(function (fig, i) {
 
@@ -447,6 +439,17 @@ f.to(floatTarget, {
   rotate: gsap.utils.random(CFG.floatRot[0], CFG.floatRot[1]),
   duration: gsap.utils.random(CFG.floatDur[0], CFG.floatDur[1])
 }, i * 0.4);
+
+          var bars = q("[data-blind-bar]");
+
+        gsap.set(bars, { scaleY: 0, transformOrigin: "bottom center" });
+
+        tl.to(bars, {
+          scaleY: 1,
+          duration: 0.30,
+          ease: "power2.inOut",
+          stagger: 0.05
+        }, BEATS.hold + DUR.hold - 0.5);
 
             loops.push(f);
 

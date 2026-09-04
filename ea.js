@@ -812,7 +812,7 @@ document.addEventListener("DOMContentLoaded", function () {
       gsap.set(texture, { opacity: 0 });
       gsap.set(land, { opacity: 0, yPercent: 60 });
       gsap.set(blast, { opacity: 0, yPercent: 70, xPercent: -50 });
-      gsap.set(bits, { opacity: 0, yPercent: -60, xPercent: -50 });
+      gsap.set(bits, { opacity: 0, yPercent: -100, xPercent: -50 });
       gsap.set(title, { opacity: 0, y: 24 });
       gsap.set(slides, { opacity: 0, yPercent: -50 });
 
@@ -840,12 +840,12 @@ document.addEventListener("DOMContentLoaded", function () {
       tl.to(bits, {
         opacity: 1, yPercent: 0,
         duration: DUR.bits, ease: "power3.out"
-      }, 0.34);
+      }, BEATS.bits);
 
       tl.to(title, {
         opacity: 1, y: 0,
         duration: 0.16, ease: "power2.out"
-      }, BEATS.bits);
+      }, BEATS.title);
 
       slides.forEach(function (slide, i) {
         var at = 0.56 + i * STEP;

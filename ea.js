@@ -64,13 +64,13 @@ document.addEventListener("DOMContentLoaded", function () {
   // does not move the others.
   var BEATS = {
     bg: 0.50,          // background image and band start turning
-    statueDark: 0.55,  // dark statue starts fading in
-    swap: 0.62,        // both word pairs swap
-    statueLight: 0.70, // light statue starts fading out
-    bits: 0.70,        // binary spray fades in
+    statueDark: 0.85,  // dark statue starts fading in
+    swap: 0.75,        // both word pairs swap
+    statueLight: 0.8, // light statue starts fading out
+    bits: 0.9,        // binary spray fades in
     specks: 0.75,      // speck container fades in
-    figures: 0.85,     // both medallion figures pop
-    hold: 1.12         // nothing happens from here
+    figures: 0.95,     // both medallion figures pop
+    hold: 1        // nothing happens from here
   };
 
   // ══ HOW LONG THINGS TAKE ═════════════════════════════════
@@ -78,12 +78,12 @@ document.addEventListener("DOMContentLoaded", function () {
     bg: 0.60,
     statueDark: 0.60,
     swap: 0.50,
-    statueLight: 0.25, // short: it only has to vanish behind
+    statueLight: 0.05, // short: it only has to vanish behind
                        // the dark one, which is already there
     bits: 0.40,
     specks: 0.40,
-    figures: 0.25,
-    hold: 1.10         // the pause. raise this AND the track
+    figures: 0.35,
+    hold: 3         // the pause. raise this AND the track
                        // height together, or it just speeds up
   };
 

@@ -378,24 +378,11 @@ floatX: [-8, 8],    // px range of the figure drift
         // the next section. no visible boundary.
         var CLEAR = BEATS.hold + DUR.hold;
 
-        tl.to([statueDark, bits, figures, host], {
+        tl.to(track.firstElementChild, {
           opacity: 0,
-          duration: 0.35,
-          ease: "power2.in",
-          stagger: 0.05
+          duration: 0.40,
+          ease: "power2.in"
         }, CLEAR);
-
-        tl.to(q("[data-liberty-swap]"), {
-          opacity: 0,
-          duration: 0.30,
-          ease: "power2.in"
-        }, CLEAR + 0.06);
-
-        tl.to(q("[data-liberty-slot-mid]"), {
-          opacity: 0,
-          duration: 0.30,
-          ease: "power2.in"
-        }, CLEAR + 0.06);
 
         if (host) {
           tl.to(host, {

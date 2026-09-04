@@ -71,7 +71,7 @@ var PRE = 1;
     statueLight: PRE + 0.70,
     bits: PRE + 1,
     specks: PRE + 0.75,
-    figures: PRE + 1.12,
+    figures: PRE + 1.55,
     hold: PRE + 1.12,
     statueSwap: PRE + 1.1
   };
@@ -85,7 +85,7 @@ var PRE = 1;
                        // the dark one, which is already there
     bits: 0.750,
     specks: 0.40,
-    figures: 0.5,
+    figures: 0.75,
     hold: 3         // the pause. raise this AND the track
                        // height together, or it just speeds up
   };
@@ -312,15 +312,17 @@ figures.forEach(function (fig, i) {
     // START
     {
       x: side === "left" ? -window.innerWidth : window.innerWidth,
+      y: side === "left" ? 120 : 175,
       opacity: 0
     },
 
     // END = Webflow position
     {
       x: 0,
+      y: 0,
       opacity: 1,
       duration: DUR.figures,
-      ease: "power3.out"
+      ease: "power2.out"
     },
 
     BEATS.figures + i * CFG.figureStagger

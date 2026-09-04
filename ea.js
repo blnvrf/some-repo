@@ -372,6 +372,31 @@ floatX: [-8, 8],    // px range of the figure drift
         }, BEATS.bits);
 
 
+                // ── the section clears itself ─────────────────────
+        // everything except the background fades out, so the
+        // liberty frame empties to a flat colour that matches
+        // the next section. no visible boundary.
+        var CLEAR = BEATS.hold + DUR.hold;
+
+        tl.to([statueDark, bits, figures, host], {
+          opacity: 0,
+          duration: 0.35,
+          ease: "power2.in",
+          stagger: 0.05
+        }, CLEAR);
+
+        tl.to(q("[data-liberty-swap]"), {
+          opacity: 0,
+          duration: 0.30,
+          ease: "power2.in"
+        }, CLEAR + 0.06);
+
+        tl.to(q("[data-liberty-slot-mid]"), {
+          opacity: 0,
+          duration: 0.30,
+          ease: "power2.in"
+        }, CLEAR + 0.06);
+
         if (host) {
           tl.to(host, {
             opacity: 1,

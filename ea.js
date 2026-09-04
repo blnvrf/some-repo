@@ -400,7 +400,7 @@ tl.fromTo(
 tl.fromTo(
   inner,
   {
-    y: 120
+    y: side === "left" ? 120 : 175
   },
   {
     y: 0,

@@ -577,7 +577,7 @@ text.innerHTML = chars.map(char => {
 //   liberty_s03-kicker  data-s03-kicker
 //
 //   NO opacity values in the Designer. The script owns them.
-*/
+/*
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-s03]").forEach(function (sec) {
     var sq = gsap.utils.selector(sec);
@@ -651,7 +651,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-
+*/
 // ── PIG SCALE ───────────────────────────────────────────
 // Replaces the PIG SCALE block in ea.js
 //

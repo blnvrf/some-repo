@@ -708,6 +708,7 @@ document.addEventListener("DOMContentLoaded", function () {
 //
 //   NO opacity values anywhere in this section.
 
+/*
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-pig]").forEach(function (sec) {
     var pq = gsap.utils.selector(sec);
@@ -888,7 +889,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
-
+*/
 // ── IDEOLOGY ────────────────────────────────────────────
 // Designer:
 //   ideo_track   height 400vh

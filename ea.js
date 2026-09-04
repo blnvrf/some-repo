@@ -33,80 +33,133 @@
 //   statue-lyr is-dark, bits-lyr, fx, both figures,
 //   both word is-in
 
+// ── LIBERTY ───────────────────────────────────────────────
+// SEQUENCE:
+//
+// 1. Background transition begins.
+//    At 80% → PHILANTHROPY / CHARITY swap.
+// 2. At 95% → Statue switches INSTANTLY.
+// 3. At 100% → Bits enter from above.
+// 4. Then → continuous red grain/specks begin.
+// 5. Then → figures enter from opposite screen sides,
+//           followed by continuous floating/rotation.
+//
+// IMPORTANT:
+// Only ONE DOMContentLoaded wrapper.
+
 document.addEventListener("DOMContentLoaded", function () {
-// ── LIBERTY ─────────────────────────────────────────────
-// Replaces the LIBERTY block in ea.js
-//
-// One scrubbed timeline. liberty_track is 240vh, the sticky
-// pins inside it, and that scroll distance maps onto timeline
-// positions 0 to TOTAL. Timeline units are not seconds: a
-// duration of 0.6 occupies 0.6 out of TOTAL, so about a
-// quarter of the section's scroll.
-//
-// Everything you would want to tune lives in BEATS and DUR
-// below. Nothing else in this file needs editing to change
-// the pacing.
+
+  gsap.registerPlugin(ScrollTrigger);
 
   var scenes = gsap.utils.toArray("[data-liberty-scene]");
   if (!scenes.length) return;
 
-  gsap.registerPlugin(ScrollTrigger);
 
-  window.addEventListener("load", function () {
-    document.fonts.ready.then(function () {
-      ScrollTrigger.refresh();
-    });
-  });
+  // ══════════════════════════════════════════════════════════
+  // MAIN TUNING
+  // ══════════════════════════════════════════════════════════
 
-  // ══ WHEN THINGS HAPPEN ═══════════════════════════════════
-  // timeline positions. raise a number to make that beat
-  // start later. nothing here is relative, so moving one
-  // does not move the others.
-  var BEATS = {
-    bg: 0.50,          // background image and band start turning
-    statueDark: 0.55,  // dark statue starts fading in
-    swap: 0.62,        // both word pairs swap
-    statueLight: 0.70, // light statue starts fading out
-    bits: 0.70,        // binary spray fades in
-    specks: 0.75,      // speck container fades in
-    figures: 0.85,     // both medallion figures pop
-    hold: 1.12         // nothing happens from here
-  };
-
-  // ══ HOW LONG THINGS TAKE ═════════════════════════════════
-  var DUR = {
-    bg: 0.60,
-    statueDark: 0.60,
-    swap: 0.50,
-    statueLight: 0.25, // short: it only has to vanish behind
-                       // the dark one, which is already there
-    bits: 0.40,
-    specks: 0.40,
-    figures: 0.25,
-    hold: 1.10         // the pause. raise this AND the track
-                       // height together, or it just speeds up
-  };
-
-  // ══ EVERYTHING ELSE ══════════════════════════════════════
   var CFG = {
-    scrub: 0.4,          // lag between scroll and animation
+
+    // How tightly animation follows scrolling.
+    // 0.2 = tight
+    // 0.4 = smooth
+    // 0.8+ = floaty / delayed
+    scrub: 0.35,
+
+
+    // ── BACKGROUND ─────────────────────────────────────────
+
+    // "wipe" = crossfade + horizontal reveal + tiny camera settle
+    // "zoom" = crossfade + subtle scale settle
+    // "fade" = normal crossfade
+    bgTransition: "wipe",
+
+    bgDuration: 1.0,
+
+    // Background completion percentages.
+    wordSwapAt: 0.80,
+    statueSwitchAt: 0.95,
+
     bandColor: "#080331",
-    figureStagger: 0.08, // second figure starts this much later
 
-    speckCount: 50,
+    // Only used by wipe.
+    bgStartScale: 1.035,
+
+
+    // ── WORD SWAP ──────────────────────────────────────────
+
+    // Very fast on purpose.
+    wordSwapDuration: 0.11,
+
+    // How far the old/new word travels.
+    wordTravel: 115,
+
+
+    // ── BITS ───────────────────────────────────────────────
+
+    bitsDuration: 0.28,
+
+    // Negative = starts above final position.
+    bitsStartY: -14,
+
+
+    // ── GRAIN ──────────────────────────────────────────────
+
+    grainFadeDuration: 0.12,
+
+    speckCount: 75,
+
     speckColor: "#d85a30",
-    speckStart: 0.35,    // fraction of track height where the
-                         // flicker switches on
 
-    floatY: [-16, -28],  // px range of the figure drift
-    floatRot: [-3.2, 3.2],
-    floatDur: [2.4, 3.6] // seconds. randomised per figure so
-                         // they never sync up
+    // Small pixel sizes.
+    speckSizeMin: 1,
+    speckSizeMax: 4,
+
+    // Lower = more frantic.
+    speckDelayMin: 0.15,
+    speckDelayMax: 2.2,
+
+
+    // ── FIGURE ENTRY ───────────────────────────────────────
+
+    figureEntryDuration: 0.38,
+
+    // 100 = exactly one own-width outside.
+    // 125 gives a more definite off-screen entrance.
+    figureStartX: 125,
+
+    // Slight delay between left/right.
+    figureStagger: 0.04,
+
+
+    // ── CONTINUOUS FIGURE FLOAT ────────────────────────────
+
+    // More movement than before.
+    floatYMin: -24,
+    floatYMax: -42,
+
+    floatRotMin: -5,
+    floatRotMax: 5,
+
+    floatDurationMin: 2.2,
+    floatDurationMax: 3.7,
+
+
+    // Finished composition remains on screen.
+    holdDuration: 0.8
   };
+
+
+  // ══════════════════════════════════════════════════════════
+  // BUILD EACH LIBERTY SCENE
+  // ══════════════════════════════════════════════════════════
 
   var mm = gsap.matchMedia();
 
+
   scenes.forEach(function (scene) {
+
     var q = gsap.utils.selector(scene);
 
     mm.add(
@@ -114,239 +167,692 @@ document.addEventListener("DOMContentLoaded", function () {
         isDesktop: "(min-width: 992px)",
         motionOk: "(prefers-reduced-motion: no-preference)"
       },
+
       function (context) {
+
         if (!context.conditions.isDesktop) return;
+
         var motionOk = context.conditions.motionOk;
 
+
+        // ── DOM ────────────────────────────────────────────
+
         var track = q("[data-liberty-track]")[0];
-        var bgDark = q('[data-liberty="bg-dark"]');
-        var band = q('[data-liberty="band"]');
-        var statueLight = q('[data-liberty="light"]');
-        var statueDark = q('[data-liberty="dark"]');
-        var bits = q('[data-liberty="bits"]');
+
+        var bgDark = q('[data-liberty="bg-dark"]')[0];
+        var band = q('[data-liberty="band"]')[0];
+
+        var statueLight = q('[data-liberty="light"]')[0];
+        var statueDark = q('[data-liberty="dark"]')[0];
+
+        var bits = q('[data-liberty="bits"]')[0];
+
         var swaps = q("[data-liberty-swap]");
+
         var figures = q("[data-figure]");
+
         var host = q("[data-liberty-static]")[0];
+
 
         if (!track) return;
 
-        // every looping timeline goes in here so the cleanup
-        // at the bottom can kill them on a resize
+
+        // Store non-scrubbed loops here.
         var loops = [];
 
-        // ══ 1. SPECKS ══════════════════════════════════════
-        // 50 spans injected into liberty_fx, each blinking on
-        // its own random schedule.
-        //
-        // This runs on a SEPARATE timeline, not the scrubbed
-        // one. repeat and yoyo inside a scrub do not play,
-        // they scrub, so scrolling drags them back and forth
-        // instead of animating them.
+
+        // ════════════════════════════════════════════════════
+        // TIMING
+        // ════════════════════════════════════════════════════
+
+        var BG_START = 0;
+
+        var BG_END =
+          BG_START +
+          CFG.bgDuration;
+
+        // Exactly 80% through background transition.
+        var WORD_SWAP =
+          BG_START +
+          CFG.bgDuration * CFG.wordSwapAt;
+
+        // Exactly 95% through background transition.
+        var STATUE_SWITCH =
+          BG_START +
+          CFG.bgDuration * CFG.statueSwitchAt;
+
+        // Bits cannot start until background = 100%.
+        var BITS_START = BG_END;
+
+        var BITS_END =
+          BITS_START +
+          CFG.bitsDuration;
+
+        // Grain only starts after bits have arrived.
+        var GRAIN_START =
+          BITS_END + 0.05;
+
+        // Figures only start after grain.
+        var FIGURES_START =
+          GRAIN_START +
+          CFG.grainFadeDuration +
+          0.10;
+
+        var FIGURES_END =
+          FIGURES_START +
+          CFG.figureEntryDuration +
+          CFG.figureStagger;
+
+        var HOLD_START =
+          FIGURES_END + 0.10;
+
+
+        // ════════════════════════════════════════════════════
+        // INITIAL STATES
+        // ════════════════════════════════════════════════════
+
+        if (bgDark) {
+
+          var bgInitial = {
+            opacity: 0,
+            transformOrigin: "center center"
+          };
+
+          if (CFG.bgTransition === "wipe") {
+
+            bgInitial.scale = CFG.bgStartScale;
+
+            // Hidden from right.
+            // Reveals left → right.
+            bgInitial.clipPath = "inset(0% 100% 0% 0%)";
+
+          } else if (CFG.bgTransition === "zoom") {
+
+            bgInitial.scale = CFG.bgStartScale;
+
+          } else {
+
+            bgInitial.scale = 1;
+          }
+
+          gsap.set(bgDark, bgInitial);
+        }
+
+
+        if (band) {
+          gsap.set(band, {
+            backgroundColor: "rgba(8, 3, 49, 0)"
+          });
+        }
+
+
+        if (statueLight) {
+          gsap.set(statueLight, {
+            opacity: 1
+          });
+        }
+
+
+        if (statueDark) {
+          gsap.set(statueDark, {
+            opacity: 0
+          });
+        }
+
+
+        if (bits) {
+          gsap.set(bits, {
+            opacity: 0,
+            yPercent: CFG.bitsStartY
+          });
+        }
+
+
+        if (host) {
+
+          gsap.set(host, {
+            opacity: 0
+          });
+
+          host.style.pointerEvents = "none";
+        }
+
+
+        // ── WORD INITIAL STATES ────────────────────────────
+
+        swaps.forEach(function (swap) {
+
+          var out = swap.querySelector('[data-word="out"]');
+          var inn = swap.querySelector('[data-word="in"]');
+
+          if (!out || !inn) return;
+
+          gsap.set(out, {
+            yPercent: 0,
+            opacity: 1
+          });
+
+          gsap.set(inn, {
+            yPercent: CFG.wordTravel,
+            opacity: 1
+          });
+        });
+
+
+        // ── FIGURE INITIAL STATES ──────────────────────────
+
+        figures.forEach(function (fig) {
+
+          var side = fig.getAttribute("data-figure");
+
+          gsap.set(fig, {
+            opacity: 0,
+            xPercent:
+              side === "left"
+                ? -CFG.figureStartX
+                : CFG.figureStartX
+          });
+        });
+
+
+        // ════════════════════════════════════════════════════
+        // RED SPECK / DIGITAL GRAIN SYSTEM
+        // ════════════════════════════════════════════════════
+
+        var grainTweens = [];
+        var grainActive = false;
+
+
         if (host && motionOk) {
-          var flick = gsap.timeline({ paused: true });
 
           for (var i = 0; i < CFG.speckCount; i++) {
-            var sp = document.createElement("span");
-            sp.style.cssText =
-              "position:absolute;display:block;background:" +
-              CFG.speckColor + ";opacity:0;will-change:opacity";
-            host.appendChild(sp);
+
+            var speck = document.createElement("span");
+
+            speck.style.cssText =
+              "position:absolute;" +
+              "display:block;" +
+              "pointer-events:none;" +
+              "background:" + CFG.speckColor + ";" +
+              "opacity:0;" +
+              "will-change:opacity,transform;";
+
+            host.appendChild(speck);
+
 
             (function (el) {
-              function place() {
-                var d = gsap.utils.random(2, 4, 1);
+
+              function relocate() {
+
+                var size = gsap.utils.random(
+                  CFG.speckSizeMin,
+                  CFG.speckSizeMax,
+                  1
+                );
+
                 gsap.set(el, {
-                  width: d,
-                  height: d,
+                  width: size,
+                  height: size,
                   left: gsap.utils.random(0, 100) + "%",
                   top: gsap.utils.random(0, 100) + "%"
                 });
               }
 
-              place();
 
-              // repeatRefresh re-rolls the delay every cycle
-              // and onRepeat moves the speck, so the pattern
-              // never visibly loops
-              flick.to(el, {
-                opacity: 1,
-                duration: 0.06,
+              relocate();
+
+
+              var tween = gsap.to(el, {
+
+                opacity: function () {
+                  return gsap.utils.random(0.35, 1);
+                },
+
+                duration: function () {
+                  return gsap.utils.random(0.04, 0.11);
+                },
+
                 repeat: -1,
+
+                repeatDelay: function () {
+                  return gsap.utils.random(
+                    CFG.speckDelayMin,
+                    CFG.speckDelayMax
+                  );
+                },
+
                 repeatRefresh: true,
-                repeatDelay: gsap.utils.random(0.4, 5),
+
                 yoyo: true,
-                onRepeat: place
-              }, gsap.utils.random(0, 3));
-            })(sp);
+
+                paused: true,
+
+                onRepeat: relocate
+
+              });
+
+
+              grainTweens.push(tween);
+              loops.push(tween);
+
+            })(speck);
           }
+        }
 
-          loops.push(flick);
 
-          // switch the flicker on partway down the track and
-          // off again when the section leaves, so it is not
-          // burning frames through the rest of the page
-          ScrollTrigger.create({
-            trigger: track,
-            start: "top top-=" +
-              Math.round(track.offsetHeight * CFG.speckStart),
-            end: "bottom bottom",
-            onToggle: function (self) {
-              if (self.isActive) {
-                flick.play();
-              } else {
-                flick.pause();
-                gsap.set(host.children, { opacity: 0 });
-              }
-            }
+        function startGrain() {
+
+          if (grainActive) return;
+
+          grainActive = true;
+
+          grainTweens.forEach(function (tween) {
+            tween.play();
           });
         }
 
-        // ══ 2. THE MASTER TIMELINE ═════════════════════════
-        // scrubbed: its playhead is tied to scroll position
-        // rather than to time.
+
+        function stopGrain() {
+
+          if (!grainActive) return;
+
+          grainActive = false;
+
+          grainTweens.forEach(function (tween) {
+            tween.pause();
+          });
+
+          if (host) {
+            gsap.set(host.children, {
+              opacity: 0
+            });
+          }
+        }
+
+
+        // ════════════════════════════════════════════════════
+        // CONTINUOUS FIGURE FLOAT
+        // ════════════════════════════════════════════════════
+
+        var figureFloaters = [];
+        var floatsActive = false;
+
+
+        if (motionOk && figures.length) {
+
+          figures.forEach(function (fig, i) {
+
+            // Float the IMAGE inside the wrapper.
+            //
+            // This is important:
+            // wrapper = slide-in animation
+            // image   = endless float
+            //
+            // Therefore the transforms never fight.
+
+            var floatingTarget =
+              fig.querySelector(".liberty_figure-img") ||
+              fig.querySelector("img") ||
+              fig;
+
+
+            var floatTween = gsap.to(floatingTarget, {
+
+              y: function () {
+                return gsap.utils.random(
+                  CFG.floatYMin,
+                  CFG.floatYMax
+                );
+              },
+
+              rotation: function () {
+                return gsap.utils.random(
+                  CFG.floatRotMin,
+                  CFG.floatRotMax
+                );
+              },
+
+              duration: function () {
+                return gsap.utils.random(
+                  CFG.floatDurationMin,
+                  CFG.floatDurationMax
+                );
+              },
+
+              repeat: -1,
+              repeatRefresh: true,
+              yoyo: true,
+
+              ease: "sine.inOut",
+
+              paused: true,
+
+              delay: i * 0.25
+
+            });
+
+
+            figureFloaters.push(floatTween);
+            loops.push(floatTween);
+          });
+        }
+
+
+        function startFloats() {
+
+          if (floatsActive) return;
+
+          floatsActive = true;
+
+          figureFloaters.forEach(function (tween) {
+            tween.play();
+          });
+        }
+
+
+        function stopFloats() {
+
+          if (!floatsActive) return;
+
+          floatsActive = false;
+
+          figureFloaters.forEach(function (tween) {
+            tween.pause();
+          });
+        }
+
+
+        // ════════════════════════════════════════════════════
+        // MASTER SCROLL TIMELINE
+        // ════════════════════════════════════════════════════
+
         var tl = gsap.timeline({
+
           scrollTrigger: {
+
             trigger: track,
+
             start: "top top",
             end: "bottom bottom",
-            scrub: CFG.scrub
+
+            scrub: CFG.scrub,
+
+            // These callbacks allow the NON-SCRUBBED animations
+            // to keep moving even when the user stops scrolling.
+
+            onUpdate: function (self) {
+
+              var currentTime = tl.time();
+
+
+              // Grain begins only AFTER bits.
+              if (
+                currentTime >= GRAIN_START &&
+                self.isActive
+              ) {
+                startGrain();
+              } else {
+                stopGrain();
+              }
+
+
+              // Floating begins only AFTER figure entrance.
+              if (
+                currentTime >= FIGURES_END &&
+                self.isActive
+              ) {
+                startFloats();
+              } else {
+                stopFloats();
+              }
+            },
+
+
+            onLeave: function () {
+              stopGrain();
+              stopFloats();
+            },
+
+
+            onLeaveBack: function () {
+              stopGrain();
+              stopFloats();
+            }
           }
         });
 
-        // ── word swaps ────────────────────────────────────
-        // each slot holds two words stacked on top of each
-        // other. the incoming one starts at yPercent 100,
-        // meaning one full self-height below, hidden by
-        // overflow: hidden on the slot.
-        //
-        // both travel upward, so it reads as one motion
-        // rather than two separate fades.
+
+        // ════════════════════════════════════════════════════
+        // 1 — BACKGROUND TRANSITION
+        // ════════════════════════════════════════════════════
+
+        if (bgDark) {
+
+          var bgTo = {
+
+            opacity: 1,
+            scale: 1,
+
+            duration: CFG.bgDuration,
+
+            // LINEAR matters here because:
+            //
+            // timeline 80% = background visually 80% progressed
+            //
+            // This keeps your exact 80 / 95 / 100 logic.
+            ease: "none"
+          };
+
+
+          if (CFG.bgTransition === "wipe") {
+
+            bgTo.clipPath =
+              "inset(0% 0% 0% 0%)";
+          }
+
+
+          tl.to(
+            bgDark,
+            bgTo,
+            BG_START
+          );
+        }
+
+
+        // Band changes simultaneously with background.
+
+        if (band) {
+
+          tl.to(
+            band,
+            {
+              backgroundColor: CFG.bandColor,
+              duration: CFG.bgDuration,
+              ease: "none"
+            },
+            BG_START
+          );
+        }
+
+
+        // ════════════════════════════════════════════════════
+        // 1B — AT 80%: FAST WORD SWAP
+        // ════════════════════════════════════════════════════
+
         swaps.forEach(function (swap) {
+
           var out = swap.querySelector('[data-word="out"]');
           var inn = swap.querySelector('[data-word="in"]');
 
-          gsap.set(inn, { yPercent: 100, opacity: 0 });
+          if (!out || !inn) return;
 
-          tl.to(out, {
-            yPercent: -110,
-            opacity: 0,
-            duration: DUR.swap,
-            ease: "power2.inOut"
-          }, BEATS.swap);
 
-          tl.to(inn, {
-            yPercent: 0,
-            opacity: 1,
-            duration: DUR.swap,
-            ease: "power2.inOut"
-          }, BEATS.swap);
+          tl.to(
+            out,
+            {
+              yPercent: -CFG.wordTravel,
+              duration: CFG.wordSwapDuration,
+              ease: "power4.inOut"
+            },
+            WORD_SWAP
+          );
+
+
+          tl.to(
+            inn,
+            {
+              yPercent: 0,
+              duration: CFG.wordSwapDuration,
+              ease: "power4.inOut"
+            },
+            WORD_SWAP
+          );
         });
 
-        // ── the background turns ──────────────────────────
-        tl.to(bgDark, {
-          opacity: 1,
-          duration: DUR.bg,
-          ease: "none"
-        }, BEATS.bg);
 
-        // the band is not fading, its colour is tweening.
-        // it has mix-blend-mode multiply, so through the
-        // transition it multiplies with whatever is behind it.
-        tl.to(band, {
-          backgroundColor: CFG.bandColor,
-          duration: DUR.bg,
-          ease: "none"
-        }, BEATS.bg);
+        // ════════════════════════════════════════════════════
+        // 2 — AT 95%: INSTANT STATUE SWITCH
+        // ════════════════════════════════════════════════════
 
-        // ── the statue swaps ──────────────────────────────
-        // dark comes up first and light leaves after, so the
-        // body is covered before the head disappears. without
-        // that overlap you see the background through it.
-        tl.to(statueDark, {
-          opacity: 1,
-          duration: DUR.statueDark,
-          ease: "none"
-        }, BEATS.statueDark);
+        if (statueLight && statueDark) {
 
-        tl.to(statueLight, {
-          opacity: 0,
-          duration: DUR.statueLight,
-          ease: "none"
-        }, BEATS.statueLight);
+          tl.set(
+            statueDark,
+            {
+              opacity: 1
+            },
+            STATUE_SWITCH
+          );
 
-        // ── the corruption arrives ────────────────────────
-        tl.to(bits, {
-          opacity: 1,
-          duration: DUR.bits,
-          ease: "none"
-        }, BEATS.bits);
+
+          tl.set(
+            statueLight,
+            {
+              opacity: 0
+            },
+            STATUE_SWITCH
+          );
+        }
+
+
+        // ════════════════════════════════════════════════════
+        // 3 — BG IS 100%: BITS DROP FROM ABOVE
+        // ════════════════════════════════════════════════════
+
+        if (bits) {
+
+          tl.to(
+            bits,
+            {
+              opacity: 1,
+              yPercent: 0,
+
+              duration: CFG.bitsDuration,
+
+              ease: "power3.out"
+            },
+            BITS_START
+          );
+        }
+
+
+        // ════════════════════════════════════════════════════
+        // 4 — GRAIN LAYER APPEARS
+        // ════════════════════════════════════════════════════
 
         if (host) {
-          tl.to(host, {
-            opacity: 1,
-            duration: DUR.specks,
-            ease: "none"
-          }, BEATS.specks);
+
+          tl.to(
+            host,
+            {
+              opacity: 1,
+
+              duration: CFG.grainFadeDuration,
+
+              ease: "power2.out"
+            },
+            GRAIN_START
+          );
         }
 
-        tl.to(figures, {
-          opacity: 1,
-          duration: DUR.figures,
-          ease: "power2.out",
-          stagger: CFG.figureStagger
-        }, BEATS.figures);
 
-        // ── the hold ──────────────────────────────────────
-        // an empty tween on a dummy object. it occupies
-        // timeline space and does nothing, which is what
-        // gives the finished frame time on screen.
-        tl.to({}, { duration: DUR.hold }, BEATS.hold);
+        // ════════════════════════════════════════════════════
+        // 5 — FIGURES ENTER FROM SCREEN SIDES
+        // ════════════════════════════════════════════════════
 
-        // ══ 3. FIGURE FLOAT ════════════════════════════════
-        // separate timeline again, for the same reason as
-        // the specks. each figure gets its own random
-        // duration and offset so they never move in unison.
-        if (motionOk && figures.length) {
-          figures.forEach(function (fig, i) {
-            var f = gsap.timeline({
-              repeat: -1,
-              yoyo: true,
-              paused: true,
-              defaults: { ease: "sine.inOut" }
-            });
+        figures.forEach(function (fig, i) {
 
-            f.to(fig, {
-              y: gsap.utils.random(CFG.floatY[0], CFG.floatY[1]),
-              rotate: gsap.utils.random(CFG.floatRot[0], CFG.floatRot[1]),
-              duration: gsap.utils.random(CFG.floatDur[0], CFG.floatDur[1])
-            }, i * 0.4);
+          tl.to(
+            fig,
+            {
+              opacity: 1,
+              xPercent: 0,
 
-            loops.push(f);
+              duration: CFG.figureEntryDuration,
 
-            ScrollTrigger.create({
-              trigger: track,
-              start: "top bottom",
-              end: "bottom top",
-              onToggle: function (self) {
-                self.isActive ? f.play() : f.pause();
-              }
-            });
-          });
-        }
+              // Tiny overshoot gives it weight rather than
+              // looking like a generic slide-in.
+              ease: "back.out(1.25)"
+            },
 
-        // ══ CLEANUP ════════════════════════════════════════
-        // runs when the viewport drops below 992px. kills the
-        // looping timelines and empties the injected specks
-        // so a resize back up does not stack duplicates.
+            FIGURES_START +
+            i * CFG.figureStagger
+          );
+        });
+
+
+        // ════════════════════════════════════════════════════
+        // HOLD FINISHED FRAME
+        // ════════════════════════════════════════════════════
+
+        tl.to(
+          {},
+          {
+            duration: CFG.holdDuration
+          },
+          HOLD_START
+        );
+
+
+        // ════════════════════════════════════════════════════
+        // CLEANUP
+        // ════════════════════════════════════════════════════
+
         return function () {
-          loops.forEach(function (t) { t.kill(); });
-          if (host) host.innerHTML = "";
+
+          stopGrain();
+          stopFloats();
+
+          loops.forEach(function (loop) {
+            loop.kill();
+          });
+
+          if (host) {
+            host.innerHTML = "";
+          }
         };
       }
     );
   });
-});
 
+
+  // Refresh after fonts/images/layout have settled.
+
+  window.addEventListener("load", function () {
+
+    if (document.fonts && document.fonts.ready) {
+
+      document.fonts.ready.then(function () {
+        ScrollTrigger.refresh();
+      });
+
+    } else {
+
+      ScrollTrigger.refresh();
+    }
+  });
+
+});
 
 // ── S03 STACK ───────────────────────────────────────────
 // Replaces the S03 block in ea.js

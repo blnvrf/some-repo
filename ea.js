@@ -74,19 +74,11 @@ document.addEventListener("DOMContentLoaded", function () {
   texts.forEach((text) => {
     const chars = [...text.textContent];
 
-    text.innerHTML = chars.map(char => {
-      if (char === " ") {
-        return `<span style="display:inline-block; width:0.3em;">&nbsp;</span>`;
-      }
+text.innerHTML = chars.map(char => {
+  if (char === " ") return " ";
 
-      return `
-        <span style="display:inline-block; overflow:hidden; vertical-align:bottom;">
-          <span class="char-reveal-inner" style="display:inline-block;">
-            ${char}
-          </span>
-        </span>
-      `;
-    }).join("");
+  return `<span style="display:inline-block;overflow:hidden;"><span class="char-reveal-inner" style="display:inline-block;">${char}</span></span>`;
+}).join("");
 
     const innerChars = text.querySelectorAll(".char-reveal-inner");
 

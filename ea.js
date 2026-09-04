@@ -380,35 +380,56 @@ floatX: [-8, 8],    // px range of the figure drift
         }
 
 figures.forEach(function (fig, i) {
+
   var side = fig.getAttribute("data-figure");
 
-tl.fromTo(
-  fig,
-  {
-    x: side === "left" ? -window.innerWidth : window.innerWidth,
-    opacity: 0
-  },
-  {
-    x: 0,
-    opacity: 1,
-    duration: DUR.figures,
-    ease: "power2.out"
-  },
-  BEATS.figures
-);
+  var inner = fig.querySelector(
+    '[data-inner-figure="true"]'
+  );
 
-tl.fromTo(
-  inner,
-  {
-    y: side === "left" ? 120 : 175
-  },
-  {
-    y: 0,
-    duration: DUR.figures,
-    ease: "power2.out"
-  },
-  BEATS.figures
-);
+
+  // OUTER WRAPPER:
+  // enters horizontally from outside the viewport
+  tl.fromTo(
+    fig,
+    {
+      x: side === "left"
+        ? -window.innerWidth
+        : window.innerWidth,
+
+      opacity: 0
+    },
+    {
+      x: 0,
+      opacity: 1,
+      duration: DUR.figures,
+      ease: "power2.out"
+    },
+
+    BEATS.figures + i * CFG.figureStagger
+  );
+
+
+  // INNER FIGURE:
+  // gives the entrance its diagonal Y movement
+  if (inner) {
+
+    tl.fromTo(
+      inner,
+      {
+        y: side === "left" ? 120 : 175
+      },
+      {
+        y: 0,
+        duration: DUR.figures,
+        ease: "power2.out"
+      },
+
+      BEATS.figures + i * CFG.figureStagger
+    );
+
+  }
+
 });
 
         // ── the hold ──────────────────────────────────────

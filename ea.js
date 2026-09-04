@@ -455,8 +455,12 @@ text.innerHTML = chars.map(char => {
           ScrollTrigger.create({
             trigger: pig,
             start: "top top",
-            onEnter: function () { gsap.set(sticky, { opacity: 0 }); },
-            onLeaveBack: function () { gsap.set(sticky, { opacity: 1 }); }
+            onEnter: function () {
+              gsap.set(sticky, { opacity: 0 });
+            },
+            onLeaveBack: function () {
+              gsap.set(sticky, { opacity: 1 });
+            }
           });
         }
 

@@ -383,13 +383,6 @@ figures.forEach(function (fig, i) {
 
   var side = fig.getAttribute("data-figure");
 
-  var inner = fig.querySelector(
-    '[data-inner-figure="true"]'
-  );
-
-
-  // OUTER WRAPPER:
-  // enters horizontally from outside the viewport
   tl.fromTo(
     fig,
     {
@@ -397,10 +390,13 @@ figures.forEach(function (fig, i) {
         ? -window.innerWidth
         : window.innerWidth,
 
+      y: side === "left" ? 120 : 175,
+
       opacity: 0
     },
     {
       x: 0,
+      y: 0,
       opacity: 1,
       duration: DUR.figures,
       ease: "power2.out"
@@ -408,27 +404,6 @@ figures.forEach(function (fig, i) {
 
     BEATS.figures + i * CFG.figureStagger
   );
-
-
-  // INNER FIGURE:
-  // gives the entrance its diagonal Y movement
-  if (inner) {
-
-    tl.fromTo(
-      inner,
-      {
-        y: side === "left" ? 120 : 175
-      },
-      {
-        y: 0,
-        duration: DUR.figures,
-        ease: "power2.out"
-      },
-
-      BEATS.figures + i * CFG.figureStagger
-    );
-
-  }
 
 });
 
@@ -451,7 +426,9 @@ figures.forEach(function (fig, i) {
               defaults: { ease: "sine.inOut" }
             });
 
-var floatTarget = fig.querySelector('[data-inner-figure="true"]');
+var floatTarget = fig.querySelector(
+  '[data-inner-figure="true"]'
+);
 
 f.to(floatTarget, {
   x: gsap.utils.random(CFG.floatX[0], CFG.floatX[1]),

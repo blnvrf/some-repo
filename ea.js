@@ -382,26 +382,33 @@ floatX: [-8, 8],    // px range of the figure drift
 figures.forEach(function (fig, i) {
   var side = fig.getAttribute("data-figure");
 
-  tl.fromTo(
-    fig,
+tl.fromTo(
+  fig,
+  {
+    x: side === "left" ? -window.innerWidth : window.innerWidth,
+    opacity: 0
+  },
+  {
+    x: 0,
+    opacity: 1,
+    duration: DUR.figures,
+    ease: "power2.out"
+  },
+  BEATS.figures
+);
 
-    // START
-    {
-      x: side === "left" ? -window.innerWidth : window.innerWidth,
-      y: side === "left" ? 120 : 175,
-      opacity: 0
-    },
-
-    // END = Webflow position
-    {
-      x: 0,
-      y: 0,
-      opacity: 1,
-      duration: DUR.figures,
-ease: "rough({template:power2.out, strength:1, points:16, taper:out, randomize:true, clamp:true})"    },
-
-    BEATS.figures + i * CFG.figureStagger
-  );
+tl.fromTo(
+  inner,
+  {
+    y: 120
+  },
+  {
+    y: 0,
+    duration: DUR.figures,
+    ease: "power2.out"
+  },
+  BEATS.figures
+);
 });
 
         // ── the hold ──────────────────────────────────────
@@ -423,14 +430,14 @@ ease: "rough({template:power2.out, strength:1, points:16, taper:out, randomize:t
               defaults: { ease: "sine.inOut" }
             });
 
-           var floatTarget = fig.querySelector('[data-inner-figure="true"]');
+var floatTarget = fig.querySelector('[data-inner-figure="true"]');
 
-            f.to(fig, {
-              x: gsap.utils.random(CFG.floatX[0], CFG.floatX[1]),
-              y: gsap.utils.random(CFG.floatY[0], CFG.floatY[1]),
-              rotate: gsap.utils.random(CFG.floatRot[0], CFG.floatRot[1]),
-              duration: gsap.utils.random(CFG.floatDur[0], CFG.floatDur[1])
-            }, i * 0.4);
+f.to(floatTarget, {
+  x: gsap.utils.random(CFG.floatX[0], CFG.floatX[1]),
+  y: gsap.utils.random(CFG.floatY[0], CFG.floatY[1]),
+  rotate: gsap.utils.random(CFG.floatRot[0], CFG.floatRot[1]),
+  duration: gsap.utils.random(CFG.floatDur[0], CFG.floatDur[1])
+}, i * 0.4);
 
             loops.push(f);
 

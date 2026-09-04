@@ -282,10 +282,17 @@ var PRE = 1;
         tl.set(statueDark, { opacity: 1 }, BEATS.statueSwap);
         tl.set(statueLight, { opacity: 0 }, BEATS.statueSwap);
         // ── the corruption arrives ────────────────────────
+
+        gsap.set(bits, {
+          yPercent: -100,
+          opacity: 0
+        });
+
         tl.to(bits, {
+          yPercent: 0,
           opacity: 1,
           duration: DUR.bits,
-          ease: "none"
+          ease: "power3.out"
         }, BEATS.bits);
 
         if (host) {
@@ -812,7 +819,7 @@ document.addEventListener("DOMContentLoaded", function () {
       gsap.set(texture, { opacity: 0 });
       gsap.set(land, { opacity: 0, yPercent: 60 });
       gsap.set(blast, { opacity: 0, yPercent: 70, xPercent: -50 });
-      gsap.set(bits, { opacity: 0, yPercent: -100, xPercent: -50 });
+      gsap.set(bits, { opacity: 0, yPercent: -60, xPercent: -50 });
       gsap.set(title, { opacity: 0, y: 24 });
       gsap.set(slides, { opacity: 0, yPercent: -50 });
 
@@ -839,13 +846,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
       tl.to(bits, {
         opacity: 1, yPercent: 0,
-        duration: DUR.bits, ease: "power3.out"
-      }, BEATS.bits);
+        duration: 0.22, ease: "power2.out"
+      }, 0.34);
 
       tl.to(title, {
         opacity: 1, y: 0,
         duration: 0.16, ease: "power2.out"
-      }, BEATS.title);
+      }, 0.44);
 
       slides.forEach(function (slide, i) {
         var at = 0.56 + i * STEP;

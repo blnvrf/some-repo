@@ -232,34 +232,37 @@ speckInitialDelay: [0, 0.15],
 
 var speckTweens = [];
 
+// ══ 1. SPECKS ══════════════════════════════════════
+
 if (host && motionOk) {
+
+  var flick = gsap.timeline({ paused: true });
 
   for (var i = 0; i < CFG.speckCount; i++) {
 
-    var speck = document.createElement("span");
+    var sp = document.createElement("span");
 
-    speck.style.position = "absolute";
-    speck.style.display = "block";
-    speck.style.pointerEvents = "none";
-    speck.style.backgroundColor = CFG.speckColor;
-    speck.style.opacity = "0";
+    sp.style.cssText =
+      "position:absolute;" +
+      "display:block;" +
+      "background:" + CFG.speckColor + ";" +
+      "opacity:0;" +
+      "pointer-events:none;" +
+      "will-change:opacity";
 
-    host.appendChild(speck);
+    host.appendChild(sp);
 
 
     (function (el) {
 
       function place() {
 
-        var size = gsap.utils.random(
-          CFG.speckSize[0],
-          CFG.speckSize[1],
-          1
-        );
+        // SMALL: 1–2px
+        var d = gsap.utils.random(1, 2, 1);
 
         gsap.set(el, {
-          width: size,
-          height: size,
+          width: d,
+          height: d,
           left: gsap.utils.random(0, 100) + "%",
           top: gsap.utils.random(0, 100) + "%"
         });
@@ -269,86 +272,63 @@ if (host && motionOk) {
       place();
 
 
-      var flick = gsap.to(el, {
+      flick.to(
+        el,
+        {
+          opacity: gsap.utils.random(0.25, 0.75),
 
-        opacity: function () {
-          return gsap.utils.random(
-            CFG.speckOpacity[0],
-            CFG.speckOpacity[1]
-          );
+          // FAST flash
+          duration: gsap.utils.random(0.02, 0.05),
+
+          repeat: -1,
+
+          // MUCH shorter wait = noise
+          repeatDelay: gsap.utils.random(0.02, 0.15),
+
+          yoyo: true,
+
+          // jump somewhere else each cycle
+          onRepeat: place
         },
 
-        duration: function () {
-          return gsap.utils.random(
-            CFG.speckFlashDur[0],
-            CFG.speckFlashDur[1]
-          );
-        },
+        // spread initial flashes slightly
+        gsap.utils.random(0, 0.4)
+      );
 
-        repeat: -1,
-        repeatRefresh: true,
-
-        repeatDelay: function () {
-          return gsap.utils.random(
-            CFG.speckDelay[0],
-            CFG.speckDelay[1]
-          );
-        },
-
-        yoyo: true,
-
-        onRepeat: place,
-
-        delay: gsap.utils.random(
-          CFG.speckInitialDelay[0],
-          CFG.speckInitialDelay[1]
-        ),
-
-        paused: true
-      });
-
-
-      speckTweens.push(flick);
-      loops.push(flick);
-
-    })(speck);
+    })(sp);
   }
 
 
-  var speckTrigger = ScrollTrigger.create({
+  loops.push(flick);
+
+
+  ScrollTrigger.create({
 
     trigger: track,
 
-    start: "top 35%",
-    end: "bottom top",
+    start:
+      "top top-=" +
+      Math.round(track.offsetHeight * CFG.speckStart),
 
-    onEnter: function () {
-      speckTweens.forEach(function (tween) {
-        tween.play();
-      });
-    },
+    end: "bottom bottom",
 
-    onEnterBack: function () {
-      speckTweens.forEach(function (tween) {
-        tween.play();
-      });
-    },
+    onToggle: function (self) {
 
-    onLeave: function () {
-      speckTweens.forEach(function (tween) {
-        tween.pause();
-      });
-    },
+      if (self.isActive) {
 
-    onLeaveBack: function () {
-      speckTweens.forEach(function (tween) {
-        tween.pause(0);
-      });
+        flick.play();
+
+      } else {
+
+        flick.pause();
+
+        gsap.set(host.children, {
+          opacity: 0
+        });
+      }
     }
 
   });
-
-  loops.push(speckTrigger);
 }
 
 

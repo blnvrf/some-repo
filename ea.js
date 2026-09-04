@@ -839,13 +839,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
       tl.to(bits, {
         opacity: 1, yPercent: 0,
-        duration: 0.22, ease: "power2.out"
+        duration: DUR.bits, ease: "power3.out"
       }, 0.34);
 
       tl.to(title, {
         opacity: 1, y: 0,
         duration: 0.16, ease: "power2.out"
-      }, 0.44);
+      }, BEATS.bits);
 
       slides.forEach(function (slide, i) {
         var at = 0.56 + i * STEP;

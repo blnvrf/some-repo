@@ -708,13 +708,43 @@ document.addEventListener("DOMContentLoaded", function () {
 //
 //   NO opacity values anywhere in this section.
 
-/*
+// ── PIG SCALE ───────────────────────────────────────────
+// Replaces the PIG SCALE block in ea.js
+//
+// HERD LAYOUT
+// pig_herd is a wrapping COLUMN at 100% height. Each pig sits
+// in a pig_cell, and only the CELL is ever resized. The image
+// inside is max-width 100% / max-height 100% with auto on both
+// dimensions, so it fits its cell and never distorts.
+//
+// Cell WIDTH is the size control. Cell HEIGHT is purely
+// structural: it decides how many fit in a column before
+// wrapping. Keeping the width constant from 1 to 4 pigs means
+// no width tween fires on those steps, so the image can never
+// flash bigger than either state mid-transition.
+//
+// Cells always resize BEFORE new pigs appear. If both ran at
+// once you would see a new pig sitting in a row before the
+// column width caught up and dropped it into place.
+//
+// THE ENDING
+// The quote arrives on the second to last line, clearing the
+// pigs and the copy container so it sits alone in the centre.
+// The final line then clears the quote and lands on an empty
+// frame with the copy container restored to full height.
+//
+// PACING: sum of HOLDS divided by 0.0094 gives the track
+// height in vh. Current sum is 12.8, so pig_track = 1360vh.
+//
+// Needs SplitText ticked in Site Settings, Integrations.
+
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-pig]").forEach(function (sec) {
     var pq = gsap.utils.selector(sec);
 
     var track = pq("[data-pig-track]")[0];
-    var stack = pq("[data-pig-stack]")[0];
+    var stackWrap = pq("[data-stack-wrapper]")[0];
+    var scale = pq("[data-pig-scale]")[0];
     var lines = pq("[data-pig-line]");
     var human = pq("[data-pig-human]");
     var op = pq("[data-pig-op]");
@@ -725,12 +755,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!track || !lines.length || !herdBox) return;
 
-    var seed = herdBox.querySelector("img");
+    var seed = herdBox.querySelector("[data-pig-cell]");
     if (!seed) return;
 
+    var hasSplit = typeof SplitText !== "undefined";
+    if (hasSplit) gsap.registerPlugin(SplitText);
+
     // ── one entry per copy line, in order ─────────────────
-    // pigs 0 for the first five, so the copy stays centred
-    // through the whole setup and only drops at line 6
     var BEATS = [
       { pigs: 0,  human: false },  //  1  religion of Silicon Valley
       { pigs: 0,  human: false },  //  2  here are its tenets
@@ -741,56 +772,86 @@ document.addEventListener("DOMContentLoaded", function () {
       { pigs: 2,  human: true  },  //  7  0.51 math
       { pigs: 2,  human: true  },  //  8  not so fast
       { pigs: 10, human: true  },  //  9  five to ten pigs
-      { pigs: 10, human: true  },  // 10  it's logical
-      { pigs: 10, human: true  }   // 11  spare
+      { pigs: 10, human: true  },  // 10  it's logical, quote lands here
     ];
 
     // ── how long each line holds, in timeline units ───────
-    // one entry per line. the opening statement gets three
-    // times the rest. add or remove entries to match BEATS.
     var HOLDS = [
-      1.00,   //  1  the opening statement, sits a long time
-      0.34,   //  2
-      0.40,   //  3
-      0.40,   //  4
-      0.44,   //  5  the question, slightly longer
-      0.34,   //  6
-      0.46,   //  7  the 0.51 math, longest of the rest
-      0.34,   //  8
-      0.40,   //  9
-      0.40,   // 10
-      0.40    // 11
+      2.0,   //  1  the opening statement, sits a long time
+      1.0,   //  2
+      1.0,   //  3
+      1.0,   //  4
+      1.0,   //  5
+      1.0,   //  6
+      1.0,   //  7
+      1.0,   //  8
+      1.0,   //  9
+      2.4    // 11  final line, alone on empty
     ];
 
-    // ── config ────────────────────────────────────────────
-    var FADE = 0.14;         // text fade duration
-    var FIG = 0.16;          // figure fade duration
-    var DROP = 0.34;         // how long the copy takes to move
-    var TEXT_LOW = "34vh";   // how far the copy drops
+    // ── cell geometry per pig count ───────────────────────
+    // width is the size control and stays constant to 4 pigs,
+    // so nothing tweens wider mid-step. height only ever
+    // shrinks, and controls how many fit per column.
+    function cellSize(n) {
+      if (n <= 1) return { w: "75%", h: "75%" };
+      if (n === 2) return { w: "75%", h: "50%" };
+      if (n <= 4) return { w: "75%", h: "25%" };
 
-    // ── build the herd to 10 total ────────────────────────
-    var HERD_TARGET = 10;
-    var existing = herdBox.querySelectorAll("img").length;
-
-    for (var p = existing; p < HERD_TARGET; p++) {
-      var clone = seed.cloneNode(true);
-      clone.classList.add("is-stack");
-      herdBox.appendChild(clone);
+      var cols = Math.ceil(n / 4);
+      return { w: (75 / cols) + "%", h: "25%" };
     }
 
-    var herd = gsap.utils.toArray(herdBox.querySelectorAll("img"));
+    // ── config ────────────────────────────────────────────
+    var FADE = 0.14;      // word reveal duration
+    var IN_STAG = 0.03;   // gap between words coming in
+    var OUT_STAG = 0.02;  // gap between words going out
+    var WORD_Y = 40;      // percent of own height travelled
+    var FIG = 0.16;       // figure fade duration
+    var DROP = 0.34;      // frame split and layout change
+    var CLEAR = 0.24;     // how long things take to leave
+        var QUOTE_HOLD = 1.6;   // scroll distance the quote owns
+    var QUOTE_AFTER = 8;    // it takes over after this line index
+
+    // ── build the herd to 10 cells ────────────────────────
+    var HERD_TARGET = 10;
+    var existing = herdBox.querySelectorAll("[data-pig-cell]").length;
+
+    for (var p = existing; p < HERD_TARGET; p++) {
+      herdBox.appendChild(seed.cloneNode(true));
+    }
+
+    var herd = gsap.utils.toArray(
+      herdBox.querySelectorAll("[data-pig-cell]")
+    );
 
     gsap.matchMedia().add("(min-width: 992px)", function () {
       // ── starting states ─────────────────────────────────
-      gsap.set([human, op, pigSide, quote], { opacity: 0 });
+      gsap.set([human, op, pigSide], { opacity: 0 });
       gsap.set(herd, { opacity: 0, display: "none" });
-      if (stack) gsap.set(stack, { y: 0 });
+      gsap.set(quote, { opacity: 0, xPercent: -50, yPercent: -50 });
 
-      // grid locked to its ten-pig arrangement, never reflows.
-      // 18% plus the 2% gap gives five per row, so ten wrap
-      // as two rows of five and centre as a block.
-      gsap.set(herdBox, { flexWrap: "wrap" });
-      gsap.set(herd, { width: "18%", height: "auto" });
+      // the copy fills the frame, the figures wait below it
+      if (stackWrap) {
+        gsap.set(stackWrap, { height: "100%", top: "0%", opacity: 1 });
+      }
+      if (scale) gsap.set(scale, { yPercent: 100, opacity: 0 });
+
+      // column direction plus wrap plus a fixed height is
+      // what breaks the herd into columns automatically
+      gsap.set(herdBox, {
+        flexDirection: "column",
+        flexWrap: "wrap",
+        height: "100%",
+        width: "100%"
+      });
+
+      var first = cellSize(1);
+      gsap.set(herd, { width: first.w, height: first.h });
+
+      // every SplitText instance, so the cleanup below can
+      // put the markup back on a resize
+      var splits = [];
 
       var tl = gsap.timeline({
         scrollTrigger: {
@@ -806,14 +867,40 @@ document.addEventListener("DOMContentLoaded", function () {
       var at = 0;
 
       lines.forEach(function (line, i) {
-        var span = HOLDS[i] !== undefined ? HOLDS[i] : 0.34;
+        var span = HOLDS[i] !== undefined ? HOLDS[i] : 1.0;
         var txt = line.querySelector("[data-pig-txt]");
         var beat = BEATS[i] || BEATS[BEATS.length - 1];
         var prev = i > 0 ? BEATS[i - 1] : { pigs: 0, human: false };
         var last = i === lines.length - 1;
+        var quoteBeat = i === lines.length - 2;
 
-        // ── copy: out before the next comes in ───────────
-        if (txt) {
+        // ── copy: word by word, first to last ────────────
+        if (txt && hasSplit) {
+          var sp = new SplitText(txt, { type: "words" });
+          splits.push(sp);
+
+          gsap.set(txt, { opacity: 1 });
+          gsap.set(sp.words, { opacity: 0, yPercent: WORD_Y });
+
+          tl.to(sp.words, {
+            opacity: 1,
+            yPercent: 0,
+            duration: FADE,
+            ease: "power2.out",
+            stagger: { each: IN_STAG }
+          }, at);
+
+          if (!last) {
+            tl.to(sp.words, {
+              opacity: 0,
+              yPercent: -WORD_Y,
+              duration: FADE,
+              ease: "power2.in",
+              stagger: { each: OUT_STAG }
+            }, at + span - FADE);
+          }
+        } else if (txt) {
+          // fallback if SplitText is not loaded
           gsap.set(txt, { opacity: 0 });
 
           tl.to(txt, {
@@ -827,40 +914,80 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         }
 
-        // ── the copy drops once, as the figures arrive ───
-        if (stack && beat.pigs > 0 && prev.pigs === 0) {
-          tl.to(stack, {
-            y: TEXT_LOW,
+        // ── the frame splits once, as the figures arrive ──
+        // the copy container shrinks to the lower half while
+        // the figures rise into the space it vacates
+        if (beat.pigs > 0 && prev.pigs === 0) {
+          if (stackWrap) {
+            tl.to(stackWrap, {
+              height: "50%",
+              top: "50%",
+              duration: DROP,
+              ease: "power2.inOut"
+            }, at);
+          }
+
+          if (scale) {
+            tl.to(scale, {
+              yPercent: 0,
+              opacity: 1,
+              duration: DROP,
+              ease: "power2.out"
+            }, at + 0.04);
+          }
+        }
+
+        // ── cells resize as the count changes ────────────
+        if (beat.pigs !== prev.pigs && beat.pigs > 0) {
+          var cell = cellSize(beat.pigs);
+
+          // one and two pigs sit centred. three or more
+          // anchor top-left so cells shrink in place and new
+          // columns extend rightward without the whole group
+          // recentring mid-tween, which caused the jump.
+          tl.set(herdBox, {
+            justifyContent: beat.pigs <= 2 ? "center" : "flex-start",
+            alignContent: beat.pigs <= 2 ? "center" : "flex-start"
+          }, at);
+
+          tl.to(herd, {
+            width: cell.w,
+            height: cell.h,
             duration: DROP,
             ease: "power2.inOut"
           }, at);
         }
 
-        // ── figures: absolute state at every beat ────────
+        // ── the layout finishes before pigs appear ───────
+        var revealAt = beat.pigs !== prev.pigs
+          ? at + DROP
+          : at;
+
+        // ── figures, all on revealAt ─────────────────────
         tl.to(human, {
           opacity: beat.human ? 1 : 0,
           duration: FIG, ease: "none"
-        }, at);
+        }, revealAt);
 
         tl.to(op, {
           opacity: beat.human && beat.pigs > 0 ? 1 : 0,
           duration: FIG, ease: "none"
-        }, at);
+        }, revealAt);
 
         tl.to(pigSide, {
           opacity: beat.pigs > 0 ? 1 : 0,
           duration: FIG, ease: "none"
-        }, at);
+        }, revealAt);
 
-        herd.forEach(function (pig, idx) {
-          tl.set(pig, {
-            display: idx < beat.pigs ? "block" : "none"
-          }, at);
+        herd.forEach(function (cellEl, idx) {
+          tl.set(cellEl, {
+            display: idx < beat.pigs ? "flex" : "none"
+          }, revealAt);
 
-          tl.to(pig, {
+          tl.to(cellEl, {
             opacity: idx < beat.pigs ? 1 : 0,
             duration: FIG, ease: "none"
-          }, at + idx * 0.01);
+          }, revealAt + idx * 0.01);
         });
 
         if (pigCount) {
@@ -869,27 +996,78 @@ document.addEventListener("DOMContentLoaded", function () {
             snap: { innerText: 1 },
             innerText: beat.pigs,
             ease: "none"
-          }, at);
+          }, revealAt);
         }
 
-        // ── torn quote on the final beat ─────────────────
-        if (last && quote.length) {
+        // ── the quote takes the frame ────────────────────
+        // fires near the end of the second to last line. the
+        // figures and the copy container clear, then the
+        // quote drops into the empty centre.
+
+
+        // ── the quote clears for the final line ──────────
+        // the copy container returns to full height and
+        // centres, so the last line lands on an empty frame
+    
+
+        // ── the quote owns the frame between two lines ───
+        // everything clears, the quote lands alone and holds
+        // for its own beat, then leaves before the next line
+        if (i === QUOTE_AFTER && quote.length) {
+          var qStart = at + span;
+
+          // pigs and copy container clear
+          tl.to([scale, stackWrap], {
+            opacity: 0,
+            duration: CLEAR,
+            ease: "power2.in"
+          }, qStart);
+
+          // quote arrives in the empty centre
           tl.fromTo(quote,
-            { opacity: 0, y: 60, rotate: -8 },
+            { opacity: 0, y: 60, rotate: -8, xPercent: -50, yPercent: -50 },
             {
               opacity: 1, y: 0, rotate: -2,
-              duration: 0.26, ease: "power3.out"
+              xPercent: -50, yPercent: -50,
+              duration: 0.34, ease: "power3.out"
             },
-            at
+            qStart + CLEAR + 0.10
           );
+
+          // it holds, then leaves
+          tl.to(quote, {
+            opacity: 0,
+            duration: CLEAR,
+            ease: "power2.in"
+          }, qStart + QUOTE_HOLD - CLEAR);
+
+          // the copy container returns, full height, centred
+          if (stackWrap) {
+            tl.to(stackWrap, {
+              opacity: 1,
+              height: "100%",
+              top: "0%",
+              duration: 0.30,
+              ease: "power2.inOut"
+            }, qStart + QUOTE_HOLD - CLEAR);
+          }
         }
 
         at += span;
+
+        if (i === QUOTE_AFTER) at += QUOTE_HOLD;
       });
+
+            tl.to({}, { duration: 0.01 }, at);
+
+
+      // ── cleanup ───────────────────────────────────────
+      return function () {
+        splits.forEach(function (s) { s.revert(); });
+      };
     });
   });
 });
-*/
 // ── IDEOLOGY ────────────────────────────────────────────
 // Designer:
 //   ideo_track   height 400vh

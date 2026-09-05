@@ -1081,7 +1081,7 @@ document.addEventListener("DOMContentLoaded", function () {
 //                sits outside padding-global so it centres on
 //                the viewport rather than the container
 //   Needs SplitText ticked in Integrations.
-
+/*
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-ideology]").forEach(function (sec) {
     var iq = gsap.utils.selector(sec);
@@ -1159,7 +1159,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
-
+*/
 
 // ── NUKE ────────────────────────────────────────────────
 // Designer:

@@ -1069,19 +1069,27 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 // ── IDEOLOGY ────────────────────────────────────────────
-// Designer:
-//   ideo_track   height 400vh
-//   ideo_title   position absolute, top 50%, left 0, width 100%,
-//                text-align center, line-height 1.05,
-//                white-space nowrap, NO transform
-//   ideo_body    position absolute, top 50%, left 50%,
-//                max-width 46ch, transform translate -50% -50%
-//   ideo_quote   position absolute, top 50%, left 50%, width 58%,
-//                transform translate -50% -50%, z-index 2
-//                sits outside padding-global so it centres on
-//                the viewport rather than the container
-//   Needs SplitText ticked in Integrations.
-/*
+// Replaces the IDEOLOGY block in ea.js
+//
+// SEQUENCE
+//   1. title words rise in, centred
+//   2. title holds alone
+//   3. title travels to the top edge and settles there
+//   4. pause on an empty frame
+//   5. body words rise in, centred
+//   6. body holds so it can actually be read
+//   7. quote rises slowly from below and comes to rest ON TOP
+//      of the body. the body is never hidden, it stays under
+//      the artifact.
+//   8. footnote fades in once the image has settled
+//
+// Every position lives in BEATS and every duration in DUR.
+// Nothing else needs editing to change the pacing.
+//
+// PACING: the timeline ends around 2.9. ideo_track at 900vh
+// gives roughly 0.0032 units per vh. If you lengthen a beat,
+// scale the track by the same ratio.
+
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-ideology]").forEach(function (sec) {
     var iq = gsap.utils.selector(sec);
@@ -1090,8 +1098,38 @@ document.addEventListener("DOMContentLoaded", function () {
     var title = iq("[data-ideo-title]");
     var body = iq("[data-ideo-body]");
     var quote = iq("[data-ideo-quote]");
+    var footnote = iq("[data-ideo-footnote]");
 
     if (!track || !title.length) return;
+
+    // ══ WHEN THINGS HAPPEN ═══════════════════════════════
+    var BEATS = {
+      titleIn: 0.00,   // words rise into the centre
+      titleUp: 0.70,   // title travels to the top edge
+      bodyIn: 1.20,    // body arrives, after the title settles
+      quoteIn: 2.10,   // quote starts its slow rise
+      footIn: 2.70     // footnote fades in once it has landed
+    };
+
+    var DUR = {
+      titleIn: 0.16,
+      titleUp: 0.34,
+      bodyIn: 0.16,
+      quoteIn: 1.40,   // much slower. it is the beat.
+      footIn: 0.20
+    };
+
+    // ══ EVERYTHING ELSE ══════════════════════════════════
+    var CFG = {
+      scrub: 0.4,
+      titleStagger: 0.02,
+      bodyStagger: 0.015,
+      wordRise: 60,      // percent of own height
+      quoteRise: 110,    // percent, so it starts fully offscreen
+      //quoteTilt: -6,     // degrees it arrives at
+      //quoteRest: -1.5,   // degrees it settles at
+      titleTop: "1rem"
+    };
 
     gsap.matchMedia().add("(min-width: 992px)", function () {
       var hasSplit = typeof SplitText !== "undefined";
@@ -1103,54 +1141,82 @@ document.addEventListener("DOMContentLoaded", function () {
       var titleWords = tSplit ? tSplit.words : title;
       var bodyWords = bSplit ? bSplit.words : body;
 
-      // title is centred by yPercent, not by a CSS transform,
-      // so GSAP can move it to the top edge without a fight
+      // the title is centred by yPercent rather than a CSS
+      // transform, so GSAP can move it to the top edge
+      // without the two fighting for the transform property
       gsap.set(title, { yPercent: -50 });
-      gsap.set(titleWords, { opacity: 0, yPercent: 60 });
-      gsap.set(bodyWords, { opacity: 0, yPercent: 60 });
-      gsap.set(quote, { opacity: 0, yPercent: 90, rotate: -6 });
+      gsap.set(titleWords, { opacity: 0, yPercent: CFG.wordRise });
+      gsap.set(bodyWords, { opacity: 0, yPercent: CFG.wordRise });
+
+      gsap.set(quote, { yPercent: -50, y: "100vh" });
+
+      gsap.set(footnote, { opacity: 0 });
 
       var tl = gsap.timeline({
         scrollTrigger: {
           trigger: track,
           start: "top top",
           end: "bottom bottom",
-          scrub: 0.4
+          scrub: CFG.scrub
         }
       });
 
+      // ── 1. title rises into the centre ────────────────
       tl.to(titleWords, {
-        opacity: 1, yPercent: 0,
-        duration: 0.14, ease: "power2.out",
-        stagger: { each: 0.02 }
-      }, 0);
+        opacity: 1,
+        yPercent: 0,
+        duration: DUR.titleIn,
+        ease: "power2.out",
+        stagger: { each: CFG.titleStagger }
+      }, BEATS.titleIn);
 
-      // title holds alone from 0.16 to 0.50
+      // ── 2. it holds alone ─────────────────────────────
+      // gap from 0.16 to 0.70
 
+      // ── 3. title travels to the top and settles ───────
       tl.to(title, {
-        top: "1rem", yPercent: 0,
-        duration: 0.2, ease: "power2.inOut"
-      }, 0.50);
+        top: CFG.titleTop,
+        yPercent: 0,
+        duration: DUR.titleUp,
+        ease: "power2.inOut"
+      }, BEATS.titleUp);
 
+      // ── 4. pause on an empty frame ────────────────────
+      // gap from 1.04 to 1.20
+
+      // ── 5. body rises into the vacated centre ─────────
       tl.to(bodyWords, {
-        opacity: 1, yPercent: 0,
-        duration: 0.14, ease: "power2.out",
-        stagger: { each: 0.015 }
-      }, 0.54);
+        opacity: 1,
+        yPercent: 0,
+        duration: DUR.bodyIn,
+        ease: "power2.out",
+        stagger: { each: CFG.bodyStagger }
+      }, BEATS.bodyIn);
 
-      tl.to(bodyWords, {
-        opacity: 0, yPercent: -60,
-        duration: 0.14, ease: "power2.in",
-        stagger: { each: 0.012 }
-      }, 0.96);
+      // ── 6. the body holds so it can be read ───────────
+      // gap from 1.36 to 2.10
 
+      // ── 7. the quote rises slowly and lands on top ────
+      // the body is NOT hidden. the artifact comes to rest
+      // over it, which is the point: the evidence lands on
+      // the argument.
       tl.to(quote, {
-        opacity: 1, yPercent: 0, rotate: -1.5,
-        duration: 0.22, ease: "power3.out"
-      }, 1.00);
+        y: 0,
+        duration: DUR.quoteIn,
+        ease: "none"
+      }, BEATS.quoteIn);
 
-      // dead space after 1.02 so 45 words can be read.
-      // lengthen ideo_track rather than editing numbers.
+      // ── 8. the footnote arrives once it has settled ───
+      tl.to(footnote, {
+        opacity: 1,
+        duration: DUR.footIn,
+        ease: "power1.out"
+      }, BEATS.footIn);
+
+      tl.to({}, { duration: 2.2 }, BEATS.footIn + DUR.footIn);
+
+      // dead space after 2.90 so the 45 words can be read.
+      // lengthen ideo_track rather than editing the numbers.
 
       return function () {
         if (tSplit) tSplit.revert();
@@ -1159,7 +1225,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
-*/
 
 // ── NUKE ────────────────────────────────────────────────
 // Designer:

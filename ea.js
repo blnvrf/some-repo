@@ -1227,94 +1227,251 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // ── NUKE ────────────────────────────────────────────────
+// Replaces the NUKE block in ea.js
+//
+// The background texture is NOT animated. It sits at full
+// opacity throughout, so the boundary with the section above
+// is invisible. Make sure nuke_bg has no opacity value in
+// the Designer.
+//
+// STRICT SEQUENCE. Nothing overlaps.
+//   0.00  land travels up from below      ends 0.34
+//   0.40  blast rises from behind it      ends 0.76
+//   0.82  bits travel down from above     ends 1.16
+//   1.30  title reveals word by word      ends 1.62
+//   1.80  body reveals word by word       ends 2.10
+//   2.90  first quote arrives             long gap before it
+//   then each quote in turn
+//
+// THE QUOTES
+// A vertical slider. Each quote travels UP from below the
+// frame to centre, holds still for most of its beat, then
+// continues UP and out of the top. The movement is fast, the
+// pause is long. Nothing ever reverses direction.
+//
+// The three scene layers never fade. They are forced to
+// opacity 1 so any leftover Designer value cannot make them
+// fade, and they travel in VIEWPORT units so they always
+// start fully off frame whatever their own height is.
+//
+// nuke_sticky MUST have overflow hidden.
+//
 // Designer:
-//   nuke_track   height 600vh
-//   nuke_bg      data-nuke texture, absolute, inset 0, z-index 0
-//   nuke_blast   data-nuke blast, absolute, bottom 0, left 50%,
-//                width 62%, z-index 1, NO transform
-//   nuke_land    data-nuke land, absolute, bottom 0, left 0,
-//                width 100%, z-index 2
-//   nuke_bits    data-nuke bits, absolute, top 0, left 50%,
-//                width 40%, z-index 3, NO transform
-//   nuke_slide   absolute, top 50%, left 0, right 0, NO transform
-//   blast and land must share the same horizon in their exports
+//   section_nuke   data-nuke-scene, position relative,
+//                  margin-top 0, z-index auto, no box-shadow
+//   nuke_track     data-nuke-track, position relative, height 1500vh
+//   nuke_sticky    sticky, top 0, height 100svh, overflow hidden
+//
+//   nuke_bg        data-nuke="texture", absolute, inset 0,
+//                  z-index 0, NO opacity
+//   nuke_blast     data-nuke="blast", absolute, bottom 0,
+//                  left 50%, width 62%, z-index 1, NO transform
+//   nuke_land      data-nuke="land", absolute, bottom 0,
+//                  left 0, width 100%, z-index 2, NO transform
+//   nuke_bits      data-nuke="bits", absolute, top 0,
+//                  left 50%, width 40%, z-index 3, NO transform
+//
+//   nuke_text      data-nuke-text, wrapper for both
+//     nuke_title   data-nuke-title
+//     nuke_body    data-nuke-body
+//
+//   nuke_slide ×3  data-nuke-slide, absolute, top 50%,
+//                  left 0, right 0, NO transform
+//
+//   Needs SplitText ticked in Site Settings, Integrations.
 
-/*
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-nuke-scene]").forEach(function (sec) {
     var nq = gsap.utils.selector(sec);
 
     var track = nq("[data-nuke-track]")[0];
-    var texture = nq('[data-nuke="texture"]');
     var land = nq('[data-nuke="land"]');
     var blast = nq('[data-nuke="blast"]');
     var bits = nq('[data-nuke="bits"]');
     var title = nq("[data-nuke-title]");
+    var body = nq("[data-nuke-body]");
     var slides = nq("[data-nuke-slide]");
 
     if (!track) return;
 
-    var STEP = 0.22;
+    // ══ WHEN THINGS HAPPEN ═══════════════════════════════
+    // every beat finishes before the next one starts
+    var BEATS = {
+      land: 0.00,    // ends 0.34
+      blast: 0.40,   // ends 0.76
+      bits: 0.82,    // ends 1.16
+      title: 1.30,   // ends 1.62 with stagger
+      body: 1.80,    // ends 2.10 with stagger
+      slides: 2.90   // long pause after the body settles
+    };
+
+    // ══ HOW LONG THINGS TAKE ═════════════════════════════
+    var DUR = {
+      land: 0.34,
+      blast: 0.36,
+      bits: 0.34,
+      title: 0.20,
+      body: 0.20,
+      slideMove: 0.20   // fast. the pause does the work.
+    };
+
+    // ══ EVERYTHING ELSE ══════════════════════════════════
+    var CFG = {
+      scrub: 0.4,
+
+      // scene layers travel in VIEWPORT units, not element
+      // units, so they always start fully off frame
+      landFrom: "100vh",
+      blastFrom: "100vh",
+      bitsFrom: "-100vh",
+
+      wordRise: 50,       // percent of own height
+      titleStagger: 0.03,
+      bodyStagger: 0.02,
+
+      // the vertical slider
+      slideStep: 1.80,    // scroll distance per quote
+      slideFrom: "100vh",  // enters from here, below the frame
+      slideTo: "-100vh",   // exits to here, above the frame
+
+      endHold: 2.40       // empty scroll after the last quote
+    };
 
     gsap.matchMedia().add("(min-width: 992px)", function () {
-      // xPercent handles the left 50% centring so nothing
-      // in CSS fights GSAP for the transform
-      gsap.set(texture, { opacity: 0 });
-      gsap.set(land, { opacity: 0, yPercent: 60 });
-      gsap.set(blast, { opacity: 0, yPercent: 70, xPercent: -50 });
-      gsap.set(bits, { opacity: 0, yPercent: -60, xPercent: -50 });
-      gsap.set(title, { opacity: 0, y: 24 });
-      gsap.set(slides, { opacity: 0, yPercent: -50 });
+      var hasSplit = typeof SplitText !== "undefined";
+      if (hasSplit) gsap.registerPlugin(SplitText);
+
+      // every split instance, so the cleanup can put the
+      // markup back on a resize
+      var splits = [];
+
+      function splitOf(el) {
+        if (!hasSplit || !el || !el.length) return null;
+        var s = new SplitText(el, { type: "words" });
+        splits.push(s);
+        return s.words;
+      }
+
+      var titleWords = splitOf(title) || title;
+      var bodyWords = splitOf(body) || body;
+
+      // ── starting states ─────────────────────────────────
+      // opacity forced to 1 on the scene layers so a leftover
+      // Designer value cannot make them fade. xPercent does
+      // the left 50% centring so nothing in CSS fights GSAP
+      // for the transform.
+      gsap.set(land, { y: CFG.landFrom, opacity: 1 });
+      gsap.set(blast, { y: CFG.blastFrom, xPercent: -50, opacity: 1 });
+      gsap.set(bits, { y: CFG.bitsFrom, xPercent: -50, opacity: 1 });
+
+      gsap.set(titleWords, { opacity: 0, yPercent: CFG.wordRise });
+      gsap.set(bodyWords, { opacity: 0, yPercent: CFG.wordRise });
+
+      // quotes wait below the frame, already visible, so the
+      // slider reads as movement rather than a fade
+      gsap.set(slides, {
+        y: CFG.slideFrom,
+        yPercent: -50,
+        opacity: 1
+      });
 
       var tl = gsap.timeline({
         scrollTrigger: {
           trigger: track,
           start: "top top",
           end: "bottom bottom",
-          scrub: 0.4
+          scrub: CFG.scrub
         }
       });
 
-      tl.to(texture, { opacity: 1, duration: 0.14, ease: "none" }, 0);
-
+      // ── 1. land travels up from below the frame ───────
       tl.to(land, {
-        opacity: 1, yPercent: 0,
-        duration: 0.20, ease: "power2.out"
-      }, 0.08);
+        y: 0,
+        duration: DUR.land,
+        ease: "power2.out"
+      }, BEATS.land);
 
+      // ── 2. blast rises from behind the land ───────────
       tl.to(blast, {
-        opacity: 1, yPercent: 0,
-        duration: 0.26, ease: "power2.out"
-      }, 0.20);
+        y: 0,
+        duration: DUR.blast,
+        ease: "power2.out"
+      }, BEATS.blast);
 
+      // ── 3. bits travel down from above the frame ──────
       tl.to(bits, {
-        opacity: 1, yPercent: 0,
-        duration: 0.22, ease: "power2.out"
-      }, 0.34);
+        y: 0,
+        duration: DUR.bits,
+        ease: "power2.out"
+      }, BEATS.bits);
 
-      tl.to(title, {
-        opacity: 1, y: 0,
-        duration: 0.16, ease: "power2.out"
-      }, 0.44);
+      // gap: the scene settles
+
+      // ── 4. title reveals, alone ───────────────────────
+      tl.to(titleWords, {
+        opacity: 1,
+        yPercent: 0,
+        duration: DUR.title,
+        ease: "power2.out",
+        stagger: { each: CFG.titleStagger }
+      }, BEATS.title);
+
+      // gap: the title holds by itself
+
+      // ── 5. body follows, once the title has finished ──
+      tl.to(bodyWords, {
+        opacity: 1,
+        yPercent: 0,
+        duration: DUR.body,
+        ease: "power2.out",
+        stagger: { each: CFG.bodyStagger }
+      }, BEATS.body);
+
+      // gap: 0.80 of nothing before the first quote
+
+      // ── 6. the vertical slider ────────────────────────
+      // each quote travels up into centre, holds still for
+      // most of its beat, then continues up and out. the
+      // movement never reverses, so it reads as one belt
+      // moving through the frame.
+      var lastAt = BEATS.slides;
 
       slides.forEach(function (slide, i) {
-        var at = 0.56 + i * STEP;
+        var at = BEATS.slides + i * CFG.slideStep;
         var last = i === slides.length - 1;
 
+        // in, fast
         tl.to(slide, {
-          opacity: 1, duration: 0.12, ease: "power1.out"
+          y: 0,
+          duration: DUR.slideMove,
+          ease: "power3.out"
         }, at);
 
+        // holds still for the rest of its beat
+
+        // out through the top, same direction, same speed
         if (!last) {
           tl.to(slide, {
-            opacity: 0, duration: 0.12, ease: "power1.in"
-          }, at + STEP);
+            y: CFG.slideTo,
+            duration: DUR.slideMove,
+            ease: "power3.in"
+          }, at + CFG.slideStep - DUR.slideMove);
         }
+
+        lastAt = at;
       });
+
+      // ── 7. the final quote holds ──────────────────────
+      // the timeline ends at its last tween, so an empty
+      // tween reserves the hold and makes it real scroll
+      tl.to({}, { duration: CFG.endHold }, lastAt + DUR.slideMove);
+
+      return function () {
+        splits.forEach(function (s) { s.revert(); });
+      };
     });
   });
 });
-*/
 // ── MATH ────────────────────────────────────────────────
 // Replaces the MATH block in ea.js
 //

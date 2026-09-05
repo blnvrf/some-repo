@@ -1239,6 +1239,7 @@ document.addEventListener("DOMContentLoaded", function () {
 //   nuke_slide   absolute, top 50%, left 0, right 0, NO transform
 //   blast and land must share the same horizon in their exports
 
+/*
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-nuke-scene]").forEach(function (sec) {
     var nq = gsap.utils.selector(sec);
@@ -1313,8 +1314,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
-
-
+*/
 // ── MATH ────────────────────────────────────────────────
 // Replaces the MATH block in ea.js
 //

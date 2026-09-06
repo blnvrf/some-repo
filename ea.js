@@ -1514,7 +1514,7 @@ document.addEventListener("DOMContentLoaded", function () {
 //
 //   math_end       data-math-end, absolute, inset 0, z-index 5,
 //                  flex column centered, pointer-events none
-
+/*
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-math-scene]").forEach(function (sec) {
     var mq = gsap.utils.selector(sec);
@@ -1668,6 +1668,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
+*/
 // ── OPTIMIZED WORLD ─────────────────────────────────────
 // Replaces the OPTIMIZED WORLD block in ea.js
 //

@@ -5924,3 +5924,1256 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  gsap.registerPlugin(ScrollTrigger);
+
+
+  gsap.utils
+    .toArray("[data-scandal-scene]")
+    .forEach(function (sec) {
+
+      // =============================================
+      // ELEMENTS
+      // =============================================
+
+      var cards =
+        gsap.utils.toArray(
+          sec.querySelectorAll("[data-scandal-card]")
+        );
+
+      var reader =
+        sec.querySelector("[data-scandal-reader]");
+
+      var readerVisual =
+        reader?.querySelector(".scandal_reader-visual");
+
+      var readerContent =
+        reader?.querySelector(".scandal_reader-content");
+
+      var readerScroll =
+        reader?.querySelector(".scandal_reader-scroll");
+
+      var readerImage =
+        reader?.querySelector("[data-scandal-reader-image]");
+
+      var closeBtn =
+        reader?.querySelector("[data-scandal-close]");
+
+      var prevBtn =
+        reader?.querySelector("[data-scandal-prev]");
+
+      var nextBtn =
+        reader?.querySelector("[data-scandal-next]");
+
+      var stories =
+        reader
+          ? gsap.utils.toArray(
+              reader.querySelectorAll("[data-scandal-story]")
+            )
+          : [];
+
+
+      if (
+        !cards.length ||
+        !reader ||
+        !readerVisual ||
+        !readerContent ||
+        !readerImage ||
+        !closeBtn ||
+        !stories.length
+      ) {
+
+        console.warn(
+          "Scandals section: missing required elements.",
+          {
+            cards: cards.length,
+            reader: reader,
+            readerVisual: readerVisual,
+            readerContent: readerContent,
+            readerImage: readerImage,
+            closeBtn: closeBtn,
+            stories: stories.length
+          }
+        );
+
+        return;
+      }
+
+
+
+      // =============================================
+      // STATE
+      // =============================================
+
+      var currentCard = null;
+      var currentStory = null;
+      var currentIndex = -1;
+
+      var isOpen = false;
+      var isAnimating = false;
+
+      var oldBodyOverflow = "";
+      var oldHtmlOverflow = "";
+
+
+
+      // =============================================
+      // INITIAL STATE
+      // =============================================
+
+      reader.setAttribute(
+        "aria-hidden",
+        "true"
+      );
+
+
+      gsap.set(reader, {
+        autoAlpha: 0,
+        pointerEvents: "none"
+      });
+
+
+      gsap.set(stories, {
+        display: "none"
+      });
+
+
+      cards.forEach(function (card) {
+
+        card.setAttribute(
+          "role",
+          "button"
+        );
+
+        card.setAttribute(
+          "tabindex",
+          "0"
+        );
+
+      });
+
+
+
+      // =============================================
+      // HELPERS
+      // =============================================
+
+      function getStoryForCard(card) {
+
+        var id =
+          card.getAttribute("data-story");
+
+
+        return stories.find(
+          function (story) {
+
+            return (
+              story.getAttribute(
+                "data-scandal-story"
+              ) === id
+            );
+
+          }
+        );
+
+      }
+
+
+
+      function getCardImage(card) {
+
+        return card.querySelector(
+          "[data-scandal-image]"
+        );
+
+      }
+
+
+
+      function setReaderImage(card) {
+
+        var source =
+          getCardImage(card);
+
+
+        if (!source) {
+          return;
+        }
+
+
+        var src =
+          source.currentSrc ||
+          source.src;
+
+
+        if (src) {
+          readerImage.src = src;
+        }
+
+
+        readerImage.alt =
+          source.alt || "";
+
+
+        var styles =
+          window.getComputedStyle(source);
+
+
+        readerImage.style.objectPosition =
+          styles.objectPosition;
+
+      }
+
+
+
+      function lockPage() {
+
+        oldBodyOverflow =
+          document.body.style.overflow;
+
+        oldHtmlOverflow =
+          document.documentElement.style.overflow;
+
+
+        document.body.style.overflow =
+          "hidden";
+
+        document.documentElement.style.overflow =
+          "hidden";
+
+      }
+
+
+
+      function unlockPage() {
+
+        document.body.style.overflow =
+          oldBodyOverflow;
+
+        document.documentElement.style.overflow =
+          oldHtmlOverflow;
+
+      }
+
+
+
+      function activateStory(story) {
+
+        stories.forEach(function (item) {
+
+          item.classList.remove(
+            "is-active"
+          );
+
+
+          gsap.set(item, {
+            display: "none"
+          });
+
+        });
+
+
+        story.classList.add(
+          "is-active"
+        );
+
+
+        gsap.set(story, {
+          display: "block"
+        });
+
+      }
+
+
+
+      // =============================================
+      // FLYING IMAGE
+      // =============================================
+      //
+      // Creates a temporary copy of an image.
+      //
+      // IMPORTANT:
+      // We animate width + height,
+      // NOT scaleX + scaleY.
+      //
+      // object-fit: cover means the artwork
+      // keeps its natural proportions.
+      //
+      // =============================================
+
+      function createFlyingImage(source, rect) {
+
+        if (!source) {
+          return null;
+        }
+
+
+        var styles =
+          window.getComputedStyle(source);
+
+
+        var clone =
+          document.createElement("img");
+
+
+        clone.src =
+          source.currentSrc ||
+          source.src;
+
+
+        clone.alt = "";
+
+
+        Object.assign(
+          clone.style,
+          {
+
+            position:
+              "fixed",
+
+            left:
+              rect.left + "px",
+
+            top:
+              rect.top + "px",
+
+            width:
+              rect.width + "px",
+
+            height:
+              rect.height + "px",
+
+            objectFit:
+              "cover",
+
+            objectPosition:
+              styles.objectPosition,
+
+            margin:
+              "0",
+
+            padding:
+              "0",
+
+            border:
+              "0",
+
+            zIndex:
+              "99999",
+
+            pointerEvents:
+              "none",
+
+            willChange:
+              "left, top, width, height",
+
+            transform:
+              "none"
+
+          }
+        );
+
+
+        document.body.appendChild(
+          clone
+        );
+
+
+        return clone;
+
+      }
+
+
+
+      // =============================================
+      // OPEN STORY
+      // =============================================
+
+      function openStory(card) {
+
+        if (
+          isAnimating ||
+          isOpen
+        ) {
+          return;
+        }
+
+
+        var story =
+          getStoryForCard(card);
+
+
+        var sourceImage =
+          getCardImage(card);
+
+
+        if (
+          !story ||
+          !sourceImage
+        ) {
+
+          console.warn(
+            "Scandal card missing story/image:",
+            card
+          );
+
+          return;
+        }
+
+
+        isAnimating = true;
+
+        currentCard = card;
+        currentStory = story;
+        currentIndex = cards.indexOf(card);
+
+
+
+        // ---------------------------------------------
+        // PREPARE READER
+        // ---------------------------------------------
+
+        setReaderImage(card);
+        activateStory(story);
+
+
+        if (readerScroll) {
+          readerScroll.scrollTop = 0;
+        }
+
+
+        reader.classList.add(
+          "is-open"
+        );
+
+
+        reader.setAttribute(
+          "aria-hidden",
+          "false"
+        );
+
+
+        gsap.set(reader, {
+          autoAlpha: 1,
+          pointerEvents: "auto"
+        });
+
+
+        lockPage();
+
+
+
+        // ---------------------------------------------
+        // MEASURE
+        // ---------------------------------------------
+
+        var sourceRect =
+          sourceImage.getBoundingClientRect();
+
+
+        var targetRect =
+          readerVisual.getBoundingClientRect();
+
+
+
+        // ---------------------------------------------
+        // FLYING CLONE
+        // ---------------------------------------------
+
+        var flyingImage =
+          createFlyingImage(
+            sourceImage,
+            sourceRect
+          );
+
+
+
+        // Hide real left panel until clone arrives.
+
+        gsap.set(
+          readerVisual,
+          {
+            autoAlpha: 0
+          }
+        );
+
+
+        // Right side waits off-screen.
+
+        gsap.set(
+          readerContent,
+          {
+            xPercent: 100
+          }
+        );
+
+
+        gsap.set(
+          currentStory,
+          {
+            autoAlpha: 0,
+            y: 30
+          }
+        );
+
+
+        gsap.set(
+          closeBtn,
+          {
+            autoAlpha: 0,
+            scale: 0.8
+          }
+        );
+
+
+
+        // =============================================
+        // OPEN TIMELINE
+        // =============================================
+
+        var tl =
+          gsap.timeline({
+
+            onComplete:
+              function () {
+
+                // Swap clone → real reader artwork.
+
+                gsap.set(
+                  readerVisual,
+                  {
+                    autoAlpha: 1
+                  }
+                );
+
+
+                if (flyingImage) {
+                  flyingImage.remove();
+                }
+
+
+                isOpen = true;
+                isAnimating = false;
+
+              }
+
+          });
+
+
+
+        // ---------------------------------------------
+        // IMAGE EXPANDS
+        // ---------------------------------------------
+
+        if (flyingImage) {
+
+          tl.to(
+            flyingImage,
+            {
+
+              left:
+                targetRect.left,
+
+              top:
+                targetRect.top,
+
+              width:
+                targetRect.width,
+
+              height:
+                targetRect.height,
+
+              duration:
+                0.75,
+
+              ease:
+                "power4.inOut"
+
+            },
+
+            0
+          );
+
+        }
+
+
+
+        // ---------------------------------------------
+        // RIGHT PANEL
+        // ---------------------------------------------
+
+        tl.to(
+          readerContent,
+          {
+
+            xPercent: 0,
+
+            duration:
+              0.72,
+
+            ease:
+              "power4.inOut"
+
+          },
+
+          0.08
+        );
+
+
+
+        // ---------------------------------------------
+        // STORY
+        // ---------------------------------------------
+
+        tl.to(
+          currentStory,
+          {
+
+            autoAlpha: 1,
+            y: 0,
+
+            duration:
+              0.45,
+
+            ease:
+              "power3.out"
+
+          },
+
+          0.38
+        );
+
+
+
+        // ---------------------------------------------
+        // CLOSE BUTTON
+        // ---------------------------------------------
+
+        tl.to(
+          closeBtn,
+          {
+
+            autoAlpha: 1,
+            scale: 1,
+
+            duration:
+              0.3,
+
+            ease:
+              "back.out(1.8)"
+
+          },
+
+          0.50
+        );
+
+      }
+
+
+
+      // =============================================
+      // CLOSE STORY
+      // =============================================
+
+      function closeStory() {
+
+        if (
+          !isOpen ||
+          isAnimating ||
+          !currentCard
+        ) {
+          return;
+        }
+
+
+        var targetImage =
+          getCardImage(
+            currentCard
+          );
+
+
+        if (!targetImage) {
+          return;
+        }
+
+
+        isAnimating = true;
+
+
+
+        // ---------------------------------------------
+        // MEASURE
+        // ---------------------------------------------
+
+        var startRect =
+          readerVisual.getBoundingClientRect();
+
+
+        var targetRect =
+          targetImage.getBoundingClientRect();
+
+
+
+        // ---------------------------------------------
+        // CLONE READER IMAGE
+        // ---------------------------------------------
+
+        var flyingImage =
+          createFlyingImage(
+            readerImage,
+            startRect
+          );
+
+
+
+        // Hide real left panel immediately.
+        // Clone visually replaces it.
+
+        gsap.set(
+          readerVisual,
+          {
+            autoAlpha: 0
+          }
+        );
+
+
+
+        // =============================================
+        // CLOSE TIMELINE
+        // =============================================
+
+        var tl =
+          gsap.timeline({
+
+            onComplete:
+              function () {
+
+                if (flyingImage) {
+                  flyingImage.remove();
+                }
+
+
+                reader.classList.remove(
+                  "is-open"
+                );
+
+
+                reader.setAttribute(
+                  "aria-hidden",
+                  "true"
+                );
+
+
+                gsap.set(
+                  reader,
+                  {
+                    autoAlpha: 0,
+                    pointerEvents: "none"
+                  }
+                );
+
+
+                gsap.set(
+                  readerVisual,
+                  {
+                    autoAlpha: 1
+                  }
+                );
+
+
+                gsap.set(
+                  readerContent,
+                  {
+                    xPercent: 0
+                  }
+                );
+
+
+                if (currentStory) {
+
+                  currentStory.classList.remove(
+                    "is-active"
+                  );
+
+
+                  gsap.set(
+                    currentStory,
+                    {
+                      display: "none",
+                      clearProps:
+                        "opacity,visibility,transform"
+                    }
+                  );
+
+                }
+
+
+                if (readerScroll) {
+                  readerScroll.scrollTop = 0;
+                }
+
+
+                unlockPage();
+
+
+                isOpen = false;
+                isAnimating = false;
+
+                currentCard = null;
+                currentStory = null;
+                currentIndex = -1;
+
+              }
+
+          });
+
+
+
+        // ---------------------------------------------
+        // STORY OUT
+        // ---------------------------------------------
+
+        tl.to(
+          currentStory,
+          {
+
+            autoAlpha: 0,
+            y: 20,
+
+            duration:
+              0.22,
+
+            ease:
+              "power2.in"
+
+          },
+
+          0
+        );
+
+
+
+        // ---------------------------------------------
+        // CLOSE BUTTON OUT
+        // ---------------------------------------------
+
+        tl.to(
+          closeBtn,
+          {
+
+            autoAlpha: 0,
+
+            duration:
+              0.15
+
+          },
+
+          0
+        );
+
+
+
+        // ---------------------------------------------
+        // RIGHT PANEL OUT
+        // ---------------------------------------------
+
+        tl.to(
+          readerContent,
+          {
+
+            xPercent: 100,
+
+            duration:
+              0.58,
+
+            ease:
+              "power3.inOut"
+
+          },
+
+          0.08
+        );
+
+
+
+        // ---------------------------------------------
+        // IMAGE CONTRACTS BACK TO CARD
+        // ---------------------------------------------
+
+        if (flyingImage) {
+
+          tl.to(
+            flyingImage,
+            {
+
+              left:
+                targetRect.left,
+
+              top:
+                targetRect.top,
+
+              width:
+                targetRect.width,
+
+              height:
+                targetRect.height,
+
+              duration:
+                0.70,
+
+              ease:
+                "power4.inOut"
+
+            },
+
+            0.04
+          );
+
+        }
+
+      }
+
+
+
+      // =============================================
+      // NEXT / PREVIOUS
+      // =============================================
+
+      function goToStory(index) {
+
+        if (
+          !isOpen ||
+          isAnimating
+        ) {
+          return;
+        }
+
+
+        if (index < 0) {
+
+          index =
+            cards.length - 1;
+
+        }
+
+
+        if (
+          index >= cards.length
+        ) {
+
+          index = 0;
+
+        }
+
+
+        if (
+          index === currentIndex
+        ) {
+          return;
+        }
+
+
+        var nextCard =
+          cards[index];
+
+
+        var nextStory =
+          getStoryForCard(
+            nextCard
+          );
+
+
+        if (!nextStory) {
+          return;
+        }
+
+
+        isAnimating = true;
+
+
+        var oldStory =
+          currentStory;
+
+
+
+        var tl =
+          gsap.timeline({
+
+            onComplete:
+              function () {
+
+                currentIndex = index;
+                currentCard = nextCard;
+                currentStory = nextStory;
+
+                isAnimating = false;
+
+              }
+
+          });
+
+
+
+        // ---------------------------------------------
+        // OLD CONTENT OUT
+        // ---------------------------------------------
+
+        tl.to(
+          [
+            oldStory,
+            readerImage
+          ],
+          {
+
+            autoAlpha: 0,
+
+            duration:
+              0.20,
+
+            ease:
+              "power2.in"
+
+          }
+        );
+
+
+
+        // ---------------------------------------------
+        // SWAP
+        // ---------------------------------------------
+
+        tl.call(
+          function () {
+
+            oldStory.classList.remove(
+              "is-active"
+            );
+
+
+            gsap.set(
+              oldStory,
+              {
+                display: "none"
+              }
+            );
+
+
+            setReaderImage(
+              nextCard
+            );
+
+
+            activateStory(
+              nextStory
+            );
+
+
+            if (readerScroll) {
+              readerScroll.scrollTop = 0;
+            }
+
+
+            gsap.set(
+              nextStory,
+              {
+
+                autoAlpha: 0,
+                y: 25
+
+              }
+            );
+
+
+            gsap.set(
+              readerImage,
+              {
+
+                autoAlpha: 0,
+                scale: 1.025
+
+              }
+            );
+
+          }
+        );
+
+
+
+        // ---------------------------------------------
+        // NEW IMAGE
+        // ---------------------------------------------
+
+        tl.to(
+          readerImage,
+          {
+
+            autoAlpha: 1,
+            scale: 1,
+
+            duration:
+              0.42,
+
+            ease:
+              "power3.out"
+
+          }
+        );
+
+
+
+        // ---------------------------------------------
+        // NEW STORY
+        // ---------------------------------------------
+
+        tl.to(
+          nextStory,
+          {
+
+            autoAlpha: 1,
+            y: 0,
+
+            duration:
+              0.40,
+
+            ease:
+              "power3.out"
+
+          },
+
+          "<0.08"
+        );
+
+      }
+
+
+
+      // =============================================
+      // CARD EVENTS
+      // =============================================
+
+      cards.forEach(
+        function (card) {
+
+          card.addEventListener(
+            "click",
+            function (event) {
+
+              event.preventDefault();
+
+              openStory(card);
+
+            }
+          );
+
+
+          card.addEventListener(
+            "keydown",
+            function (event) {
+
+              if (
+                event.key === "Enter" ||
+                event.key === " "
+              ) {
+
+                event.preventDefault();
+
+                openStory(card);
+
+              }
+
+            }
+          );
+
+        }
+      );
+
+
+
+      // =============================================
+      // CLOSE
+      // =============================================
+
+      closeBtn.addEventListener(
+        "click",
+        function (event) {
+
+          event.preventDefault();
+
+          closeStory();
+
+        }
+      );
+
+
+
+      // =============================================
+      // PREVIOUS
+      // =============================================
+
+      if (prevBtn) {
+
+        prevBtn.addEventListener(
+          "click",
+          function (event) {
+
+            event.preventDefault();
+
+            goToStory(
+              currentIndex - 1
+            );
+
+          }
+        );
+
+      }
+
+
+
+      // =============================================
+      // NEXT
+      // =============================================
+
+      if (nextBtn) {
+
+        nextBtn.addEventListener(
+          "click",
+          function (event) {
+
+            event.preventDefault();
+
+            goToStory(
+              currentIndex + 1
+            );
+
+          }
+        );
+
+      }
+
+
+
+      // =============================================
+      // ESCAPE KEY
+      // =============================================
+
+      document.addEventListener(
+        "keydown",
+        function (event) {
+
+          if (
+            event.key === "Escape" &&
+            isOpen
+          ) {
+
+            closeStory();
+
+          }
+
+        }
+      );
+
+    });
+
+});

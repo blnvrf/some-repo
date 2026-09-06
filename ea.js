@@ -3301,7 +3301,7 @@ document.addEventListener("DOMContentLoaded", function () {
 //     function(b,i){ console.log(i,
 //       b.querySelectorAll("[data-ftx-item]").length); });
 //   Want 2, 2, 5, 1, 5, 1.
-
+/*
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-ftx-scene]").forEach(function (sec) {
     var fq = gsap.utils.selector(sec);
@@ -3402,7 +3402,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
-
+*/
 
 // ── FAMILY ──────────────────────────────────────────────
 // Vertical scroll driving a horizontal transform. The page

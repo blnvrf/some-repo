@@ -1514,161 +1514,1185 @@ document.addEventListener("DOMContentLoaded", function () {
 //
 //   math_end       data-math-end, absolute, inset 0, z-index 5,
 //                  flex column centered, pointer-events none
-/*
+
 document.addEventListener("DOMContentLoaded", function () {
+
+  gsap.registerPlugin(ScrollTrigger);
+
   gsap.utils.toArray("[data-math-scene]").forEach(function (sec) {
-    var mq = gsap.utils.selector(sec);
 
-    var track = mq("[data-math-track]")[0];
-    var items = mq("[data-math-item]");
-    var field = mq("[data-math-field]");
-    var fieldAll = mq('[data-math-field="all"]');
-    var fieldLit = mq('[data-math-field="lit"]');
-    var caption = mq("[data-math-caption]")[0];
-    var capHead = mq("[data-math-head]")[0];
-    var capSub = mq("[data-math-sub]")[0];
-    var burst = mq("[data-math-burst]");
-    var end = mq("[data-math-end]");
+    var q = gsap.utils.selector(sec);
 
-    if (!track || !items.length) return;
+    var track = q("[data-math-track]")[0];
 
-    // ── how long each stack item holds ────────────────────
-    // one entry per data-math-item, in order:
-    // title, copy, quote
-    var HOLDS = [0.70, 0.80, 0.90];
+    var title = q("[data-math-title]")[0];
+    var body = q("[data-math-body]")[0];
+    var quote = q("[data-math-quote]")[0];
 
-    // ── config ────────────────────────────────────────────
-    var IN = 0.20;        // how long an item takes to rise in
-    var OUT = 0.18;       // how long it takes to lift away
-    var RISE = 60;        // px travelled on the way in
-    var LIFT = -70;       // px travelled on the way out
-    var GAP = 0.30;       // empty frame after the last item
-    var BURST = 420;      // scale for a 6px dot to cover 1440px
-    var CAP_TOP = "0vh";  // flush to the top edge, no gap
-    var FIELD_REST = 0;   // field lands flush
-    var XFADE = 0.40;     // dot image cross-fade
+    var field = q('[data-dot-field="true"]')[0];
+
+    var caption = q("[data-math-caption]")[0];
+    var capHead = q("[data-math-head]")[0];
+    var capSub = q("[data-math-sub]")[0];
+
+    var burst = q("[data-math-burst]")[0];
+    var end = q("[data-math-end]")[0];
+
+    if (
+      !track ||
+      !title ||
+      !body ||
+      !quote ||
+      !field ||
+      !caption ||
+      !capHead ||
+      !capSub ||
+      !burst ||
+      !end
+    ) {
+      console.warn("Math scene: missing required element.");
+      return;
+    }
+
+
+    // ── CONFIG ──────────────────────────────────────
+
+    var TEXT_IN = 0.30;
+    var TEXT_OUT = 0.25;
+
+    var IN_STAGGER = 0.055;
+    var OUT_STAGGER = 0.035;
+
+    var TITLE_HOLD = 1.10;
+    var BODY_HOLD = 1.40;
+    var QUOTE_HOLD = 1.35;
+
+    var ITEM_GAP = 0.18;
+    var CAPTION_GAP = 0.35;
+
+    var QUOTE_RISE = 0.55;
+
+    var XFADE = 0.55;
+    var DOT_FADED_OPACITY = 0.12;
+
+    var CAP_TOP = "0vh";
+    var FIELD_REST = 0;
+
+    var BURST_SCALE = 420;
+
+    var END_HOLD = 1.75;
+
+
+    // ── CAPTION COPY ────────────────────────────────
 
     var CAPTION_1 = "People who do not exist yet";
-    var SUB_1 = "10^58 potential future lives";
+    var SUB_1 = "10⁵⁸ potential future lives";
+
     var CAPTION_2 = "8,000,000,000";
     var SUB_2 = "Everyone alive today";
 
-    gsap.matchMedia().add("(min-width: 992px)", function () {
-      // ── starting states ─────────────────────────────────
-      // xPercent and yPercent do the centring so GSAP can
-      // move the items without a CSS transform fighting it
-      gsap.set(items, {
-        opacity: 0,
+
+    // ── DOTS ────────────────────────────────────────
+
+    var COLS = 49;
+    var ROWS = 25;
+
+    var DOT_SIZE_MIN = 10;
+    var DOT_SIZE_MAX = 14;
+
+var PULSE_CHANCE = 0.10;
+
+var PULSE_CHANGE_MIN = 3;
+var PULSE_CHANGE_MAX = 5;
+
+var PULSE_DURATION_MIN = 1.2;
+var PULSE_DURATION_MAX = 2.4;
+
+    var DOT_COLOR = "#ff684d";
+
+
+    function random(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+
+    // ── BUILD DOT FIELD ─────────────────────────────
+
+    field.innerHTML = "";
+
+    var centerCol = Math.floor(COLS / 2);
+    var centerRow = Math.floor(ROWS / 2);
+
+
+    for (var i = 0; i < COLS * ROWS; i++) {
+
+      var dot = document.createElement("div");
+      dot.className = "math-dot";
+
+      var col = i % COLS;
+      var row = Math.floor(i / COLS);
+
+      var size = random(
+        DOT_SIZE_MIN,
+        DOT_SIZE_MAX
+      );
+
+
+      dot.style.setProperty(
+        "--dot-size",
+        size.toFixed(2) + "px"
+      );
+
+
+      var inCenterBlock =
+        Math.abs(col - centerCol) <= 1 &&
+        Math.abs(row - centerRow) <= 1;
+
+
+      // Actual mathematical center dot
+      var exactCenter =
+        col === centerCol &&
+        row === centerRow;
+
+
+      // Remove ONE corner from the 3 × 3
+      // so only 8 dots remain highlighted.
+      var excludedCorner =
+        col === centerCol - 1 &&
+        row === centerRow - 1;
+
+
+      var fixed =
+        inCenterBlock &&
+        !excludedCorner;
+
+
+      if (exactCenter) {
+        dot.classList.add("is-center");
+      }
+
+
+      if (fixed) {
+
+        dot.classList.add("is-fixed");
+
+      } else if (Math.random() < PULSE_CHANCE) {
+
+        dot.classList.add("is-pulsing");
+
+        var change = random(
+          PULSE_CHANGE_MIN,
+          PULSE_CHANGE_MAX
+        );
+
+        var direction =
+          Math.random() < 0.5 ? -1 : 1;
+
+        var targetSize =
+          Math.max(
+            2,
+            size + change * direction
+          );
+
+
+        dot.style.setProperty(
+          "--pulse-scale",
+          (targetSize / size).toFixed(3)
+        );
+
+
+        dot.style.setProperty(
+          "--pulse-duration",
+          random(
+            PULSE_DURATION_MIN,
+            PULSE_DURATION_MAX
+          ).toFixed(2) + "s"
+        );
+
+
+        dot.style.setProperty(
+          "--pulse-delay",
+          -random(0, 3).toFixed(2) + "s"
+        );
+
+      }
+
+
+      field.appendChild(dot);
+    }
+
+
+
+    var normalDots = gsap.utils.toArray(
+      field.querySelectorAll(
+        ".math-dot:not(.is-fixed)"
+      )
+    );
+
+
+    var fixedDots = gsap.utils.toArray(
+      field.querySelectorAll(
+        ".math-dot.is-fixed"
+      )
+    );
+
+
+    var centerDot =
+      field.querySelector(".math-dot.is-center");
+
+
+    gsap.set(normalDots, {
+      opacity: 1,
+      backgroundColor: DOT_COLOR
+    });
+
+
+    gsap.set(fixedDots, {
+      opacity: 1,
+      backgroundColor: DOT_COLOR
+    });
+
+
+
+    // ── ALIGN BURST TO TRUE CENTER DOT ──────────────
+
+    function alignBurst() {
+
+      if (!centerDot || !burst) return;
+
+      var dotRect =
+        centerDot.getBoundingClientRect();
+
+      var parent =
+        burst.offsetParent;
+
+      if (!parent) return;
+
+      var parentRect =
+        parent.getBoundingClientRect();
+
+
+      gsap.set(burst, {
+
+        left:
+          dotRect.left -
+          parentRect.left +
+          dotRect.width / 2,
+
+        top:
+          dotRect.top -
+          parentRect.top +
+          dotRect.height / 2,
+
         xPercent: -50,
         yPercent: -50,
-        y: RISE
-      });
-      gsap.set(field, { opacity: 0, yPercent: 100 });
-      gsap.set(fieldAll, { opacity: 1 });
-      gsap.set(fieldLit, { opacity: 0 });
-      gsap.set(caption, { opacity: 0, yPercent: -50 });
-      gsap.set(burst, { opacity: 0, scale: 1, xPercent: -50, yPercent: -50 });
-      gsap.set(end, { opacity: 0 });
 
-      var tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: track,
-          start: "top top",
-          end: "bottom bottom",
-          scrub: 0.4
-        }
+        marginTop: 0,
+        marginLeft: 0
+
       });
 
-      // ── 1-3. one item at a time, rise then lift ─────────
-      // positions accumulate so each item can have its own
-      // length. it rises into place, holds, then lifts away
-      // in the same direction, so the sequence reads as one
-      // continuous upward flow.
-      var at = 0;
+    }
 
-      items.forEach(function (item, i) {
-        var span = HOLDS[i] !== undefined ? HOLDS[i] : 0.70;
 
-        tl.to(item, {
-          opacity: 1,
-          y: 0,
-          duration: IN,
-          ease: "power3.out"
-        }, at);
-
-        tl.to(item, {
-          opacity: 0,
-          y: LIFT,
-          duration: OUT,
-          ease: "power2.in"
-        }, at + span - OUT);
-
-        at += span;
-      });
-
-      // gap: empty frame
-
-      // ── 4. caption 1 arrives in the centre ──────────────
-      var capAt = at + GAP;
-
-      tl.set(capHead, { innerText: CAPTION_1 }, capAt - 0.01);
-      tl.set(capSub, { innerText: SUB_1 }, capAt - 0.01);
-
-      tl.to(caption, {
-        opacity: 1, duration: 0.18, ease: "power2.out"
-      }, capAt);
-
-      // gap: caption sits alone, centred
-
-      // ── 5. the field rises and pushes the caption up ────
-      // both move on the same ease and overlap in time, so it
-      // reads as contact even though they never touch
-      
-      var fieldAt = capAt + 0.40;
-
-      tl.to(field, {
-        opacity: 1, yPercent: FIELD_REST,
-        duration: 0.38, ease: "power2.out"
-      }, fieldAt);
-
-      tl.to(caption, {
-        top: CAP_TOP, yPercent: 0,
-        duration: 0.34, ease: "power2.out"
-      }, fieldAt + 0.06);
-
-      // gap: the full field holds
-
-      // ── 6. slow cross-fade, instant text swap ───────────
-      var litAt = fieldAt + 2.4;
-
-      tl.to(fieldLit, { opacity: 1, duration: XFADE, ease: "none" }, litAt);
-      tl.to(fieldAll, { opacity: 0, duration: XFADE, ease: "none" }, litAt + 2.4);
-
-      // swaps in one frame at 80% through the cross-fade, so
-      // the caption bar never leaves the screen
-      tl.set(capHead, { innerText: CAPTION_2 }, litAt + XFADE * 0.8);
-      tl.set(capSub, { innerText: SUB_2 }, litAt + XFADE * 0.8);
-
-      // gap: the lit field holds
-
-      // ── 7. the dot expands and takes the screen ─────────
-      var burstAt = litAt + 1.30;
-
-      tl.to(burst, { opacity: 1, duration: 0.06 }, burstAt);
-
-      tl.to(burst, {
-        scale: BURST, duration: 0.36, ease: "power2.in"
-      }, burstAt + 0.04);
-
-      tl.to([field, caption], { opacity: 0, duration: 0.14 }, burstAt + 0.24);
-
-      tl.to(end, {
-        opacity: 1, duration: 0.18, ease: "power1.out"
-      }, burstAt + 0.44);
+    // Wait until browser has laid out the generated grid.
+    requestAnimationFrame(function () {
+      alignBurst();
     });
+
+
+    // Recalculate if viewport dimensions change.
+    window.addEventListener(
+      "resize",
+      alignBurst
+    );
+
+
+    // Recalculate again once fonts have settled.
+    if (document.fonts && document.fonts.ready) {
+
+      document.fonts.ready.then(function () {
+
+        alignBurst();
+        ScrollTrigger.refresh();
+
+      });
+
+    }
+
+
+
+    // ── CAPTION LAYERS ──────────────────────────────
+
+    function makeCaptionLayers(
+      container,
+      oldText,
+      newText
+    ) {
+
+      container.innerHTML = "";
+
+      container.style.position = "relative";
+      container.style.overflow = "hidden";
+
+      var oldLayer =
+        document.createElement("span");
+
+      var newLayer =
+        document.createElement("span");
+
+      oldLayer.textContent =
+        oldText;
+
+      newLayer.textContent =
+        newText;
+
+
+      oldLayer.style.display =
+        "block";
+
+      oldLayer.style.position =
+        "relative";
+
+
+      newLayer.style.display =
+        "block";
+
+      newLayer.style.position =
+        "absolute";
+
+      newLayer.style.inset =
+        "0";
+
+      newLayer.style.width =
+        "100%";
+
+
+      container.appendChild(
+        oldLayer
+      );
+
+      container.appendChild(
+        newLayer
+      );
+
+
+      return {
+        old: oldLayer,
+        next: newLayer
+      };
+
+    }
+
+
+    var headLayers =
+      makeCaptionLayers(
+        capHead,
+        CAPTION_1,
+        CAPTION_2
+      );
+
+
+    var subLayers =
+      makeCaptionLayers(
+        capSub,
+        SUB_1,
+        SUB_2
+      );
+
+
+
+    // ── DESKTOP ─────────────────────────────────────
+
+    gsap.matchMedia().add(
+      "(min-width: 992px)",
+      function () {
+
+        var hasSplit =
+          typeof SplitText !== "undefined";
+
+
+        if (hasSplit) {
+          gsap.registerPlugin(SplitText);
+        }
+
+
+        var splits = [];
+
+
+        function splitWords(el) {
+
+          if (!hasSplit) {
+            return [el];
+          }
+
+
+          var split =
+            new SplitText(
+              el,
+              {
+                type: "words"
+              }
+            );
+
+
+          splits.push(split);
+
+          return split.words;
+
+        }
+
+
+
+        var titleWords =
+          splitWords(title);
+
+        var bodyWords =
+          splitWords(body);
+
+        var quoteWords =
+          splitWords(quote);
+
+
+        var oldHeadWords =
+          splitWords(headLayers.old);
+
+        var oldSubWords =
+          splitWords(subLayers.old);
+
+        var newHeadWords =
+          splitWords(headLayers.next);
+
+        var newSubWords =
+          splitWords(subLayers.next);
+
+
+        var endWords =
+          splitWords(end);
+
+
+
+        var allStackWords = []
+          .concat(
+            titleWords,
+            bodyWords,
+            quoteWords
+          )
+          .filter(Boolean);
+
+
+        var oldCaptionWords = []
+          .concat(
+            oldHeadWords,
+            oldSubWords
+          )
+          .filter(Boolean);
+
+
+        var newCaptionWords = []
+          .concat(
+            newHeadWords,
+            newSubWords
+          )
+          .filter(Boolean);
+
+
+
+        // ── INITIAL STATES ───────────────────────────
+
+        gsap.set(
+          [title, body],
+          {
+            autoAlpha: 0,
+            xPercent: -50,
+            yPercent: -50
+          }
+        );
+
+
+        gsap.set(
+          quote,
+          {
+            autoAlpha: 0,
+            xPercent: -50,
+            yPercent: -50,
+            y: 0
+          }
+        );
+
+
+        gsap.set(
+          allStackWords,
+          {
+            autoAlpha: 0,
+            yPercent: 55
+          }
+        );
+
+
+        gsap.set(
+          field,
+          {
+            opacity: 0,
+            yPercent: 100
+          }
+        );
+
+
+        gsap.set(
+          caption,
+          {
+            opacity: 0,
+            yPercent: -50
+          }
+        );
+
+
+        gsap.set(
+          oldCaptionWords,
+          {
+            autoAlpha: 0,
+            yPercent: 55
+          }
+        );
+
+
+        gsap.set(
+          newCaptionWords,
+          {
+            autoAlpha: 0,
+            yPercent: 120
+          }
+        );
+
+
+        gsap.set(
+          burst,
+          {
+            opacity: 0,
+            scale: 1,
+
+            // Position comes from alignBurst()
+            xPercent: -50,
+            yPercent: -50,
+
+            marginTop: 0,
+            marginLeft: 0
+          }
+        );
+
+
+        // Position again after GSAP has established
+        // its starting transforms.
+        alignBurst();
+
+
+        gsap.set(
+          end,
+          {
+            autoAlpha: 0
+          }
+        );
+
+
+        gsap.set(
+          endWords,
+          {
+            autoAlpha: 0,
+            yPercent: 55
+          }
+        );
+
+
+
+        // ── TIMELINE ─────────────────────────────────
+
+        var tl =
+          gsap.timeline({
+
+            scrollTrigger: {
+
+              trigger: track,
+
+              start: "top top",
+              end: "bottom bottom",
+
+              scrub: 0.4
+
+            }
+
+          });
+
+
+
+        // ── STANDARD TITLE / BODY ───────────────────
+
+        function addTextScene(
+          element,
+          words,
+          hold
+        ) {
+
+          tl.set(
+            element,
+            {
+              autoAlpha: 1
+            }
+          );
+
+
+          tl.to(
+            words,
+            {
+              autoAlpha: 1,
+              yPercent: 0,
+
+              duration:
+                TEXT_IN,
+
+              ease:
+                "power3.out",
+
+              stagger: {
+                each:
+                  IN_STAGGER
+              }
+            }
+          );
+
+
+          tl.to(
+            {},
+            {
+              duration:
+                hold
+            }
+          );
+
+
+          tl.to(
+            words,
+            {
+              autoAlpha: 0,
+              yPercent: -55,
+
+              duration:
+                TEXT_OUT,
+
+              ease:
+                "power2.in",
+
+              stagger: {
+                each:
+                  OUT_STAGGER
+              }
+            }
+          );
+
+
+          tl.set(
+            element,
+            {
+              autoAlpha: 0
+            }
+          );
+
+
+          tl.to(
+            {},
+            {
+              duration:
+                ITEM_GAP
+            }
+          );
+
+        }
+
+
+
+        // ── QUOTE ───────────────────────────────────
+        //
+        // BELOW → CENTER → ABOVE
+        // ────────────────────────────────────────────
+
+        function addQuoteScene(
+          words,
+          hold
+        ) {
+
+          // Starts BELOW
+
+          tl.set(
+            quote,
+            {
+              autoAlpha: 1,
+              y: "45vh"
+            }
+          );
+
+
+          // BELOW → CENTER
+
+          tl.to(
+            quote,
+            {
+              y: 0,
+
+              duration:
+                QUOTE_RISE,
+
+              ease:
+                "power3.out"
+            }
+          );
+
+
+          // Reveal words during entrance
+
+          tl.to(
+            words,
+            {
+              autoAlpha: 1,
+              yPercent: 0,
+
+              duration:
+                TEXT_IN,
+
+              ease:
+                "power3.out",
+
+              stagger: {
+                each:
+                  IN_STAGGER
+              }
+            },
+            "<"
+          );
+
+
+          // Hold in center
+
+          tl.to(
+            {},
+            {
+              duration:
+                hold
+            }
+          );
+
+
+          // CENTER → ABOVE
+
+          tl.to(
+            quote,
+            {
+              y: "-45vh",
+
+              duration:
+                QUOTE_RISE,
+
+              ease:
+                "power2.in"
+            }
+          );
+
+
+          // Words fade during upward exit
+
+          tl.to(
+            words,
+            {
+              autoAlpha: 0,
+
+              duration:
+                TEXT_OUT,
+
+              ease:
+                "power2.in",
+
+              stagger: {
+                each:
+                  OUT_STAGGER
+              }
+            },
+            "<"
+          );
+
+
+          tl.set(
+            quote,
+            {
+              autoAlpha: 0
+            }
+          );
+
+
+          tl.to(
+            {},
+            {
+              duration:
+                ITEM_GAP
+            }
+          );
+
+        }
+
+
+
+        // 1. TITLE
+
+        addTextScene(
+          title,
+          titleWords,
+          TITLE_HOLD
+        );
+
+
+        // 2. BODY
+
+        addTextScene(
+          body,
+          bodyWords,
+          BODY_HOLD
+        );
+
+
+        // 3. QUOTE
+
+        addQuoteScene(
+          quoteWords,
+          QUOTE_HOLD
+        );
+
+
+
+        // 4. PEOPLE WHO DO NOT EXIST YET
+
+        var capAt =
+          tl.duration() +
+          CAPTION_GAP;
+
+
+        tl.set(
+          caption,
+          {
+            opacity: 1
+          },
+          capAt
+        );
+
+
+        tl.to(
+          oldHeadWords,
+          {
+            autoAlpha: 1,
+            yPercent: 0,
+
+            duration: 0.30,
+
+            ease:
+              "power3.out",
+
+            stagger: {
+              each: 0.05
+            }
+          },
+          capAt
+        );
+
+
+        tl.to(
+          oldSubWords,
+          {
+            autoAlpha: 1,
+            yPercent: 0,
+
+            duration: 0.24,
+
+            ease:
+              "power3.out",
+
+            stagger: {
+              each: 0.035
+            }
+          },
+          capAt + 0.10
+        );
+
+
+
+        // 5. DOT FIELD RISES
+
+        var fieldAt =
+          capAt + 0.75;
+
+
+        tl.to(
+          field,
+          {
+            opacity: 1,
+
+            yPercent:
+              FIELD_REST,
+
+            duration: 0.38,
+
+            ease:
+              "power2.out"
+          },
+          fieldAt
+        );
+
+
+        tl.to(
+          caption,
+          {
+            top:
+              CAP_TOP,
+
+            yPercent: 0,
+
+            duration: 0.34,
+
+            ease:
+              "power2.out"
+          },
+          fieldAt + 0.06
+        );
+
+
+
+        // 6. DOT FADE
+
+        var litAt =
+          fieldAt + 2.4;
+
+
+        tl.to(
+          normalDots,
+          {
+            opacity:
+              DOT_FADED_OPACITY,
+
+            duration:
+              XFADE,
+
+            ease:
+              "none"
+          },
+          litAt
+        );
+
+
+        tl.set(
+          fixedDots,
+          {
+            opacity: 1
+          },
+          litAt
+        );
+
+
+
+        // 7. CAPTION SWAP AT 80%
+
+        var swapAt =
+          litAt +
+          XFADE * 0.8;
+
+
+        tl.to(
+          oldHeadWords,
+          {
+            autoAlpha: 0,
+            yPercent: -110,
+
+            duration: 0.20,
+
+            ease:
+              "power2.in",
+
+            stagger: {
+              each: 0.035
+            }
+          },
+          swapAt - 0.20
+        );
+
+
+        tl.to(
+          oldSubWords,
+          {
+            autoAlpha: 0,
+            yPercent: -110,
+
+            duration: 0.18,
+
+            ease:
+              "power2.in",
+
+            stagger: {
+              each: 0.025
+            }
+          },
+          swapAt - 0.16
+        );
+
+
+        tl.to(
+          newHeadWords,
+          {
+            autoAlpha: 1,
+            yPercent: 0,
+
+            duration: 0.30,
+
+            ease:
+              "power3.out",
+
+            stagger: {
+              each: 0.04
+            }
+          },
+          swapAt
+        );
+
+
+        tl.to(
+          newSubWords,
+          {
+            autoAlpha: 1,
+            yPercent: 0,
+
+            duration: 0.26,
+
+            ease:
+              "power3.out",
+
+            stagger: {
+              each: 0.035
+            }
+          },
+          swapAt + 0.06
+        );
+
+
+
+        // 8. BURST
+
+        var burstAt =
+          litAt + 1.30;
+
+
+        // Reconfirm exact center immediately
+        // before the burst becomes visible.
+
+        tl.call(
+          alignBurst,
+          null,
+          burstAt - 0.01
+        );
+
+
+        tl.to(
+          burst,
+          {
+            opacity: 1,
+            duration: 0.06
+          },
+          burstAt
+        );
+
+
+        tl.to(
+          burst,
+          {
+            scale:
+              BURST_SCALE,
+
+            duration: 0.36,
+
+            ease:
+              "power2.in"
+          },
+          burstAt + 0.04
+        );
+
+
+        tl.to(
+          [field, caption],
+          {
+            opacity: 0,
+
+            duration: 0.14
+          },
+          burstAt + 0.24
+        );
+
+
+
+        // 9. END TEXT
+
+        var endAt =
+          burstAt + 0.44;
+
+
+        tl.set(
+          end,
+          {
+            autoAlpha: 1
+          },
+          endAt
+        );
+
+
+        tl.to(
+          endWords,
+          {
+            autoAlpha: 1,
+            yPercent: 0,
+
+            duration: 0.35,
+
+            ease:
+              "power3.out",
+
+            stagger: {
+              each: 0.055
+            }
+          },
+          endAt
+        );
+
+
+        tl.to(
+          {},
+          {
+            duration:
+              END_HOLD
+          }
+        );
+
+
+
+        return function () {
+
+          splits.forEach(
+            function (split) {
+              split.revert();
+            }
+          );
+
+        };
+
+      }
+    );
+
   });
+
 });
-*/
+
+
 // ── OPTIMIZED WORLD ─────────────────────────────────────
 // Replaces the OPTIMIZED WORLD block in ea.js
 //

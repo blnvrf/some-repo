@@ -3169,123 +3169,1096 @@ clipPath:
 
 });
 
-// ── FTX ─────────────────────────────────────────────────
-// Six blocks, same component shape as the optimized world.
-// The portrait fades in at block 2 and holds behind
-// everything to the end, with a very slow push-in.
-//
-// Designer: ftx_track height 1000vh.
-// Money figures carry data-ftx-count, data-ftx-prefix and
-// data-ftx-suffix. Counted in short form: nobody reads
-// 4,238,109,442 ticking past, but 0 to 8 with a B lands.
-// Check after duplicating a block:
-//   document.querySelectorAll("[data-ftx-block]").forEach(
-//     function(b,i){ console.log(i,
-//       b.querySelectorAll("[data-ftx-item]").length); });
-//   Want 2, 2, 5, 1, 5, 1.
-/*
 document.addEventListener("DOMContentLoaded", function () {
-  gsap.utils.toArray("[data-ftx-scene]").forEach(function (sec) {
-    var fq = gsap.utils.selector(sec);
 
-    var track = fq("[data-ftx-track]")[0];
-    var portrait = fq("[data-ftx-portrait]");
-    var blocks = fq("[data-ftx-block]");
+  gsap.registerPlugin(ScrollTrigger);
 
-    if (!track || !blocks.length) return;
+  gsap.utils.toArray(".section_ftx").forEach(function (sec) {
 
-    var BEAT = 1.08;
-    var FIRST = 0.30;
-    var STAGGER = 0.05;
-    var COUNT_AT = 0.08;
-    var THROW = 0.64;
-    var PORTRAIT_ON = 1;
+    var track =
+      sec.querySelector(".ftx_track");
 
-    gsap.matchMedia().add("(min-width: 992px)", function () {
-      gsap.set(blocks, { opacity: 0, x: 0, y: 0, rotate: 0, scale: 1 });
-      gsap.set(portrait, { opacity: 0, scale: 1.08 });
+    var camera =
+      sec.querySelector(".ftx_camera");
 
-      blocks.forEach(function (b) {
-        gsap.set(b.querySelectorAll("[data-ftx-item]"), {
-          opacity: 0, y: 30
-        });
-      });
+    var background =
+      sec.querySelector(".ftx_background");
 
-      var figs = fq("[data-ftx-count]");
-      figs.forEach(function (f) {
-        f._pre = f.getAttribute("data-ftx-prefix") || "";
-        f._suf = f.getAttribute("data-ftx-suffix") || "";
-        f._end = parseFloat(f.getAttribute("data-ftx-count")) || 0;
-        f.textContent = f._pre + "0" + f._suf;
-      });
+    var face =
+      sec.querySelector(".ftx_face");
 
-      var tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: track,
-          start: "top top",
-          end: "bottom bottom",
-          scrub: 0.4
+    var money =
+      sec.querySelector(".ftx_money");
+
+    var blocks =
+      gsap.utils.toArray(
+        sec.querySelectorAll(".ftx_block")
+      );
+
+
+    if (
+      !track ||
+      !camera ||
+      !background ||
+      !face ||
+      !money ||
+      !blocks.length
+    ) {
+      console.warn("FTX: missing required element.");
+      return;
+    }
+
+
+
+    // ─────────────────────────────────────────────
+    // CONFIG
+    // ─────────────────────────────────────────────
+
+    var WORD_IN = 0.32;
+    var WORD_OUT = 0.22;
+
+    var WORD_STAGGER_IN = 0.055;
+    var WORD_STAGGER_OUT = 0.03;
+
+    var TEXT_HOLD = 0.70;
+
+
+    // FACE
+    var FACE_FADE = 0.55;
+
+
+    // MONEY
+    var MONEY_START = "100vh";
+    var MONEY_IN = 0.65;
+
+
+    // QUOTE CARD
+    var QUOTE_IN = 0.38;
+    var QUOTE_OUT = 0.28;
+
+    var QUOTE_Y = 28;
+    var QUOTE_SCALE = 0.975;
+
+
+    // COUNTERS
+    var COUNT_IN = 0.65;
+
+
+    // ─────────────────────────────────────────────
+    // THREE-EYE FOCAL POINT
+    //
+    // Calculated from uploaded artwork.
+    //
+    // This is relative to the SOURCE IMAGE,
+    // not the Webflow viewport.
+    // ─────────────────────────────────────────────
+
+    var FOCUS_SOURCE_X = 67.93;
+    var FOCUS_SOURCE_Y = 22.74;
+
+
+    // How close we finish.
+    var FINAL_ZOOM = 3.8;
+
+
+
+    gsap.matchMedia().add(
+      "(min-width: 992px)",
+      function () {
+
+
+        // ─────────────────────────────────────────
+        // MAP SOURCE FOCAL POINT INTO
+        // OBJECT-FIT:COVER CAMERA COORDINATES
+        // ─────────────────────────────────────────
+
+        function getCameraFocus() {
+
+          var cw =
+            camera.clientWidth;
+
+          var ch =
+            camera.clientHeight;
+
+
+          var iw =
+            background.naturalWidth;
+
+          var ih =
+            background.naturalHeight;
+
+
+          if (
+            !cw ||
+            !ch ||
+            !iw ||
+            !ih
+          ) {
+
+            return {
+              x: FOCUS_SOURCE_X,
+              y: FOCUS_SOURCE_Y
+            };
+
+          }
+
+
+          // object-fit: cover
+          var scale =
+            Math.max(
+              cw / iw,
+              ch / ih
+            );
+
+
+          var renderedWidth =
+            iw * scale;
+
+          var renderedHeight =
+            ih * scale;
+
+
+          // object-position: 50% 50%
+          var offsetX =
+            (cw - renderedWidth) / 2;
+
+          var offsetY =
+            (ch - renderedHeight) / 2;
+
+
+          // Focal point inside rendered image
+          var focusX =
+            offsetX +
+            renderedWidth *
+            (FOCUS_SOURCE_X / 100);
+
+
+          var focusY =
+            offsetY +
+            renderedHeight *
+            (FOCUS_SOURCE_Y / 100);
+
+
+          // Convert back into camera percentages
+          return {
+
+            x:
+              focusX /
+              cw *
+              100,
+
+            y:
+              focusY /
+              ch *
+              100
+
+          };
+
         }
-      });
 
-      blocks.forEach(function (block, i) {
-        var at = FIRST + i * BEAT;
 
-        var items = block.querySelectorAll("[data-ftx-item]");
-        var blockFigs = block.querySelectorAll("[data-ftx-count]");
-        var last = i === blocks.length - 1;
 
-        if (i === PORTRAIT_ON && portrait.length) {
-          tl.to(portrait, {
-            opacity: 1, duration: 0.26, ease: "none"
-          }, at - 0.18);
+        function applyCameraFocus() {
 
-          // very slow push-in across the rest of the section.
-          // imperceptible frame to frame, stops six screens
-          // of static wallpaper.
-          tl.to(portrait, {
-            scale: 1,
-            duration: (blocks.length - i) * BEAT,
-            ease: "none"
-          }, at);
-        }
+          var focus =
+            getCameraFocus();
 
-        tl.set(block, { opacity: 1 }, at - 0.02);
 
-        items.forEach(function (item, n) {
-          tl.to(item, {
-            opacity: 1, y: 0,
-            duration: 0.14, ease: "power2.out"
-          }, at + n * STAGGER);
-        });
-
-        blockFigs.forEach(function (f, n) {
-          var proxy = { v: 0 };
-
-          tl.to(proxy, {
-            v: f._end,
-            duration: 0.44,
-            ease: "power2.out",
-            onUpdate: function () {
-              f.textContent = f._pre + Math.round(proxy.v) + f._suf;
+          gsap.set(
+            camera,
+            {
+              transformOrigin:
+                focus.x +
+                "% " +
+                focus.y +
+                "%"
             }
-          }, at + COUNT_AT + n * STAGGER);
+          );
+
+
+          console.log(
+            "FTX zoom focus:",
+            focus.x.toFixed(2) + "%",
+            focus.y.toFixed(2) + "%"
+          );
+
+        }
+
+
+        applyCameraFocus();
+
+
+
+        // ─────────────────────────────────────────
+        // SPLITTEXT
+        // ─────────────────────────────────────────
+
+        var hasSplit =
+          typeof SplitText !== "undefined";
+
+
+        if (hasSplit) {
+          gsap.registerPlugin(SplitText);
+        }
+
+
+        var splits = [];
+
+
+        function splitElement(el) {
+
+          if (!el) {
+            return [];
+          }
+
+
+          if (!hasSplit) {
+            return [el];
+          }
+
+
+          var split =
+            new SplitText(
+              el,
+              {
+                type: "words"
+              }
+            );
+
+
+          splits.push(split);
+
+          return split.words;
+
+        }
+
+
+
+        // ─────────────────────────────────────────
+        // BLOCK DATA
+        // ─────────────────────────────────────────
+
+        var blockData =
+          blocks.map(function (block) {
+
+
+            var textTargets =
+              gsap.utils.toArray(
+                block.querySelectorAll(
+                  '[data-ftx-text="true"]'
+                )
+              );
+
+
+            if (!textTargets.length) {
+
+              textTargets =
+                gsap.utils.toArray(
+                  block.querySelectorAll(
+                    '[data-ftx-item="true"]:not(.ftx-fig)'
+                  )
+                );
+
+            }
+
+
+            var words = [];
+
+
+            textTargets.forEach(function (el) {
+
+              words =
+                words.concat(
+                  splitElement(el)
+                );
+
+            });
+
+
+
+            // White quote wrapper
+            var quote =
+              block.querySelector(
+                "[data-ftx-quote]"
+              );
+
+
+
+            // Number counters
+            var counters =
+              gsap.utils.toArray(
+                block.querySelectorAll(
+                  ".ftx-fig[data-ftx-count]"
+                )
+              )
+              .map(function (el) {
+
+
+                var target =
+                  parseFloat(
+                    el.getAttribute(
+                      "data-ftx-count"
+                    )
+                  ) || 0;
+
+
+                var prefix =
+                  el.getAttribute(
+                    "data-ftx-prefix"
+                  ) || "";
+
+
+                var suffix =
+                  el.getAttribute(
+                    "data-ftx-suffix"
+                  ) || "";
+
+
+                var state = {
+                  value: 0
+                };
+
+
+                el.textContent =
+                  prefix +
+                  "0" +
+                  suffix;
+
+
+                return {
+
+                  el: el,
+
+                  target: target,
+
+                  prefix: prefix,
+
+                  suffix: suffix,
+
+                  state: state
+
+                };
+
+              });
+
+
+            return {
+
+              block: block,
+
+              words: words,
+
+              quote: quote,
+
+              counters: counters
+
+            };
+
+          });
+
+
+
+        // ─────────────────────────────────────────
+        // CAMERA INITIAL STATE
+        // ─────────────────────────────────────────
+
+        gsap.set(
+          camera,
+          {
+            scale: 1,
+            x: 0,
+            y: 0
+          }
+        );
+
+
+        // Reapply after reset.
+        applyCameraFocus();
+
+
+
+        gsap.set(
+          background,
+          {
+            autoAlpha: 1
+          }
+        );
+
+
+
+        // ─────────────────────────────────────────
+        // FACE
+        // Pure fade.
+        // ─────────────────────────────────────────
+
+        gsap.set(
+          face,
+          {
+            autoAlpha: 0,
+            x: 0,
+            y: 0
+          }
+        );
+
+
+
+        // ─────────────────────────────────────────
+        // MONEY
+        // Comes physically from below.
+        // ─────────────────────────────────────────
+
+        gsap.set(
+          money,
+          {
+            autoAlpha: 1,
+            x: 0,
+            y: MONEY_START
+          }
+        );
+
+
+
+        // ─────────────────────────────────────────
+        // BLOCK INITIAL STATES
+        // ─────────────────────────────────────────
+
+        blockData.forEach(function (data, i) {
+
+          gsap.set(
+            data.block,
+            {
+              autoAlpha:
+                i === 0 ? 1 : 0
+            }
+          );
+
+
+          gsap.set(
+            data.words,
+            {
+              autoAlpha: 0,
+              yPercent: 65
+            }
+          );
+
+
+          // White quote card starts
+          // slightly down + slightly smaller.
+
+          if (data.quote) {
+
+            gsap.set(
+              data.quote,
+              {
+
+                autoAlpha: 0,
+
+                y:
+                  QUOTE_Y,
+
+                scale:
+                  QUOTE_SCALE,
+
+                transformOrigin:
+                  "left center"
+
+              }
+            );
+
+          }
+
+
+          data.counters.forEach(
+            function (counter) {
+
+              counter.state.value = 0;
+
+              counter.el.textContent =
+                counter.prefix +
+                "0" +
+                counter.suffix;
+
+            }
+          );
+
         });
 
-        if (!last) {
-          tl.to(block, {
-            y: "-125vh", rotate: -14, scale: 0.9,
-            duration: 0.20, ease: "power2.in"
-          }, at + THROW);
 
-          tl.set(block, { opacity: 0 }, at + THROW + 0.22);
+
+        // ─────────────────────────────────────────
+        // MASTER TIMELINE
+        // ─────────────────────────────────────────
+
+        var tl =
+          gsap.timeline({
+
+            scrollTrigger: {
+
+              trigger:
+                track,
+
+              start:
+                "top top",
+
+              end:
+                "bottom bottom",
+
+              scrub:
+                0.55
+
+            }
+
+          });
+
+
+
+        // ─────────────────────────────────────────
+        // COUNTERS
+        // ─────────────────────────────────────────
+
+        function animateCounters(data) {
+
+          data.counters.forEach(
+            function (counter) {
+
+              tl.to(
+                counter.state,
+                {
+
+                  value:
+                    counter.target,
+
+                  duration:
+                    COUNT_IN,
+
+                  ease:
+                    "power2.out",
+
+                  onUpdate:
+                    function () {
+
+                      counter.el.textContent =
+                        counter.prefix +
+                        Math.round(
+                          counter.state.value
+                        ) +
+                        counter.suffix;
+
+                    }
+
+                },
+                "<"
+              );
+
+            }
+          );
+
         }
-      });
-    });
-  });
-});
-*/
 
+
+
+        // ─────────────────────────────────────────
+        // SHOW BLOCK
+        // ─────────────────────────────────────────
+
+        function showText(data) {
+
+          tl.set(
+            data.block,
+            {
+              autoAlpha: 1
+            }
+          );
+
+
+          // White quote wrapper/card
+
+          if (data.quote) {
+
+            tl.to(
+              data.quote,
+              {
+
+                autoAlpha: 1,
+
+                y: 0,
+
+                scale: 1,
+
+                duration:
+                  QUOTE_IN,
+
+                ease:
+                  "power3.out"
+
+              }
+            );
+
+          }
+
+
+          // Split words
+
+          if (data.words.length) {
+
+            tl.to(
+              data.words,
+              {
+
+                autoAlpha: 1,
+
+                yPercent: 0,
+
+                duration:
+                  WORD_IN,
+
+                ease:
+                  "power3.out",
+
+                stagger: {
+                  each:
+                    WORD_STAGGER_IN
+                }
+
+              },
+
+              data.quote
+                ? "<+0.06"
+                : undefined
+
+            );
+
+          }
+
+
+          animateCounters(data);
+
+        }
+
+
+
+        // ─────────────────────────────────────────
+        // HIDE BLOCK
+        // ─────────────────────────────────────────
+
+        function hideText(data) {
+
+          if (data.words.length) {
+
+            tl.to(
+              data.words,
+              {
+
+                autoAlpha: 0,
+
+                yPercent: -60,
+
+                duration:
+                  WORD_OUT,
+
+                ease:
+                  "power2.in",
+
+                stagger: {
+                  each:
+                    WORD_STAGGER_OUT
+                }
+
+              }
+            );
+
+          }
+
+
+          // Smoothly remove whole quote card
+
+          if (data.quote) {
+
+            tl.to(
+              data.quote,
+              {
+
+                autoAlpha: 0,
+
+                y: -18,
+
+                scale:
+                  QUOTE_SCALE,
+
+                duration:
+                  QUOTE_OUT,
+
+                ease:
+                  "power2.in"
+
+              },
+              "<"
+            );
+
+          }
+
+
+          tl.set(
+            data.block,
+            {
+              autoAlpha: 0
+            }
+          );
+
+        }
+
+
+
+        // ═════════════════════════════════════════
+        // BLOCK 1
+        // Background only
+        // ═════════════════════════════════════════
+
+        showText(
+          blockData[0]
+        );
+
+
+        tl.to(
+          {},
+          {
+            duration:
+              TEXT_HOLD
+          }
+        );
+
+
+
+        // ═════════════════════════════════════════
+        // BLOCK 2
+        // ═════════════════════════════════════════
+
+        if (blockData[1]) {
+
+          hideText(
+            blockData[0]
+          );
+
+
+          showText(
+            blockData[1]
+          );
+
+        }
+
+
+
+        // FACE fades in.
+
+        tl.to(
+          face,
+          {
+
+            autoAlpha: 1,
+
+            duration:
+              FACE_FADE,
+
+            ease:
+              "power2.out"
+
+          }
+        );
+
+
+
+        // MONEY waits until face
+        // has completely finished.
+
+        tl.to(
+          money,
+          {
+
+            y: 0,
+
+            duration:
+              MONEY_IN,
+
+            ease:
+              "power3.out"
+
+          }
+        );
+
+
+
+        tl.to(
+          {},
+          {
+            duration:
+              TEXT_HOLD
+          }
+        );
+
+
+
+        // ─────────────────────────────────────────
+        // CAMERA ZOOM START POINT
+        //
+        // Everything after this contributes
+        // continuously to the zoom.
+        // ─────────────────────────────────────────
+
+        var zoomStart =
+          tl.duration();
+
+
+
+        // ═════════════════════════════════════════
+        // BLOCK 3
+        // ═════════════════════════════════════════
+
+        if (blockData[2]) {
+
+          hideText(
+            blockData[1]
+          );
+
+
+          showText(
+            blockData[2]
+          );
+
+        }
+
+
+        tl.to(
+          {},
+          {
+            duration:
+              TEXT_HOLD
+          }
+        );
+
+
+
+        // ═════════════════════════════════════════
+        // BLOCK 4
+        // ═════════════════════════════════════════
+
+        if (blockData[3]) {
+
+          hideText(
+            blockData[2]
+          );
+
+
+          showText(
+            blockData[3]
+          );
+
+        }
+
+
+        tl.to(
+          {},
+          {
+            duration:
+              TEXT_HOLD
+          }
+        );
+
+
+
+        // ═════════════════════════════════════════
+        // BLOCK 5
+        // ═════════════════════════════════════════
+
+        if (blockData[4]) {
+
+          hideText(
+            blockData[3]
+          );
+
+
+          showText(
+            blockData[4]
+          );
+
+        }
+
+
+
+        // Money leaves independently.
+
+        tl.to(
+          money,
+          {
+
+            x:
+              "-25vw",
+
+            y:
+              "20vh",
+
+            duration:
+              0.80,
+
+            ease:
+              "power2.inOut"
+
+          },
+          "<"
+        );
+
+
+        tl.to(
+          {},
+          {
+            duration:
+              TEXT_HOLD
+          }
+        );
+
+
+
+        // ═════════════════════════════════════════
+        // BLOCK 6
+        // ═════════════════════════════════════════
+
+        if (blockData[5]) {
+
+          hideText(
+            blockData[4]
+          );
+
+
+          showText(
+            blockData[5]
+          );
+
+        }
+
+
+
+        tl.to(
+          money,
+          {
+
+            x:
+              "-45vw",
+
+            y:
+              "35vh",
+
+            duration:
+              0.90,
+
+            ease:
+              "power2.in"
+
+          },
+          "<"
+        );
+
+
+
+        // Final read / final zoom keeps going.
+
+        tl.to(
+          {},
+          {
+            duration: 1.40
+          }
+        );
+
+
+
+        // ─────────────────────────────────────────
+        // CONTINUOUS CAMERA PUSH
+        //
+        // Insert ONE tween spanning everything
+        // from Block 3 until the end.
+        //
+        // This means every bit of scrolling
+        // continuously adds more zoom.
+        // ─────────────────────────────────────────
+
+        var zoomEnd =
+          tl.duration();
+
+
+        var zoomDuration =
+          zoomEnd -
+          zoomStart;
+
+
+        tl.to(
+          camera,
+          {
+
+            scale:
+              FINAL_ZOOM,
+
+            x: 0,
+            y: 0,
+
+            duration:
+              zoomDuration,
+
+            ease:
+              "none"
+
+          },
+          zoomStart
+        );
+
+
+
+        // ─────────────────────────────────────────
+        // RESIZE
+        //
+        // Recalculate where the eye centroid
+        // actually lands after object-fit:cover.
+        // ─────────────────────────────────────────
+
+        function onResize() {
+
+          applyCameraFocus();
+
+          ScrollTrigger.refresh();
+
+        }
+
+
+        window.addEventListener(
+          "resize",
+          onResize
+        );
+
+
+
+        // ─────────────────────────────────────────
+        // CLEANUP
+        // ─────────────────────────────────────────
+
+        return function () {
+
+          window.removeEventListener(
+            "resize",
+            onResize
+          );
+
+
+          splits.forEach(
+            function (split) {
+              split.revert();
+            }
+          );
+
+        };
+
+      }
+    );
+
+  });
+
+});
 // ── FAMILY ──────────────────────────────────────────────
 // Vertical scroll driving a horizontal transform. The page
 // never scrolls sideways. fam_track is tall, fam_sticky is

@@ -5509,92 +5509,418 @@ document.addEventListener("DOMContentLoaded", function () {
 // flex sizes it. Card tilt goes on a combo class so GSAP's
 // scale does not fight it.
 // Check: 6 cards and 6 roles.
-/*
 document.addEventListener("DOMContentLoaded", function () {
-  gsap.utils.toArray("[data-fam-scene]").forEach(function (sec) {
-    var mq = gsap.utils.selector(sec);
 
-    var track = mq("[data-fam-track]")[0];
-    var sticky = track ? track.firstElementChild : null;
-    var rail = mq("[data-fam-rail]")[0];
-    var items = mq("[data-fam-item]");
-    var cards = mq("[data-fam-card]");
+  gsap.registerPlugin(ScrollTrigger);
 
-    if (!track || !sticky || !rail || !cards.length) return;
+  if (typeof SplitText !== "undefined") {
+    gsap.registerPlugin(SplitText);
+  }
 
-    var HEAD_IN = 0.06;
-    var RAIL_FROM = 0.18;
-    var FOCUS = 1.0;
-    var REST = 0.82;
-    var DIM = 0.45;
+  gsap.utils
+    .toArray("[data-fam-scene]")
+    .forEach(function (sec) {
 
-    gsap.matchMedia().add("(min-width: 992px)", function () {
-      gsap.set(items, { opacity: 0, y: 24 });
-      gsap.set(cards, { scale: REST, opacity: DIM });
-      gsap.set(mq("[data-fam-role]"), { opacity: 0 });
-      gsap.set(rail, { x: 0 });
+      var q = gsap.utils.selector(sec);
 
-      var tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: track,
-          start: "top top",
-          end: "bottom bottom",
-          scrub: 0.4,
-          invalidateOnRefresh: true
-        }
-      });
+      var track = q("[data-fam-track]")[0];
+      var rail = q("[data-fam-rail]")[0];
+      var band = q("[data-fam-band]")[0];
 
-      items.forEach(function (item, n) {
-        tl.to(item, {
-          opacity: 1, y: 0,
-          duration: 0.14, ease: "power2.out"
-        }, HEAD_IN + n * 0.06);
-      });
+      var cards = q("[data-fam-card]");
+      var items = q("[data-fam-item]");
 
-      // distance is a function so it recalculates on resize
-      tl.to(rail, {
-        x: function () {
-          return -(rail.scrollWidth - window.innerWidth);
-        },
-        duration: 1,
-        ease: "none"
-      }, RAIL_FROM);
+      var title =
+        q("[data-fam-title]")[0] ||
+        items[0];
 
-      // one trigger per card watching its real screen
-      // position, rather than guessing from timeline maths.
-      // survives any rail width or card count.
-      cards.forEach(function (card) {
-        var role = card.querySelector("[data-fam-role]");
+      var quote =
+        q("[data-fam-quote]")[0] ||
+        items[1];
 
-        ScrollTrigger.create({
-          trigger: track,
-          start: "top top",
-          end: "bottom bottom",
-          onUpdate: function () {
-            var r = card.getBoundingClientRect();
-            var cx = r.left + r.width / 2;
-            var mid = window.innerWidth / 2;
-            var d = Math.abs(cx - mid) / (window.innerWidth / 2);
-            var near = 1 - Math.min(d, 1);
+      if (
+        !track ||
+        !rail ||
+        !band ||
+        !cards.length ||
+        !title ||
+        !quote
+      ) {
+        console.warn("Family section missing:", {
+          track,
+          rail,
+          band,
+          cards: cards.length,
+          title,
+          quote
+        });
 
-            gsap.set(card, {
-              scale: REST + (FOCUS - REST) * near,
-              opacity: DIM + (1 - DIM) * near
+        return;
+      }
+
+
+      // ------------------------------------------------
+      // CONFIG
+      // ------------------------------------------------
+
+      var END_GUTTER = 48;
+
+      var WORD_DURATION = 0.32;
+      var WORD_STAGGER = 0.05;
+
+      var TITLE_HOLD = 0.35;
+      var QUOTE_HOLD = 0.55;
+
+      var ROW_DURATION = 0.75;
+      var ROW_HOLD = 0.30;
+
+      var HORIZONTAL_DURATION = 2.8;
+      var FINAL_HOLD = 0.5;
+
+
+
+      gsap.matchMedia().add(
+        "(min-width: 992px)",
+        function () {
+
+          var splits = [];
+
+
+          // ------------------------------------------------
+          // SPLIT TEXT
+          // ------------------------------------------------
+
+          function makeWords(el) {
+
+            if (typeof SplitText === "undefined") {
+              return [el];
+            }
+
+            var split = new SplitText(el, {
+              type: "words"
             });
 
-            if (role) {
-              gsap.set(role, {
-                opacity: Math.max(0, (near - 0.55) / 0.45)
-              });
-            }
-          }
-        });
-      });
+            splits.push(split);
 
-      return function () {
-        gsap.set(rail, { x: 0 });
-      };
+            return split.words;
+          }
+
+
+          var titleWords = makeWords(title);
+          var quoteWords = makeWords(quote);
+
+
+
+          // ------------------------------------------------
+          // CLEAN BASE STATES
+          // ------------------------------------------------
+
+          gsap.set(rail, {
+            x: 0,
+            y: 0
+          });
+
+          gsap.set(band, {
+            y: 0
+          });
+
+
+          // Cards remain completely untouched.
+          // No focus.
+          // No scaling.
+          // No opacity animation.
+
+          gsap.set(cards, {
+            opacity: 1,
+            scale: 1
+          });
+
+
+          // If old code ever touched these,
+          // make sure they're visible.
+
+          gsap.set(q("[data-fam-role]"), {
+            opacity: 1
+          });
+
+
+
+          // ------------------------------------------------
+          // CALCULATE ACTUAL HORIZONTAL TRAVEL
+          // ------------------------------------------------
+          //
+          // NO 100vw padding required.
+          //
+          // We calculate:
+          //
+          // actual last-card right position
+          // minus
+          // desired right edge.
+          //
+          // ------------------------------------------------
+
+          function getHorizontalEnd() {
+
+            var lastCard =
+              cards[cards.length - 1];
+
+            if (!lastCard) return 0;
+
+
+            // Temporarily reason about the rail
+            // as if x = 0.
+            var currentX =
+              parseFloat(
+                gsap.getProperty(rail, "x")
+              ) || 0;
+
+
+            var rect =
+              lastCard.getBoundingClientRect();
+
+
+            var lastRightAtZero =
+              rect.right - currentX;
+
+
+            var desiredRight =
+              window.innerWidth - END_GUTTER;
+
+
+            var distance =
+              desiredRight - lastRightAtZero;
+
+
+            return Math.min(0, distance);
+          }
+
+
+
+          // ------------------------------------------------
+          // TIMELINE
+          // ------------------------------------------------
+
+          var tl = gsap.timeline({
+
+            scrollTrigger: {
+
+              trigger: track,
+
+              start: "top top",
+
+              end: "bottom bottom",
+
+              scrub: 0.5,
+
+              invalidateOnRefresh: true,
+
+              // Uncomment while debugging if wanted:
+              // markers: true,
+
+              onRefresh: function () {
+                // make sure dynamic endpoint
+                // gets recalculated cleanly
+              }
+
+            }
+
+          });
+
+
+
+          // =================================================
+          // 1. TITLE
+          // =================================================
+
+          tl.fromTo(
+            titleWords,
+
+            {
+              autoAlpha: 0,
+              yPercent: 65
+            },
+
+            {
+              autoAlpha: 1,
+              yPercent: 0,
+
+              duration: WORD_DURATION,
+
+              stagger: {
+                each: WORD_STAGGER
+              },
+
+              ease: "power3.out",
+
+              immediateRender: true
+            }
+          );
+
+
+
+          tl.to({}, {
+            duration: TITLE_HOLD
+          });
+
+
+
+          // =================================================
+          // 2. QUOTE
+          // =================================================
+
+          tl.fromTo(
+            quoteWords,
+
+            {
+              autoAlpha: 0,
+              yPercent: 65
+            },
+
+            {
+              autoAlpha: 1,
+              yPercent: 0,
+
+              duration: WORD_DURATION,
+
+              stagger: {
+                each: WORD_STAGGER
+              },
+
+              ease: "power3.out",
+
+              immediateRender: true
+            }
+          );
+
+
+
+          tl.to({}, {
+            duration: QUOTE_HOLD
+          });
+
+
+
+          // =================================================
+          // 3. CARDS + BAND COME FROM BELOW
+          // =================================================
+          //
+          // fromTo is deliberate here.
+          //
+          // This guarantees that before this point
+          // they're below the viewport.
+          //
+          // =================================================
+
+          tl.fromTo(
+            rail,
+
+            {
+              y: "105vh"
+            },
+
+            {
+              y: 0,
+
+              duration: ROW_DURATION,
+
+              ease: "power3.out",
+
+              immediateRender: true
+            }
+          );
+
+
+          tl.fromTo(
+            band,
+
+            {
+              y: "105vh"
+            },
+
+            {
+              y: 0,
+
+              duration: ROW_DURATION,
+
+              ease: "power3.out",
+
+              immediateRender: true
+            },
+
+            "<"
+          );
+
+
+
+          tl.to({}, {
+            duration: ROW_HOLD
+          });
+
+
+
+          // =================================================
+          // 4. HORIZONTAL SCROLL
+          // =================================================
+
+          tl.to(
+            rail,
+
+            {
+              x: function () {
+                return getHorizontalEnd();
+              },
+
+              duration: HORIZONTAL_DURATION,
+
+              ease: "none"
+            }
+          );
+
+
+
+          // =================================================
+          // 5. END HOLD
+          // =================================================
+
+          tl.to({}, {
+            duration: FINAL_HOLD
+          });
+
+
+
+          // ------------------------------------------------
+          // REFRESH AFTER EVERYTHING HAS BEEN MEASURED
+          // ------------------------------------------------
+
+          requestAnimationFrame(function () {
+            ScrollTrigger.refresh();
+          });
+
+
+
+          // ------------------------------------------------
+          // CLEANUP
+          // ------------------------------------------------
+
+          return function () {
+
+            splits.forEach(function (split) {
+              split.revert();
+            });
+
+            gsap.set(rail, {
+              clearProps: "transform"
+            });
+
+            gsap.set(band, {
+              clearProps: "transform"
+            });
+
+          };
+
+        }
+      );
+
     });
-  });
+
 });
-*/

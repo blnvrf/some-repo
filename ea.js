@@ -2759,7 +2759,416 @@ var PULSE_DURATION_MAX = 2.4;
 //         !!b.querySelector("[data-opt-quote]")); });
 //
 //   NO opacity values anywhere in this section.
-/*
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.utils
+    .toArray("[data-opt-scene]")
+    .forEach(function (sec) {
+
+      var q = gsap.utils.selector(sec);
+
+      var track =
+        q("[data-opt-track]")[0];
+
+      var intro =
+        q("[data-opt-intro]")[0];
+
+      var introText =
+        q("[data-opt-intro-txt]")[0] || intro;
+
+      var blocks =
+        q("[data-opt-block]");
+
+      if (
+        !track ||
+        !intro ||
+        !blocks.length
+      ) {
+        return;
+      }
+
+
+      // ─────────────────────────────────────────────
+      // CONFIG
+      // ─────────────────────────────────────────────
+
+      var INTRO_IN = 0.35;
+      var INTRO_STAGGER = 0.055;
+      var INTRO_HOLD = 0.80;
+
+      var CARD_IN = 0.85;
+      var CARD_HOLD = 0.55;
+
+      var QUOTE_IN = 0.65;
+      var QUOTE_HOLD = 0.95;
+
+      // Quote starts this far below
+      // its Designer position.
+      var QUOTE_START = "65vh";
+
+      // How far title + body move upward
+      // when quote enters.
+      var TEXT_PUSH = "-17vh";
+
+
+      // ─────────────────────────────────────────────
+      // TRAPEZOID TOP
+      //
+      // BOTH top corners are below viewport top.
+      //
+      // Left corner = 7% down
+      // Right corner = 2.5% down
+      //
+      // The transparent area above reveals
+      // the previous card underneath.
+      // ─────────────────────────────────────────────
+
+var CARD_CLIPS = [
+  "polygon(0 8%, 100% 3%, 100% 100%, 0 100%)",
+  "polygon(0 4%, 100% 9%, 100% 100%, 0 100%)",
+  "polygon(0 10%, 100% 5%, 100% 100%, 0 100%)",
+  "polygon(0 6%, 100% 2%, 100% 100%, 0 100%)"
+];
+
+
+      gsap.matchMedia().add(
+        "(min-width: 992px)",
+        function () {
+
+
+          // ─────────────────────────────────────────
+          // SPLIT INTRO
+          // ─────────────────────────────────────────
+
+          var introSplit = null;
+          var introWords = [introText];
+
+
+          if (typeof SplitText !== "undefined") {
+
+            gsap.registerPlugin(SplitText);
+
+            introSplit =
+              new SplitText(
+                introText,
+                {
+                  type: "words"
+                }
+              );
+
+            introWords =
+              introSplit.words;
+          }
+
+
+          // ─────────────────────────────────────────
+          // INTRO
+          // ─────────────────────────────────────────
+
+          gsap.set(intro, {
+            zIndex: 1
+          });
+
+
+          gsap.set(
+            introWords,
+            {
+              autoAlpha: 0,
+              yPercent: 55
+            }
+          );
+
+
+          // ─────────────────────────────────────────
+          // BLOCK INITIAL STATES
+          // ─────────────────────────────────────────
+
+          blocks.forEach(function (block, i) {
+
+            var head =
+              block.querySelector(
+                "[data-opt-head]"
+              );
+
+            var copy =
+              block.querySelector(
+                "[data-opt-copy]"
+              );
+
+            var quote =
+              block.querySelector(
+                "[data-opt-quote]"
+              );
+
+
+            // Every new card sits ABOVE
+            // the previous card.
+
+            gsap.set(block, {
+
+              zIndex: i + 2,
+
+              // Start one viewport below.
+              yPercent: 100,
+
+              // Absolutely no tilt / scale / fade.
+              rotation: 0,
+              scale: 1,
+
+              // Real transparent trapezoid.
+clipPath:
+  CARD_CLIPS[i % CARD_CLIPS.length]
+
+            });
+
+
+            // Title/body stay exactly as designed.
+            // Only their vertical position will move
+            // when the quote arrives.
+
+            if (head) {
+              gsap.set(head, {
+                y: 0
+              });
+            }
+
+            if (copy) {
+              gsap.set(copy, {
+                y: 0
+              });
+            }
+
+
+            // Quote starts below its final
+            // Webflow Designer position.
+
+            if (quote) {
+
+              gsap.set(quote, {
+                y: QUOTE_START
+              });
+
+            }
+
+          });
+
+
+
+          // ─────────────────────────────────────────
+          // MASTER SCROLL TIMELINE
+          // ─────────────────────────────────────────
+
+          var tl =
+            gsap.timeline({
+
+              scrollTrigger: {
+
+                trigger: track,
+
+                start: "top top",
+                end: "bottom bottom",
+
+                scrub: 0.4
+
+              }
+
+            });
+
+
+
+          // ═════════════════════════════════════════
+          // INTRO
+          // ═════════════════════════════════════════
+
+          tl.to(
+            introWords,
+            {
+              autoAlpha: 1,
+              yPercent: 0,
+
+              duration: INTRO_IN,
+              ease: "power3.out",
+
+              stagger: {
+                each: INTRO_STAGGER
+              }
+            }
+          );
+
+
+          tl.to(
+            {},
+            {
+              duration: INTRO_HOLD
+            }
+          );
+
+
+
+          // ═════════════════════════════════════════
+          // STACKED CARDS
+          // ═════════════════════════════════════════
+
+          blocks.forEach(function (block) {
+
+            var head =
+              block.querySelector(
+                "[data-opt-head]"
+              );
+
+            var copy =
+              block.querySelector(
+                "[data-opt-copy]"
+              );
+
+            var quote =
+              block.querySelector(
+                "[data-opt-quote]"
+              );
+
+
+            // ───────────────────────────────────────
+            // 1. NEW CARD SLIDES OVER PREVIOUS CARD
+            //
+            // Previous card does NOTHING.
+            // ───────────────────────────────────────
+
+            tl.to(
+              block,
+              {
+                yPercent: 0,
+
+                duration: CARD_IN,
+
+                ease: "none"
+              }
+            );
+
+
+            // Card is now fully positioned.
+            // Let title/body breathe.
+
+            tl.to(
+              {},
+              {
+                duration: CARD_HOLD
+              }
+            );
+
+
+
+            // ───────────────────────────────────────
+            // 2. QUOTE ENTERS FROM BELOW
+            // ───────────────────────────────────────
+
+            if (quote) {
+
+              tl.to(
+                quote,
+                {
+                  y: 0,
+
+                  duration: QUOTE_IN,
+
+                  ease: "power3.out"
+                }
+              );
+
+
+              // ─────────────────────────────────────
+              // Title + body pushed upward
+              // simultaneously.
+              // ─────────────────────────────────────
+
+              var textTargets = [];
+
+              if (head) {
+                textTargets.push(head);
+              }
+
+              if (copy) {
+                textTargets.push(copy);
+              }
+
+
+              if (textTargets.length) {
+
+                tl.to(
+                  textTargets,
+                  {
+                    y: TEXT_PUSH,
+
+                    duration: QUOTE_IN,
+
+                    ease: "power3.inOut"
+                  },
+                  "<"
+                );
+
+              }
+
+            }
+
+
+
+            // ───────────────────────────────────────
+            // 3. FULL COMPOSITION HOLDS
+            // ───────────────────────────────────────
+
+            tl.to(
+              {},
+              {
+                duration: QUOTE_HOLD
+              }
+            );
+
+
+            // THAT'S IT.
+            //
+            // No outgoing animation.
+            //
+            // Next iteration simply brings
+            // the next card over this one.
+
+          });
+
+
+
+          // ─────────────────────────────────────────
+          // FINAL HOLD
+          // ─────────────────────────────────────────
+
+          tl.to(
+            {},
+            {
+              duration: 1.2
+            }
+          );
+
+
+
+          // ─────────────────────────────────────────
+          // CLEANUP
+          // ─────────────────────────────────────────
+
+          return function () {
+
+            if (introSplit) {
+              introSplit.revert();
+            }
+
+          };
+
+        }
+      );
+
+    });
+
+});
+
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-opt-scene]").forEach(function (sec) {
     var oq = gsap.utils.selector(sec);
@@ -2877,7 +3286,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
-*/
+
 // ── FTX ─────────────────────────────────────────────────
 // Six blocks, same component shape as the optimized world.
 // The portrait fades in at block 2 and holds behind

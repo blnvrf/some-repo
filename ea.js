@@ -2759,7 +2759,7 @@ var PULSE_DURATION_MAX = 2.4;
 //         !!b.querySelector("[data-opt-quote]")); });
 //
 //   NO opacity values anywhere in this section.
-
+/*
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-opt-scene]").forEach(function (sec) {
     var oq = gsap.utils.selector(sec);
@@ -2877,7 +2877,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
-
+*/
 // ── FTX ─────────────────────────────────────────────────
 // Six blocks, same component shape as the optimized world.
 // The portrait fades in at block 2 and holds behind

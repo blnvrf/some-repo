@@ -4985,6 +4985,517 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
+// - where is claude
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.utils
+    .toArray("[data-claude-scene]")
+    .forEach(function (sec) {
+
+      var track =
+        sec.querySelector("[data-claude-track]");
+
+      var listGroup =
+        sec.querySelector("[data-claude-list]");
+
+      var lines =
+        gsap.utils.toArray(
+          sec.querySelectorAll("[data-claude-line]")
+        );
+
+      var finalGroup =
+        sec.querySelector("[data-claude-final]");
+
+      var finalMain =
+        sec.querySelector("[data-claude-final-main]");
+
+      var finalQuestion =
+        sec.querySelector("[data-claude-final-question]");
+
+      var finalAnswer =
+        sec.querySelector("[data-claude-final-answer]");
+
+      var finalPrefix =
+        sec.querySelector(".claude_final-prefix");
+
+      var finalHit =
+        sec.querySelector(".claude_final-hit");
+
+
+      if (
+        !track ||
+        !listGroup ||
+        lines.length < 4 ||
+        !finalGroup ||
+        !finalMain ||
+        !finalQuestion ||
+        !finalAnswer ||
+        !finalPrefix ||
+        !finalHit
+      ) {
+        console.warn("Claude section: missing required element.");
+        return;
+      }
+
+
+
+      // ─────────────────────────────────────────────
+      // CONFIG
+      // ─────────────────────────────────────────────
+
+      var DIM_OPACITY = 0.10;
+
+      var LINE_IN = 0.34;
+      var LINE_HOLD = 0.55;
+
+      var ALL_HOLD = 0.85;
+
+      var TAKEOVER = 0.85;
+
+      var WORD_IN = 0.34;
+      var WORD_OUT = 0.22;
+
+      var WORD_STAGGER = 0.05;
+
+      var MAIN_HOLD = 0.75;
+      var QUESTION_HOLD = 0.70;
+      var PREFIX_HOLD = 0.30;
+
+      var FINAL_HOLD = 1.40;
+
+
+
+      gsap.matchMedia().add(
+        "(min-width: 992px)",
+        function () {
+
+
+          // ─────────────────────────────────────────
+          // SPLIT TEXT
+          // ─────────────────────────────────────────
+
+          var hasSplit =
+            typeof SplitText !== "undefined";
+
+
+          if (hasSplit) {
+            gsap.registerPlugin(SplitText);
+          }
+
+
+          var splits = [];
+
+
+          function splitWords(el) {
+
+            if (!el) {
+              return [];
+            }
+
+
+            if (!hasSplit) {
+              return [el];
+            }
+
+
+            var split =
+              new SplitText(
+                el,
+                {
+                  type: "words"
+                }
+              );
+
+
+            splits.push(split);
+
+            return split.words;
+
+          }
+
+
+
+          var mainWords =
+            splitWords(finalMain);
+
+          var questionWords =
+            splitWords(finalQuestion);
+
+          var prefixWords =
+            splitWords(finalPrefix);
+
+          var hitWords =
+            splitWords(finalHit);
+
+
+
+          // ─────────────────────────────────────────
+          // INITIAL STATES
+          // ─────────────────────────────────────────
+
+
+          // Every Claude line starts dimmed.
+          gsap.set(
+            lines,
+            {
+              opacity:
+                DIM_OPACITY,
+
+              x: 10
+            }
+          );
+
+
+          // Final takeover starts below screen.
+          gsap.set(
+            finalGroup,
+            {
+              y: "110vh"
+            }
+          );
+
+
+          // All final copy starts hidden.
+          gsap.set(
+            mainWords
+              .concat(
+                questionWords,
+                prefixWords,
+                hitWords
+              ),
+            {
+              autoAlpha: 0,
+              yPercent: 65
+            }
+          );
+
+
+
+          // ─────────────────────────────────────────
+          // MASTER TIMELINE
+          // ─────────────────────────────────────────
+
+          var tl =
+            gsap.timeline({
+
+              scrollTrigger: {
+
+                trigger:
+                  track,
+
+                start:
+                  "top top",
+
+                end:
+                  "bottom bottom",
+
+                scrub:
+                  0.5
+
+              }
+
+            });
+
+
+
+          // ═════════════════════════════════════════
+          // 0. INITIAL STATE
+          //
+          // "WHERE IS CLAUDE?"
+          // visible.
+          //
+          // All lines dim.
+          // ═════════════════════════════════════════
+
+          tl.to(
+            {},
+            {
+              duration: 0.55
+            }
+          );
+
+
+
+          // ═════════════════════════════════════════
+          // 1–4. ACTIVATE EACH LINE
+          // ═════════════════════════════════════════
+
+          lines.forEach(function (line) {
+
+            tl.to(
+              line,
+              {
+
+                opacity: 1,
+
+                x: 0,
+
+                duration:
+                  LINE_IN,
+
+                ease:
+                  "power2.out"
+
+              }
+            );
+
+
+            // Small reading beat before
+            // next line activates.
+
+            tl.to(
+              {},
+              {
+                duration:
+                  LINE_HOLD
+              }
+            );
+
+          });
+
+
+
+          // ═════════════════════════════════════════
+          // ALL FOUR ARE NOW ACTIVE
+          // ═════════════════════════════════════════
+
+          tl.to(
+            {},
+            {
+              duration:
+                ALL_HOLD
+            }
+          );
+
+
+
+          // ═════════════════════════════════════════
+          // TAKEOVER
+          //
+          // Old list physically leaves upward.
+          //
+          // Final group physically comes from below.
+          //
+          // No fades.
+          // ═════════════════════════════════════════
+
+          tl.to(
+            listGroup,
+            {
+
+              y:
+                "-115vh",
+
+              duration:
+                TAKEOVER,
+
+              ease:
+                "power3.inOut"
+
+            }
+          );
+
+
+          tl.to(
+            finalGroup,
+            {
+
+              y: 0,
+
+              duration:
+                TAKEOVER,
+
+              ease:
+                "power3.inOut"
+
+            },
+            "<"
+          );
+
+
+
+          // ═════════════════════════════════════════
+          // FINAL MAIN STATEMENT
+          //
+          // "The values they write..."
+          // ═════════════════════════════════════════
+
+          tl.to(
+            mainWords,
+            {
+
+              autoAlpha: 1,
+
+              yPercent: 0,
+
+              duration:
+                WORD_IN,
+
+              ease:
+                "power3.out",
+
+              stagger: {
+                each:
+                  WORD_STAGGER
+              }
+
+            }
+          );
+
+
+          tl.to(
+            {},
+            {
+              duration:
+                MAIN_HOLD
+            }
+          );
+
+
+
+          // ═════════════════════════════════════════
+          // QUESTION
+          //
+          // "Do you want these people..."
+          // ═════════════════════════════════════════
+
+          tl.to(
+            questionWords,
+            {
+
+              autoAlpha: 1,
+
+              yPercent: 0,
+
+              duration:
+                WORD_IN,
+
+              ease:
+                "power3.out",
+
+              stagger: {
+                each:
+                  WORD_STAGGER
+              }
+
+            }
+          );
+
+
+          tl.to(
+            {},
+            {
+              duration:
+                QUESTION_HOLD
+            }
+          );
+
+
+
+          // ═════════════════════════════════════════
+          // "BECAUSE THEY HAVE"
+          // ═════════════════════════════════════════
+
+          tl.to(
+            prefixWords,
+            {
+
+              autoAlpha: 1,
+
+              yPercent: 0,
+
+              duration:
+                WORD_IN,
+
+              ease:
+                "power3.out",
+
+              stagger: {
+                each:
+                  WORD_STAGGER
+              }
+
+            }
+          );
+
+
+          tl.to(
+            {},
+            {
+              duration:
+                PREFIX_HOLD
+            }
+          );
+
+
+
+          // ═════════════════════════════════════════
+          // ALREADY STARTED.
+          //
+          // Separate, harder final hit.
+          // ═════════════════════════════════════════
+
+          tl.to(
+            hitWords,
+            {
+
+              autoAlpha: 1,
+
+              yPercent: 0,
+
+              duration:
+                0.42,
+
+              ease:
+                "power4.out",
+
+              stagger: {
+                each: 0.08
+              }
+
+            }
+          );
+
+
+
+          // ═════════════════════════════════════════
+          // FINAL HOLD
+          // ═════════════════════════════════════════
+
+          tl.to(
+            {},
+            {
+              duration:
+                FINAL_HOLD
+            }
+          );
+
+
+
+          // ─────────────────────────────────────────
+          // CLEANUP
+          // ─────────────────────────────────────────
+
+          return function () {
+
+            splits.forEach(
+              function (split) {
+                split.revert();
+              }
+            );
+
+          };
+
+        }
+      );
+
+    });
+
+});
+
 // ── FAMILY ──────────────────────────────────────────────
 // Vertical scroll driving a horizontal transform. The page
 // never scrolls sideways. fam_track is tall, fam_sticky is
@@ -4998,7 +5509,7 @@ document.addEventListener("DOMContentLoaded", function () {
 // flex sizes it. Card tilt goes on a combo class so GSAP's
 // scale does not fight it.
 // Check: 6 cards and 6 roles.
-
+/*
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-fam-scene]").forEach(function (sec) {
     var mq = gsap.utils.selector(sec);
@@ -5086,3 +5597,4 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
+*/

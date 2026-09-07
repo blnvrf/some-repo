@@ -5929,6 +5929,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   gsap.registerPlugin(ScrollTrigger);
 
+  
+
 
   gsap.utils
     .toArray("[data-scandal-scene]")
@@ -5974,6 +5976,11 @@ document.addEventListener("DOMContentLoaded", function () {
             )
           : [];
 
+          var intro =
+  sec.querySelector("[data-scandal-intro]");
+
+var introTrack =
+  sec.querySelector("[data-scandal-track]");
 
       if (
         !cards.length ||
@@ -6001,6 +6008,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
+      
 
 
       // =============================================
@@ -6034,11 +6042,32 @@ document.addEventListener("DOMContentLoaded", function () {
         pointerEvents: "none"
       });
 
+      
+
 
       gsap.set(stories, {
         display: "none"
       });
 
+      // =============================================
+// SCANDALS INTRO FADE
+// =============================================
+
+if (intro && introTrack) {
+
+  gsap.to(intro, {
+    autoAlpha: 0,
+    ease: "none",
+
+    scrollTrigger: {
+      trigger: introTrack,
+      start: "top top",
+      end: "+=700",
+      scrub: true
+    }
+  });
+
+}
 
       cards.forEach(function (card) {
 

@@ -10077,33 +10077,30 @@ document.addEventListener("DOMContentLoaded", function () {
       // LIVE $32 / SECOND COUNTER
       // =============================================
 
-      var RATE_PER_SECOND = 32;
+var RATE_PER_SECOND = 32;
+var pageOpenedAt = performance.now();
 
+function updateCounter() {
 
-      function updateCounter() {
+  var elapsedSeconds =
+    Math.floor(
+      (performance.now() - pageOpenedAt) / 1000
+    );
 
-        var elapsedMs =
-          Date.now() -
-          performance.timeOrigin;
+  var amount =
+    elapsedSeconds * RATE_PER_SECOND;
 
+  counterValue.textContent =
+    "$" + amount.toLocaleString("en-US");
 
-        var elapsedSeconds =
-          elapsedMs / 1000;
+}
 
+updateCounter();
 
-        var amount =
-          Math.floor(
-            elapsedSeconds *
-            RATE_PER_SECOND
-          );
-
-
-        counterValue.textContent =
-          "$" +
-          amount.toLocaleString("en-US");
-
-      }
-
+setInterval(
+  updateCounter,
+  250
+);
 
       updateCounter();
 

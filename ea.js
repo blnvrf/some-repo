@@ -6134,6 +6134,16 @@ document.addEventListener("DOMContentLoaded", function () {
           zoomStart
         );
 
+        tl.to(
+  face,
+  {
+    opacity: 0.3,
+    duration: zoomDuration,
+    ease: "none"
+  },
+  zoomStart
+);
+
 
 
         // ─────────────────────────────────────────

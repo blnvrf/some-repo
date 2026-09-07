@@ -5064,7 +5064,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // - ASKELL -
-
+/*
 document.addEventListener("DOMContentLoaded", function () {
 
   gsap.registerPlugin(ScrollTrigger);
@@ -5787,7 +5787,788 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+*/
 
+document.addEventListener("DOMContentLoaded", function () {
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.utils
+    .toArray("[data-askell-scene]")
+    .forEach(function (sec) {
+
+
+      var track =
+        sec.querySelector("[data-askell-track]");
+
+      var introGroup =
+        sec.querySelector("[data-askell-intro-group]");
+
+      var title =
+        sec.querySelector("[data-askell-title]");
+
+      var body =
+        sec.querySelector("[data-askell-body]");
+
+      var person =
+        sec.querySelector("[data-askell-person]");
+
+      var personMedia =
+        person
+          ? person.querySelector(".askell_person-media")
+          : null;
+
+      var floats =
+        gsap.utils.toArray(
+          sec.querySelectorAll("[data-askell-float]")
+        );
+
+      var quotes =
+        gsap.utils.toArray(
+          sec.querySelectorAll("[data-askell-quote]")
+        );
+
+
+      if (
+        !track ||
+        !introGroup ||
+        !title ||
+        !body ||
+        !person ||
+        !floats.length ||
+        quotes.length < 3
+      ) {
+        console.warn("Askell section: missing required element.");
+        return;
+      }
+
+
+
+      // =====================================================
+      // CONFIG
+      // =====================================================
+
+      var WORD_IN = 0.34;
+      var WORD_OUT = 0.24;
+
+      var WORD_STAGGER_IN = 0.055;
+      var WORD_STAGGER_OUT = 0.03;
+
+      var EMPTY_HOLD = 0.55;
+
+      var TITLE_HOLD = 0.30;
+      var BODY_HOLD = 0.90;
+
+      var PERSON_IN = 0.85;
+
+      var FLOAT_IN = 0.45;
+      var FLOAT_HOLD = 1.15;
+      var FLOAT_OUT = 0.60;
+
+      var QUOTE_HOLD = 1.05;
+      var QUOTE_GAP = 0.30;
+
+      var FINAL_HOLD = 1.40;
+
+
+
+      gsap.matchMedia().add(
+        "(min-width: 992px)",
+        function () {
+
+
+          // ===================================================
+          // SPLIT TEXT
+          // ===================================================
+
+          var hasSplit =
+            typeof SplitText !== "undefined";
+
+
+          if (hasSplit) {
+            gsap.registerPlugin(SplitText);
+          }
+
+
+          var splits = [];
+
+
+          function splitWords(el) {
+
+            if (!el) {
+              return [];
+            }
+
+
+            if (!hasSplit) {
+              return [el];
+            }
+
+
+            var split =
+              new SplitText(
+                el,
+                {
+                  type: "words"
+                }
+              );
+
+
+            splits.push(split);
+
+            return split.words;
+
+          }
+
+
+
+          var titleWords =
+            splitWords(title);
+
+          var bodyWords =
+            splitWords(body);
+
+
+
+          // ===================================================
+          // QUOTE TEXT
+          // ===================================================
+
+          var quote1Text =
+            quotes[0].querySelector(
+              "[data-askell-quote-text]"
+            ) || quotes[0];
+
+
+          var quote2Text =
+            quotes[1].querySelector(
+              "[data-askell-quote-text]"
+            ) || quotes[1];
+
+
+          var quote3Text =
+            quotes[2].querySelector(
+              "[data-askell-quote-text]"
+            ) || quotes[2];
+
+
+
+          var quote1Words =
+            splitWords(quote1Text);
+
+          var quote2Words =
+            splitWords(quote2Text);
+
+          var quote3Words =
+            splitWords(quote3Text);
+
+
+
+          // ===================================================
+          // INITIAL STATES
+          // ===================================================
+
+          gsap.set(
+            introGroup,
+            {
+              y: 0
+            }
+          );
+
+
+          gsap.set(
+            titleWords,
+            {
+              autoAlpha: 0,
+              yPercent: 65
+            }
+          );
+
+
+          gsap.set(
+            bodyWords,
+            {
+              autoAlpha: 0,
+              yPercent: 65
+            }
+          );
+
+
+          // Amanda starts below viewport
+          gsap.set(
+            person,
+            {
+              y: "110vh"
+            }
+          );
+
+
+          if (personMedia) {
+
+            gsap.set(
+              personMedia,
+              {
+                x: 0,
+                y: 0,
+                rotation: 0
+              }
+            );
+
+          }
+
+
+          gsap.set(
+            floats,
+            {
+              autoAlpha: 0,
+              y: 0
+            }
+          );
+
+
+          // All 3 quote wrappers hidden
+          gsap.set(
+            quotes,
+            {
+              autoAlpha: 0
+            }
+          );
+
+
+          // All quote words hidden
+          gsap.set(
+            quote1Words
+              .concat(quote2Words)
+              .concat(quote3Words),
+            {
+              autoAlpha: 0,
+              yPercent: 70
+            }
+          );
+
+
+
+          // ===================================================
+          // AMANDA CONTINUOUS FLOAT
+          // ===================================================
+
+          var personFloat = null;
+
+
+          if (personMedia) {
+
+            personFloat =
+              gsap.to(
+                personMedia,
+                {
+                  y: -12,
+                  x: 5,
+
+                  rotation: 1.35,
+
+                  duration: 3.4,
+
+                  ease: "sine.inOut",
+
+                  repeat: -1,
+                  yoyo: true
+                }
+              );
+
+          }
+
+
+
+          // ===================================================
+          // FLOATING LABEL PATHS
+          // ===================================================
+
+          var floatTweens = [];
+
+
+          floats.forEach(function (float, i) {
+
+            var inner =
+              float.querySelector(
+                ".askell_float-inner"
+              ) || float;
+
+
+            var xMove;
+            var yMove;
+            var rotation;
+
+
+            switch (i) {
+
+              case 0:
+                xMove = -13;
+                yMove = -8;
+                rotation = -1.5;
+                break;
+
+              case 1:
+                xMove = 10;
+                yMove = 12;
+                rotation = 1.2;
+                break;
+
+              case 2:
+                xMove = -8;
+                yMove = 14;
+                rotation = -1;
+                break;
+
+              case 3:
+                xMove = 14;
+                yMove = 8;
+                rotation = 1.6;
+                break;
+
+              default:
+                xMove = -10;
+                yMove = -12;
+                rotation = -1.3;
+
+            }
+
+
+            var tween =
+              gsap.to(
+                inner,
+                {
+                  x: xMove,
+                  y: yMove,
+
+                  rotation: rotation,
+
+                  duration:
+                    2.3 + i * 0.22,
+
+                  ease: "sine.inOut",
+
+                  repeat: -1,
+                  yoyo: true
+                }
+              );
+
+
+            floatTweens.push(tween);
+
+          });
+
+
+
+          // ===================================================
+          // MASTER TIMELINE
+          // ===================================================
+
+          var tl =
+            gsap.timeline({
+
+              scrollTrigger: {
+
+                trigger: track,
+
+                start: "top top",
+
+                end: "bottom bottom",
+
+                scrub: 0.5
+
+              }
+
+            });
+
+
+
+          // ===================================================
+          // 0. BACKGROUND ONLY
+          // ===================================================
+
+          tl.to(
+            {},
+            {
+              duration: EMPTY_HOLD
+            }
+          );
+
+
+
+          // ===================================================
+          // 1. TITLE
+          // ===================================================
+
+          tl.to(
+            titleWords,
+            {
+              autoAlpha: 1,
+
+              yPercent: 0,
+
+              duration: WORD_IN,
+
+              ease: "power3.out",
+
+              stagger: {
+                each: WORD_STAGGER_IN
+              }
+            }
+          );
+
+
+          tl.to(
+            {},
+            {
+              duration: TITLE_HOLD
+            }
+          );
+
+
+
+          // ===================================================
+          // 2. BODY
+          // ===================================================
+
+          tl.to(
+            bodyWords,
+            {
+              autoAlpha: 1,
+
+              yPercent: 0,
+
+              duration: WORD_IN,
+
+              ease: "power3.out",
+
+              stagger: {
+                each: WORD_STAGGER_IN
+              }
+            }
+          );
+
+
+          tl.to(
+            {},
+            {
+              duration: BODY_HOLD
+            }
+          );
+
+
+
+          // ===================================================
+          // 3. AMANDA RISES
+          // ===================================================
+
+          tl.to(
+            person,
+            {
+              y: 0,
+
+              duration: PERSON_IN,
+
+              ease: "power3.out"
+            }
+          );
+
+
+          tl.to(
+            introGroup,
+            {
+              y: "-115vh",
+
+              duration: PERSON_IN,
+
+              ease: "power3.inOut"
+            },
+            "<"
+          );
+
+
+
+          // ===================================================
+          // 4. FLOATS ENTER
+          // ===================================================
+
+          tl.to(
+            floats,
+            {
+              autoAlpha: 1,
+
+              duration: FLOAT_IN,
+
+              ease: "power2.out",
+
+              stagger: {
+                each: 0.075
+              }
+            },
+            "<+0.35"
+          );
+
+
+          tl.to(
+            {},
+            {
+              duration: FLOAT_HOLD
+            }
+          );
+
+
+
+          // ===================================================
+          // 5. FLOATS LEAVE
+          // ===================================================
+
+          tl.to(
+            floats,
+            {
+              autoAlpha: 0,
+
+              y: "-55vh",
+
+              duration: FLOAT_OUT,
+
+              ease: "power2.in",
+
+              stagger: {
+                each: 0.045
+              }
+            }
+          );
+
+
+
+          // ===================================================
+          // 6. QUOTE 1
+          // ===================================================
+
+          tl.set(
+            quotes[0],
+            {
+              autoAlpha: 1
+            },
+            "<+0.08"
+          );
+
+
+          tl.to(
+            quote1Words,
+            {
+              autoAlpha: 1,
+
+              yPercent: 0,
+
+              duration: WORD_IN,
+
+              ease: "power3.out",
+
+              stagger: {
+                each: WORD_STAGGER_IN
+              }
+            }
+          );
+
+
+          tl.to(
+            {},
+            {
+              duration: QUOTE_HOLD
+            }
+          );
+
+
+
+          // QUOTE 1 LEAVES
+
+          tl.to(
+            quote1Words,
+            {
+              autoAlpha: 0,
+
+              yPercent: -70,
+
+              duration: WORD_OUT,
+
+              ease: "power2.in",
+
+              stagger: {
+                each: WORD_STAGGER_OUT
+              }
+            }
+          );
+
+
+          tl.set(
+            quotes[0],
+            {
+              autoAlpha: 0
+            }
+          );
+
+
+          tl.to(
+            {},
+            {
+              duration: QUOTE_GAP
+            }
+          );
+
+
+
+          // ===================================================
+          // 7. QUOTE 2
+          // ===================================================
+
+          tl.set(
+            quotes[1],
+            {
+              autoAlpha: 1
+            }
+          );
+
+
+          tl.to(
+            quote2Words,
+            {
+              autoAlpha: 1,
+
+              yPercent: 0,
+
+              duration: WORD_IN,
+
+              ease: "power3.out",
+
+              stagger: {
+                each: WORD_STAGGER_IN
+              }
+            }
+          );
+
+
+          tl.to(
+            {},
+            {
+              duration: QUOTE_HOLD
+            }
+          );
+
+
+
+          // QUOTE 2 LEAVES
+
+          tl.to(
+            quote2Words,
+            {
+              autoAlpha: 0,
+
+              yPercent: -70,
+
+              duration: WORD_OUT,
+
+              ease: "power2.in",
+
+              stagger: {
+                each: WORD_STAGGER_OUT
+              }
+            }
+          );
+
+
+          tl.set(
+            quotes[1],
+            {
+              autoAlpha: 0
+            }
+          );
+
+
+          tl.to(
+            {},
+            {
+              duration: QUOTE_GAP
+            }
+          );
+
+
+
+          // ===================================================
+          // 8. QUOTE 3
+          // ===================================================
+
+          tl.set(
+            quotes[2],
+            {
+              autoAlpha: 1
+            }
+          );
+
+
+          tl.to(
+            quote3Words,
+            {
+              autoAlpha: 1,
+
+              yPercent: 0,
+
+              duration: WORD_IN,
+
+              ease: "power3.out",
+
+              stagger: {
+                each: WORD_STAGGER_IN
+              }
+            }
+          );
+
+
+
+          // ===================================================
+          // FINAL HOLD — QUOTE 3 STAYS
+          // ===================================================
+
+          tl.to(
+            {},
+            {
+              duration: FINAL_HOLD
+            }
+          );
+
+
+
+          // ===================================================
+          // CLEANUP
+          // ===================================================
+
+          return function () {
+
+            if (personFloat) {
+              personFloat.kill();
+            }
+
+
+            floatTweens.forEach(
+              function (tween) {
+                tween.kill();
+              }
+            );
+
+
+            splits.forEach(
+              function (split) {
+                split.revert();
+              }
+            );
+
+          };
+
+        }
+      );
+
+    });
+
+});
 // - where is claude
 
 document.addEventListener("DOMContentLoaded", function () {

@@ -1068,6 +1068,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
+
 // ── IDEOLOGY ────────────────────────────────────────────
 // Replaces the IDEOLOGY block in ea.js
 //

@@ -6062,7 +6062,7 @@ if (intro && introTrack) {
     scrollTrigger: {
       trigger: introTrack,
       start: "top top",
-      end: "+=700",
+      end: "+=1000",
       scrub: true
     }
   });

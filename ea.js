@@ -8474,3 +8474,46 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.utils
+    .toArray("[data-map-scene]")
+    .forEach(function (sec) {
+
+      var map =
+        sec.querySelector("[data-map-visual]");
+
+      if (!map) return;
+
+
+      gsap.fromTo(
+        map,
+        {
+          autoAlpha: 0,
+          y: 60,
+          scale: 0.96
+        },
+        {
+          autoAlpha: 1,
+          y: 0,
+          scale: 1,
+
+          duration: 1,
+
+          ease: "power3.out",
+
+          scrollTrigger: {
+            trigger: sec,
+            start: "top 70%",
+            end: "top 25%",
+            scrub: 0.5
+          }
+        }
+      );
+
+    });
+
+});

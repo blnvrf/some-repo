@@ -8517,3 +8517,835 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+
+gsap.registerPlugin(ScrollTrigger);
+
+window.Webflow = window.Webflow || [];
+
+window.Webflow.push(function () {
+
+  const section =
+    document.querySelector(".section_cold-open");
+
+  if (!section) return;
+
+
+  // =========================================================
+  // ELEMENTS
+  // =========================================================
+
+  const background =
+    section.querySelector(
+      ".container_cold-open-imagery > .image_fill"
+    );
+
+  const windows =
+    gsap.utils.toArray(
+      section.querySelectorAll(".image_window")
+    );
+
+  const helicopter =
+    section.querySelector(".image_helicopter");
+
+  const spotlight =
+    section.querySelector(".image_spotlight");
+
+  const maduro =
+    section.querySelector(".image_maduro");
+
+  const code =
+    section.querySelector(".image_code");
+
+  const messages =
+    gsap.utils.toArray(
+      section.querySelectorAll(".container_side-text")
+    );
+
+
+  if (!messages.length) return;
+
+
+
+  // =========================================================
+  // TEXT FIX
+  // =========================================================
+
+  messages.forEach(function (message) {
+
+    message
+      .querySelectorAll(".text-size-large")
+      .forEach(function (text) {
+
+        text.style.setProperty(
+          "opacity",
+          "1",
+          "important"
+        );
+
+        text.style.setProperty(
+          "visibility",
+          "visible",
+          "important"
+        );
+
+      });
+
+  });
+
+
+
+  // =========================================================
+  // INITIAL TEXT STATE
+  // =========================================================
+
+  gsap.set(messages, {
+    opacity: 0,
+    visibility: "hidden"
+  });
+
+
+  gsap.set(messages[0], {
+    opacity: 1,
+    visibility: "visible"
+  });
+
+
+
+  // =========================================================
+  // INITIAL VISUAL STATES
+  // =========================================================
+
+  // BACKGROUND
+  if (background) {
+
+    gsap.set(background, {
+      scale: 1.08,
+      clipPath: "inset(0 0% 0 0%)",
+      transformOrigin: "center center"
+    });
+
+  }
+
+
+  // WINDOWS
+  if (windows.length) {
+
+    gsap.set(windows, {
+      autoAlpha: 0,
+      scale: 0.86
+    });
+
+  }
+
+
+  // HELICOPTER
+  if (helicopter) {
+
+    gsap.set(helicopter, {
+      autoAlpha: 0,
+      xPercent: 35,
+      yPercent: -10
+    });
+
+  }
+
+
+  // SPOTLIGHT
+  if (spotlight) {
+
+    gsap.set(spotlight, {
+      autoAlpha: 0
+    });
+
+  }
+
+
+  // MADURO
+  if (maduro) {
+
+    gsap.set(maduro, {
+      autoAlpha: 0,
+      yPercent: 18
+    });
+
+  }
+
+
+  // CODE
+  if (code) {
+
+    gsap.set(code, {
+      autoAlpha: 0,
+      x: 50
+    });
+
+  }
+
+
+
+  // =========================================================
+  // VISUAL SCROLL TIMELINE
+  // NO PIN / NO EXTRA HEIGHT
+  // =========================================================
+
+  const visualTl =
+    gsap.timeline({
+
+      scrollTrigger: {
+
+        trigger: section,
+
+        start: "top top",
+
+        end: "bottom top",
+
+        scrub: 0.8
+
+      }
+
+    });
+
+
+
+  // =========================================================
+  // 1. BACKGROUND ZOOM OUT
+  // =========================================================
+
+  if (background) {
+
+    visualTl.to(
+      background,
+      {
+        scale: 1,
+
+        duration: 1.4,
+
+        ease: "power2.out"
+      },
+      0
+    );
+
+  }
+
+
+
+  // =========================================================
+  // 2. WINDOWS APPEAR
+  // =========================================================
+
+  if (windows.length) {
+
+    visualTl.to(
+      windows,
+      {
+        autoAlpha: 1,
+        scale: 1,
+
+        duration: 0.8,
+
+        stagger: 0.12,
+
+        ease: "power3.out"
+      },
+      0.25
+    );
+
+  }
+
+
+
+  // =========================================================
+  // 3. HELICOPTER ENTERS
+  // =========================================================
+
+  if (helicopter) {
+
+    visualTl.to(
+      helicopter,
+      {
+        autoAlpha: 1,
+
+        xPercent: 0,
+        yPercent: 0,
+
+        duration: 1.15,
+
+        ease: "power3.out"
+      },
+      0.75
+    );
+
+  }
+
+
+
+  // =========================================================
+  // 4. SPOTLIGHT APPEARS
+  // =========================================================
+
+  if (spotlight) {
+
+    visualTl.to(
+      spotlight,
+      {
+        autoAlpha: 1,
+
+        duration: 0.55,
+
+        ease: "power2.out"
+      },
+      1.3
+    );
+
+  }
+
+
+
+  // =========================================================
+  // 5. MADURO RISES
+  // =========================================================
+
+  if (maduro) {
+
+    visualTl.to(
+      maduro,
+      {
+        autoAlpha: 1,
+
+        yPercent: 0,
+
+        duration: 1,
+
+        ease: "power3.out"
+      },
+      1.45
+    );
+
+  }
+
+
+
+  // =========================================================
+  // 6. CODE ENTERS
+  // =========================================================
+
+  if (code) {
+
+    visualTl.to(
+      code,
+      {
+        autoAlpha: 1,
+
+        x: 0,
+
+        duration: 0.8,
+
+        ease: "power3.out"
+      },
+      2.35
+    );
+
+  }
+
+
+
+  // =========================================================
+  // 7. SUBTLE HELICOPTER DRIFT
+  // =========================================================
+
+  if (helicopter) {
+
+    visualTl.to(
+      helicopter,
+      {
+        xPercent: -4,
+        yPercent: 3,
+
+        duration: 2,
+
+        ease: "none"
+      },
+      2
+    );
+
+  }
+
+
+
+  // =========================================================
+  // MESSAGE SWITCHING
+  // =========================================================
+
+  let currentIndex = 0;
+
+
+  function showMessage(index) {
+
+    if (index === currentIndex) return;
+
+
+    const oldMessage =
+      messages[currentIndex];
+
+    const newMessage =
+      messages[index];
+
+
+    // OLD OUT
+    if (oldMessage) {
+
+      gsap.killTweensOf(oldMessage);
+
+
+      gsap.to(
+        oldMessage,
+        {
+          opacity: 0,
+
+          duration: 0.22,
+
+          ease: "power2.out",
+
+          onComplete: function () {
+
+            gsap.set(
+              oldMessage,
+              {
+                visibility: "hidden"
+              }
+            );
+
+          }
+        }
+      );
+
+    }
+
+
+    // NEW IN
+    if (newMessage) {
+
+      gsap.killTweensOf(newMessage);
+
+
+      gsap.set(
+        newMessage,
+        {
+          visibility: "visible"
+        }
+      );
+
+
+      gsap.fromTo(
+        newMessage,
+        {
+          opacity: 0
+        },
+        {
+          opacity: 1,
+
+          duration: 0.32,
+
+          ease: "power2.out"
+        }
+      );
+
+    }
+
+
+    currentIndex = index;
+
+  }
+
+
+
+  // =========================================================
+  // TEXT SCROLL CONTROL
+  //
+  // LAST MESSAGE GETS A HUGE HOLD
+  // =========================================================
+
+  ScrollTrigger.create({
+
+    trigger: section,
+
+    start: "top top",
+
+    end: "bottom top",
+
+    onUpdate: function (self) {
+
+      const p =
+        self.progress;
+
+      let index = 0;
+
+
+      if (p >= 0.14) index = 1;
+
+      if (p >= 0.28) index = 2;
+
+      if (p >= 0.42) index = 3;
+
+      if (p >= 0.56) index = 4;
+
+
+      showMessage(index);
+
+    }
+
+  });
+
+
+
+  // =========================================================
+  // REFRESH
+  // =========================================================
+
+  requestAnimationFrame(function () {
+
+    ScrollTrigger.refresh();
+
+  });
+
+});
+/* other */
+
+
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  if (typeof SplitText !== "undefined") {
+    gsap.registerPlugin(SplitText);
+  }
+
+
+  gsap.utils
+    .toArray("[data-news-scene]")
+    .forEach(function (sec) {
+
+
+      // =============================================
+      // ELEMENTS
+      // =============================================
+
+      var groups =
+        gsap.utils.toArray(
+          sec.querySelectorAll("[data-news-group]")
+        );
+
+      var sectionTitle =
+        sec.querySelector(".news_eyebrow");
+
+
+      if (!groups.length) {
+        console.warn("News section: no groups found.");
+        return;
+      }
+
+
+
+      // =============================================
+      // FORCE STICKY OFFSET
+      //
+      // Webflow Preview was outputting top: 0px,
+      // so JS owns this value.
+      // =============================================
+
+      gsap.set(groups, {
+        top: "2.5rem"
+      });
+
+
+
+      // =============================================
+      // SECTION TITLE — "IN THE NEWS"
+      // =============================================
+
+      if (sectionTitle) {
+
+        var headerSplit = null;
+        var headerWords = [sectionTitle];
+
+
+        if (typeof SplitText !== "undefined") {
+
+          headerSplit =
+            new SplitText(
+              sectionTitle,
+              {
+                type: "words"
+              }
+            );
+
+          headerWords =
+            headerSplit.words;
+
+        }
+
+
+        gsap.fromTo(
+          headerWords,
+
+          {
+            autoAlpha: 0,
+            yPercent: 70
+          },
+
+          {
+            autoAlpha: 1,
+            yPercent: 0,
+
+            duration: 0.5,
+
+            stagger: {
+              each: 0.07
+            },
+
+            ease: "power3.out",
+
+            scrollTrigger: {
+
+              trigger: sectionTitle,
+
+              start: "top 85%",
+
+              toggleActions:
+                "play none none reverse"
+
+            }
+
+          }
+        );
+
+      }
+
+
+
+      // =============================================
+      // EACH STACKING NEWS GROUP
+      // =============================================
+
+      groups.forEach(function (group) {
+
+        var title =
+          group.querySelector(
+            "[data-news-title]"
+          );
+
+        var cards =
+          gsap.utils.toArray(
+            group.querySelectorAll(
+              "[data-news-card]"
+            )
+          );
+
+        var images =
+          gsap.utils.toArray(
+            group.querySelectorAll(
+              "[data-news-image]"
+            )
+          );
+
+
+        if (
+          !title ||
+          !cards.length
+        ) {
+
+          console.warn(
+            "News group missing title/cards:",
+            group
+          );
+
+          return;
+        }
+
+
+
+        // ===========================================
+        // CATEGORY TITLE SPLIT
+        // ===========================================
+
+        var titleSplit = null;
+        var titleWords = [title];
+
+
+        if (typeof SplitText !== "undefined") {
+
+          titleSplit =
+            new SplitText(
+              title,
+              {
+                type: "words"
+              }
+            );
+
+          titleWords =
+            titleSplit.words;
+
+        }
+
+
+
+        // ===========================================
+        // INITIAL STATES
+        // ===========================================
+
+        gsap.set(
+          titleWords,
+          {
+            autoAlpha: 0,
+            yPercent: 75
+          }
+        );
+
+
+        gsap.set(
+          cards,
+          {
+            autoAlpha: 0,
+            y: 55
+          }
+        );
+
+
+        gsap.set(
+          images,
+          {
+            scale: 0.94
+          }
+        );
+
+
+
+        // ===========================================
+        // GROUP ENTRANCE TIMELINE
+        // ===========================================
+
+        var tl =
+          gsap.timeline({
+            paused: true
+          });
+
+
+
+        // -------------------------------------------
+        // TITLE
+        // -------------------------------------------
+
+        tl.to(
+          titleWords,
+          {
+
+            autoAlpha: 1,
+            yPercent: 0,
+
+            duration: 0.45,
+
+            stagger: {
+              each: 0.07
+            },
+
+            ease:
+              "power3.out"
+
+          }
+        );
+
+
+
+        // -------------------------------------------
+        // THREE ARTICLE CARDS
+        // -------------------------------------------
+
+        tl.to(
+          cards,
+          {
+
+            autoAlpha: 1,
+            y: 0,
+
+            duration: 0.55,
+
+            stagger: {
+              each: 0.12
+            },
+
+            ease:
+              "power3.out"
+
+          },
+
+          "-=0.08"
+        );
+
+
+
+        // -------------------------------------------
+        // ARTICLE IMAGES
+        // -------------------------------------------
+
+        if (images.length) {
+
+          tl.to(
+            images,
+            {
+
+              scale: 1,
+
+              duration: 0.65,
+
+              stagger: {
+                each: 0.12
+              },
+
+              ease:
+                "power3.out"
+
+            },
+
+            "<"
+          );
+
+        }
+
+
+
+        // ===========================================
+        // SCROLL TRIGGER
+        // ===========================================
+
+        ScrollTrigger.create({
+
+          trigger: group,
+
+          start: "top 72%",
+
+          onEnter: function () {
+            tl.play();
+          },
+
+          onLeaveBack: function () {
+            tl.reverse();
+          }
+
+        });
+
+      });
+
+
+
+      // =============================================
+      // REFRESH AFTER WEBFLOW LAYOUT SETTLES
+      // =============================================
+
+      requestAnimationFrame(function () {
+        ScrollTrigger.refresh();
+      });
+
+    });
+
+});

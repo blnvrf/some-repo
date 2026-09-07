@@ -3972,6 +3972,7 @@ clipPath:
 
 });
 
+/*
 document.addEventListener("DOMContentLoaded", function () {
 
   gsap.registerPlugin(ScrollTrigger);
@@ -5062,7 +5063,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
 });
-
+*/
 // - ASKELL -
 /*
 document.addEventListener("DOMContentLoaded", function () {

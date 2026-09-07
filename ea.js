@@ -1090,7 +1090,7 @@ document.addEventListener("DOMContentLoaded", function () {
 // PACING: the timeline ends around 2.9. ideo_track at 900vh
 // gives roughly 0.0032 units per vh. If you lengthen a beat,
 // scale the track by the same ratio.
-
+/*
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-ideology]").forEach(function (sec) {
     var iq = gsap.utils.selector(sec);
@@ -1226,7 +1226,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
-
+*/
 // ── NUKE ────────────────────────────────────────────────
 // Replaces the NUKE block in ea.js
 //

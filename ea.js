@@ -74,11 +74,11 @@ document.addEventListener("DOMContentLoaded", function () {
   texts.forEach((text) => {
     const chars = [...text.textContent];
 
-text.innerHTML = chars.map(char => {
-  if (char === " ") return " ";
+    text.innerHTML = chars.map(char => {
+      if (char === " ") return " ";
 
-  return `<span style="display:inline-block;overflow:hidden;"><span class="char-reveal-inner" style="display:inline-block;">${char}</span></span>`;
-}).join("");
+      return `<span style="display:inline-block;overflow:hidden;"><span class="char-reveal-inner" style="display:inline-block;">${char}</span></span>`;
+    }).join("");
 
     const innerChars = text.querySelectorAll(".char-reveal-inner");
 
@@ -100,300 +100,300 @@ text.innerHTML = chars.map(char => {
 });
 
 
-  document.addEventListener('DOMContentLoaded', function () {
-    // ── LIBERTY ─────────────────────────────────────────────
-    // Replaces the LIBERTY block in ea.js
-    //
-    // One scrubbed timeline. liberty_track is 240vh, the sticky
-    // pins inside it, and that scroll distance maps onto timeline
-    // positions 0 to TOTAL. Timeline units are not seconds: a
-    // duration of 0.6 occupies 0.6 out of TOTAL, so about a
-    // quarter of the section's scroll.
-    //
-    // Everything you would want to tune lives in BEATS and DUR
-    // below. Nothing else in this file needs editing to change
-    // the pacing.
+document.addEventListener('DOMContentLoaded', function () {
+  // ── LIBERTY ─────────────────────────────────────────────
+  // Replaces the LIBERTY block in ea.js
+  //
+  // One scrubbed timeline. liberty_track is 240vh, the sticky
+  // pins inside it, and that scroll distance maps onto timeline
+  // positions 0 to TOTAL. Timeline units are not seconds: a
+  // duration of 0.6 occupies 0.6 out of TOTAL, so about a
+  // quarter of the section's scroll.
+  //
+  // Everything you would want to tune lives in BEATS and DUR
+  // below. Nothing else in this file needs editing to change
+  // the pacing.
 
-    var scenes = gsap.utils.toArray('[data-liberty-scene]');
-    if (!scenes.length) return;
+  var scenes = gsap.utils.toArray('[data-liberty-scene]');
+  if (!scenes.length) return;
 
-    gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(ScrollTrigger);
 
-    window.addEventListener('load', function () {
-      document.fonts.ready.then(function () {
-        ScrollTrigger.refresh();
-      });
+  window.addEventListener('load', function () {
+    document.fonts.ready.then(function () {
+      ScrollTrigger.refresh();
     });
+  });
 
-    // ══ WHEN THINGS HAPPEN ═══════════════════════════════════
-    // timeline positions. raise a number to make that beat
-    // start later. nothing here is relative, so moving one
-    // does not move the others.
-    var PRE = 1;
+  // ══ WHEN THINGS HAPPEN ═══════════════════════════════════
+  // timeline positions. raise a number to make that beat
+  // start later. nothing here is relative, so moving one
+  // does not move the others.
+  var PRE = 1;
 
-    var BEATS = {
-      bg: PRE + 0.5,
-      statueDark: PRE + 0.55,
-      swap: PRE + 0.62,
-      statueLight: PRE + 0.7,
-      bits: PRE + 1,
-      specks: PRE + 0.75,
-      figures: PRE + 1.55,
-      hold: PRE + 1.12,
-      statueSwap: PRE + 1.1,
-    };
+  var BEATS = {
+    bg: PRE + 0.5,
+    statueDark: PRE + 0.55,
+    swap: PRE + 0.62,
+    statueLight: PRE + 0.7,
+    bits: PRE + 1,
+    specks: PRE + 0.75,
+    figures: PRE + 1.55,
+    hold: PRE + 1.12,
+    statueSwap: PRE + 1.1,
+  };
 
-    // ══ HOW LONG THINGS TAKE ═════════════════════════════════
-    var DUR = {
-      bg: 0.6,
-      statueDark: 0.6,
-      swap: 0.5,
-      statueLight: 0.1, // short: it only has to vanish behind
-      // the dark one, which is already there
-      bits: 0.75,
-      specks: 0.4,
-      figures: 0.75,
-      hold: 3, // the pause. raise this AND the track
-      // height together, or it just speeds up
-    };
+  // ══ HOW LONG THINGS TAKE ═════════════════════════════════
+  var DUR = {
+    bg: 0.6,
+    statueDark: 0.6,
+    swap: 0.5,
+    statueLight: 0.1, // short: it only has to vanish behind
+    // the dark one, which is already there
+    bits: 0.75,
+    specks: 0.4,
+    figures: 0.75,
+    hold: 3, // the pause. raise this AND the track
+    // height together, or it just speeds up
+  };
 
-    // ══ EVERYTHING ELSE ══════════════════════════════════════
-    var CFG = {
-      scrub: 0.4, // lag between scroll and animation
-      bandColor: '#080331',
-      figureStagger: 0.08, // second figure starts this much later
+  // ══ EVERYTHING ELSE ══════════════════════════════════════
+  var CFG = {
+    scrub: 0.4, // lag between scroll and animation
+    bandColor: '#080331',
+    figureStagger: 0.08, // second figure starts this much later
 
-      speckCount: 50,
-      speckColor: '#d85a30',
-      speckStart: 0.35, // fraction of track height where the
-      // flicker switches on
-      floatX: [-8, 8], // px range of the figure drift
-      floatY: [-16, -28], // px range of the figure drift
-      floatRot: [-3.2, 3.2],
-      floatDur: [2.4, 3.6], // seconds. randomised per figure so
-      // they never sync up
-    };
+    speckCount: 50,
+    speckColor: '#d85a30',
+    speckStart: 0.35, // fraction of track height where the
+    // flicker switches on
+    floatX: [-8, 8], // px range of the figure drift
+    floatY: [-16, -28], // px range of the figure drift
+    floatRot: [-3.2, 3.2],
+    floatDur: [2.4, 3.6], // seconds. randomised per figure so
+    // they never sync up
+  };
 
-    var mm = gsap.matchMedia();
+  var mm = gsap.matchMedia();
 
-    scenes.forEach(function (scene) {
-      var q = gsap.utils.selector(scene);
+  scenes.forEach(function (scene) {
+    var q = gsap.utils.selector(scene);
 
-      mm.add(
-        {
-          isDesktop: '(min-width: 992px)',
-          motionOk: '(prefers-reduced-motion: no-preference)',
-        },
-        function (context) {
-          if (!context.conditions.isDesktop) return;
-          var motionOk = context.conditions.motionOk;
+    mm.add(
+      {
+        isDesktop: '(min-width: 992px)',
+        motionOk: '(prefers-reduced-motion: no-preference)',
+      },
+      function (context) {
+        if (!context.conditions.isDesktop) return;
+        var motionOk = context.conditions.motionOk;
 
-          var track = q('[data-liberty-track]')[0];
-          var bgDark = q('[data-liberty="bg-dark"]');
-          var band = q('[data-liberty="band"]');
-          var statueLight = q('[data-liberty="light"]');
-          var statueDark = q('[data-liberty="dark"]');
-          var bits = q('[data-liberty="bits"]');
-          var swaps = q('[data-liberty-swap]');
-          var figures = q('[data-figure]');
-          var host = q('[data-liberty-static]')[0];
-          var sticky = q("[data-liberty-sticky]")[0];
+        var track = q('[data-liberty-track]')[0];
+        var bgDark = q('[data-liberty="bg-dark"]');
+        var band = q('[data-liberty="band"]');
+        var statueLight = q('[data-liberty="light"]');
+        var statueDark = q('[data-liberty="dark"]');
+        var bits = q('[data-liberty="bits"]');
+        var swaps = q('[data-liberty-swap]');
+        var figures = q('[data-figure]');
+        var host = q('[data-liberty-static]')[0];
+        var sticky = q("[data-liberty-sticky]")[0];
 
-          if (!track) return;
+        if (!track) return;
 
-          // every looping timeline goes in here so the cleanup
-          // at the bottom can kill them on a resize
-          var loops = [];
+        // every looping timeline goes in here so the cleanup
+        // at the bottom can kill them on a resize
+        var loops = [];
 
-          // ══ 1. SPECKS ══════════════════════════════════════
-          // 50 spans injected into liberty_fx, each blinking on
-          // its own random schedule.
-          //
-          // This runs on a SEPARATE timeline, not the scrubbed
-          // one. repeat and yoyo inside a scrub do not play,
-          // they scrub, so scrolling drags them back and forth
-          // instead of animating them.
-          if (host && motionOk) {
-            var flick = gsap.timeline({ paused: true });
+        // ══ 1. SPECKS ══════════════════════════════════════
+        // 50 spans injected into liberty_fx, each blinking on
+        // its own random schedule.
+        //
+        // This runs on a SEPARATE timeline, not the scrubbed
+        // one. repeat and yoyo inside a scrub do not play,
+        // they scrub, so scrolling drags them back and forth
+        // instead of animating them.
+        if (host && motionOk) {
+          var flick = gsap.timeline({ paused: true });
 
-            for (var i = 0; i < CFG.speckCount; i++) {
-              var sp = document.createElement('span');
-              sp.style.cssText = 'position:absolute;display:block;background:' + CFG.speckColor + ';opacity:0;will-change:opacity';
-              host.appendChild(sp);
+          for (var i = 0; i < CFG.speckCount; i++) {
+            var sp = document.createElement('span');
+            sp.style.cssText = 'position:absolute;display:block;background:' + CFG.speckColor + ';opacity:0;will-change:opacity';
+            host.appendChild(sp);
 
-              (function (el) {
-                function place() {
-                  var d = gsap.utils.random(2, 4, 1);
-                  gsap.set(el, {
-                    width: d,
-                    height: d,
-                    left: gsap.utils.random(0, 100) + '%',
-                    top: gsap.utils.random(0, 100) + '%',
-                  });
-                }
+            (function (el) {
+              function place() {
+                var d = gsap.utils.random(2, 4, 1);
+                gsap.set(el, {
+                  width: d,
+                  height: d,
+                  left: gsap.utils.random(0, 100) + '%',
+                  top: gsap.utils.random(0, 100) + '%',
+                });
+              }
 
-                place();
+              place();
 
-                // repeatRefresh re-rolls the delay every cycle
-                // and onRepeat moves the speck, so the pattern
-                // never visibly loops
-                flick.to(
-                  el,
-                  {
-                    opacity: 1,
-                    duration: 0.06,
-                    repeat: -1,
-                    repeatRefresh: true,
-                    repeatDelay: gsap.utils.random(0.4, 5),
-                    yoyo: true,
-                    onRepeat: place,
-                  },
-                  gsap.utils.random(0, 3),
-                );
-              })(sp);
-            }
-
-            loops.push(flick);
-
-            // switch the flicker on partway down the track and
-            // off again when the section leaves, so it is not
-            // burning frames through the rest of the page
-            ScrollTrigger.create({
-              trigger: track,
-              start: 'top top-=' + Math.round(track.offsetHeight * CFG.speckStart),
-              end: 'bottom bottom',
-              onToggle: function (self) {
-                if (self.isActive) {
-                  flick.play();
-                } else {
-                  flick.pause();
-                  gsap.set(host.children, { opacity: 0 });
-                }
-              },
-            });
+              // repeatRefresh re-rolls the delay every cycle
+              // and onRepeat moves the speck, so the pattern
+              // never visibly loops
+              flick.to(
+                el,
+                {
+                  opacity: 1,
+                  duration: 0.06,
+                  repeat: -1,
+                  repeatRefresh: true,
+                  repeatDelay: gsap.utils.random(0.4, 5),
+                  yoyo: true,
+                  onRepeat: place,
+                },
+                gsap.utils.random(0, 3),
+              );
+            })(sp);
           }
 
-          // ══ 2. THE MASTER TIMELINE ═════════════════════════
-          // scrubbed: its playhead is tied to scroll position
-          // rather than to time.
-          var tl = gsap.timeline({
-            scrollTrigger: {
-              trigger: track,
-              start: 'top top',
-              end: 'bottom bottom',
-              scrub: CFG.scrub,
+          loops.push(flick);
+
+          // switch the flicker on partway down the track and
+          // off again when the section leaves, so it is not
+          // burning frames through the rest of the page
+          ScrollTrigger.create({
+            trigger: track,
+            start: 'top top-=' + Math.round(track.offsetHeight * CFG.speckStart),
+            end: 'bottom bottom',
+            onToggle: function (self) {
+              if (self.isActive) {
+                flick.play();
+              } else {
+                flick.pause();
+                gsap.set(host.children, { opacity: 0 });
+              }
             },
           });
+        }
 
-          // ── word swaps ────────────────────────────────────
-          // each slot holds two words stacked on top of each
-          // other. the incoming one starts at yPercent 100,
-          // meaning one full self-height below, hidden by
-          // overflow: hidden on the slot.
-          //
-          // both travel upward, so it reads as one motion
-          // rather than two separate fades.
-          swaps.forEach(function (swap) {
-            var out = swap.querySelector('[data-word="out"]');
-            var inn = swap.querySelector('[data-word="in"]');
+        // ══ 2. THE MASTER TIMELINE ═════════════════════════
+        // scrubbed: its playhead is tied to scroll position
+        // rather than to time.
+        var tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: track,
+            start: 'top top',
+            end: 'bottom bottom',
+            scrub: CFG.scrub,
+          },
+        });
 
-            gsap.set(inn, { yPercent: 100, opacity: 0 });
+        // ── word swaps ────────────────────────────────────
+        // each slot holds two words stacked on top of each
+        // other. the incoming one starts at yPercent 100,
+        // meaning one full self-height below, hidden by
+        // overflow: hidden on the slot.
+        //
+        // both travel upward, so it reads as one motion
+        // rather than two separate fades.
+        swaps.forEach(function (swap) {
+          var out = swap.querySelector('[data-word="out"]');
+          var inn = swap.querySelector('[data-word="in"]');
 
-            tl.to(
-              out,
-              {
-                yPercent: -110,
-                opacity: 0,
-                duration: DUR.swap,
-                ease: 'power2.inOut',
-              },
-              BEATS.swap,
-            );
+          gsap.set(inn, { yPercent: 100, opacity: 0 });
 
-            tl.to(
-              inn,
-              {
-                yPercent: 0,
-                opacity: 1,
-                duration: DUR.swap,
-                ease: 'power2.inOut',
-              },
-              BEATS.swap,
-            );
-          });
-
-          // ── the background turns ──────────────────────────
           tl.to(
-            bgDark,
+            out,
             {
-              opacity: 1,
-              duration: DUR.bg,
-              ease: 'none',
+              yPercent: -110,
+              opacity: 0,
+              duration: DUR.swap,
+              ease: 'power2.inOut',
             },
-            BEATS.bg,
+            BEATS.swap,
           );
 
-          // the band is not fading, its colour is tweening.
-          // it has mix-blend-mode multiply, so through the
-          // transition it multiplies with whatever is behind it.
           tl.to(
-            band,
-            {
-              backgroundColor: CFG.bandColor,
-              duration: DUR.bg,
-              ease: 'none',
-            },
-            BEATS.bg,
-          );
-
-          // ── the statue swaps ──────────────────────────────
-          // dark comes up first and light leaves after, so the
-          // body is covered before the head disappears. without
-          // that overlap you see the background through it.
-          /*
-        tl.to(statueDark, {
-          opacity: 1,
-          duration: DUR.statueDark,
-          ease: "none"
-        }, BEATS.statueDark);
-
-        tl.to(statueLight, {
-          opacity: 0,
-          duration: DUR.statueLight,
-          ease: "none"
-        }, BEATS.statueLight);
-*/
-
-          tl.set(statueDark, { opacity: 1 }, BEATS.statueSwap);
-          tl.set(statueLight, { opacity: 0 }, BEATS.statueSwap);
-          // ── the corruption arrives ────────────────────────
-
-          gsap.set(bits, {
-            yPercent: -100,
-            opacity: 0,
-          });
-
-          tl.to(
-            bits,
+            inn,
             {
               yPercent: 0,
               opacity: 1,
-              duration: DUR.bits,
-              ease: 'power3.out',
+              duration: DUR.swap,
+              ease: 'power2.inOut',
             },
-            BEATS.bits,
+            BEATS.swap,
           );
+        });
 
-          // ── the section clears itself ─────────────────────
-          // everything except the background fades out, so the
-          // liberty frame empties to a flat colour that matches
-          // the next section. no visible boundary.
-          // ── the section clears ────────────────────────────
-          // content fades out first, band included. the
-          // background then cuts instantly rather than fading,
-          // because the next section already has the identical
-          // image behind it and a fade would show as a dip.
-                  // ── the section clears ────────────────────────────
+        // ── the background turns ──────────────────────────
+        tl.to(
+          bgDark,
+          {
+            opacity: 1,
+            duration: DUR.bg,
+            ease: 'none',
+          },
+          BEATS.bg,
+        );
+
+        // the band is not fading, its colour is tweening.
+        // it has mix-blend-mode multiply, so through the
+        // transition it multiplies with whatever is behind it.
+        tl.to(
+          band,
+          {
+            backgroundColor: CFG.bandColor,
+            duration: DUR.bg,
+            ease: 'none',
+          },
+          BEATS.bg,
+        );
+
+        // ── the statue swaps ──────────────────────────────
+        // dark comes up first and light leaves after, so the
+        // body is covered before the head disappears. without
+        // that overlap you see the background through it.
+        /*
+      tl.to(statueDark, {
+        opacity: 1,
+        duration: DUR.statueDark,
+        ease: "none"
+      }, BEATS.statueDark);
+
+      tl.to(statueLight, {
+        opacity: 0,
+        duration: DUR.statueLight,
+        ease: "none"
+      }, BEATS.statueLight);
+*/
+
+        tl.set(statueDark, { opacity: 1 }, BEATS.statueSwap);
+        tl.set(statueLight, { opacity: 0 }, BEATS.statueSwap);
+        // ── the corruption arrives ────────────────────────
+
+        gsap.set(bits, {
+          yPercent: -100,
+          opacity: 0,
+        });
+
+        tl.to(
+          bits,
+          {
+            yPercent: 0,
+            opacity: 1,
+            duration: DUR.bits,
+            ease: 'power3.out',
+          },
+          BEATS.bits,
+        );
+
+        // ── the section clears itself ─────────────────────
+        // everything except the background fades out, so the
+        // liberty frame empties to a flat colour that matches
+        // the next section. no visible boundary.
+        // ── the section clears ────────────────────────────
+        // content fades out first, band included. the
+        // background then cuts instantly rather than fading,
+        // because the next section already has the identical
+        // image behind it and a fade would show as a dip.
+        // ── the section clears ────────────────────────────
         // each element exits the way it entered, reversed.
         // figures fly back out sideways, bits rise back up
         // off the top, the band collapses to nothing, text
@@ -447,9 +447,9 @@ text.innerHTML = chars.map(char => {
           ease: "power2.in"
         }, CLEAR + 0.30);
 
-          // hard cut, no fade. by this point the pig section
-          // has covered the frame with the same image.
-		        // hide only once pig has covered the frame
+        // hard cut, no fade. by this point the pig section
+        // has covered the frame with the same image.
+        // hide only once pig has covered the frame
         var pig = document.querySelector("[data-pig]");
         if (pig) {
           ScrollTrigger.create({
@@ -464,101 +464,101 @@ text.innerHTML = chars.map(char => {
           });
         }
 
-          if (host) {
-            tl.to(
-              host,
-              {
-                opacity: 1,
-                duration: DUR.specks,
-                ease: 'none',
-              },
-              BEATS.specks,
-            );
-          }
+        if (host) {
+          tl.to(
+            host,
+            {
+              opacity: 1,
+              duration: DUR.specks,
+              ease: 'none',
+            },
+            BEATS.specks,
+          );
+        }
 
+        figures.forEach(function (fig, i) {
+          var side = fig.getAttribute('data-figure');
+
+          tl.fromTo(
+            fig,
+            {
+              x: side === 'left' ? -window.innerWidth : window.innerWidth,
+
+              y: side === 'left' ? 120 : 175,
+
+              opacity: 0,
+            },
+            {
+              x: 0,
+              y: 0,
+              opacity: 1,
+              duration: DUR.figures,
+              ease: 'power2.out',
+            },
+
+            BEATS.figures + i * CFG.figureStagger,
+          );
+        });
+
+        // ── the hold ──────────────────────────────────────
+        // an empty tween on a dummy object. it occupies
+        // timeline space and does nothing, which is what
+        // gives the finished frame time on screen.
+        tl.to({}, { duration: DUR.hold }, BEATS.hold);
+
+        // ══ 3. FIGURE FLOAT ════════════════════════════════
+        // separate timeline again, for the same reason as
+        // the specks. each figure gets its own random
+        // duration and offset so they never move in unison.
+        if (motionOk && figures.length) {
           figures.forEach(function (fig, i) {
-            var side = fig.getAttribute('data-figure');
+            var f = gsap.timeline({
+              repeat: -1,
+              yoyo: true,
+              paused: true,
+              defaults: { ease: 'sine.inOut' },
+            });
 
-            tl.fromTo(
-              fig,
+            var floatTarget = fig.querySelector('[data-inner-figure="true"]');
+
+            f.to(
+              floatTarget,
               {
-                x: side === 'left' ? -window.innerWidth : window.innerWidth,
-
-                y: side === 'left' ? 120 : 175,
-
-                opacity: 0,
+                x: gsap.utils.random(CFG.floatX[0], CFG.floatX[1]),
+                y: gsap.utils.random(CFG.floatY[0], CFG.floatY[1]),
+                rotate: gsap.utils.random(CFG.floatRot[0], CFG.floatRot[1]),
+                duration: gsap.utils.random(CFG.floatDur[0], CFG.floatDur[1]),
               },
-              {
-                x: 0,
-                y: 0,
-                opacity: 1,
-                duration: DUR.figures,
-                ease: 'power2.out',
-              },
-
-              BEATS.figures + i * CFG.figureStagger,
+              i * 0.4,
             );
+
+            loops.push(f);
+
+            ScrollTrigger.create({
+              trigger: track,
+              start: 'top bottom',
+              end: 'bottom top',
+              onToggle: function (self) {
+                self.isActive ? f.play() : f.pause();
+              },
+            });
           });
+        }
 
-          // ── the hold ──────────────────────────────────────
-          // an empty tween on a dummy object. it occupies
-          // timeline space and does nothing, which is what
-          // gives the finished frame time on screen.
-          tl.to({}, { duration: DUR.hold }, BEATS.hold);
-
-          // ══ 3. FIGURE FLOAT ════════════════════════════════
-          // separate timeline again, for the same reason as
-          // the specks. each figure gets its own random
-          // duration and offset so they never move in unison.
-          if (motionOk && figures.length) {
-            figures.forEach(function (fig, i) {
-              var f = gsap.timeline({
-                repeat: -1,
-                yoyo: true,
-                paused: true,
-                defaults: { ease: 'sine.inOut' },
-              });
-
-              var floatTarget = fig.querySelector('[data-inner-figure="true"]');
-
-              f.to(
-                floatTarget,
-                {
-                  x: gsap.utils.random(CFG.floatX[0], CFG.floatX[1]),
-                  y: gsap.utils.random(CFG.floatY[0], CFG.floatY[1]),
-                  rotate: gsap.utils.random(CFG.floatRot[0], CFG.floatRot[1]),
-                  duration: gsap.utils.random(CFG.floatDur[0], CFG.floatDur[1]),
-                },
-                i * 0.4,
-              );
-
-              loops.push(f);
-
-              ScrollTrigger.create({
-                trigger: track,
-                start: 'top bottom',
-                end: 'bottom top',
-                onToggle: function (self) {
-                  self.isActive ? f.play() : f.pause();
-                },
-              });
-            });
-          }
-
-          // ══ CLEANUP ════════════════════════════════════════
-          // runs when the viewport drops below 992px. kills the
-          // looping timelines and empties the injected specks
-          // so a resize back up does not stack duplicates.
-          return function () {
-            loops.forEach(function (t) {
-              t.kill();
-            });
-            if (host) host.innerHTML = '';
-          };
-        },
-      );
-    });
+        // ══ CLEANUP ════════════════════════════════════════
+        // runs when the viewport drops below 992px. kills the
+        // looping timelines and empties the injected specks
+        // so a resize back up does not stack duplicates.
+        return function () {
+          loops.forEach(function (t) {
+            t.kill();
+          });
+          if (host) host.innerHTML = '';
+        };
+      },
+    );
   });
+});
 
 
 // ── S03 STACK ───────────────────────────────────────────
@@ -763,16 +763,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // ── one entry per copy line, in order ─────────────────
     var BEATS = [
-      { pigs: 0,  human: false },  //  1  religion of Silicon Valley
-      { pigs: 0,  human: false },  //  2  here are its tenets
-      { pigs: 0,  human: false },  //  3  Effective:
-      { pigs: 0,  human: false },  //  4  Altruism:
-      { pigs: 0,  human: false },  //  5  who can argue against
-      { pigs: 1,  human: true  },  //  6  what does that look like
-      { pigs: 2,  human: true  },  //  7  0.51 math
-      { pigs: 2,  human: true  },  //  8  not so fast
-      { pigs: 10, human: true  },  //  9  five to ten pigs
-      { pigs: 10, human: true  },  // 10  it's logical, quote lands here
+      { pigs: 0, human: false },  //  1  religion of Silicon Valley
+      { pigs: 0, human: false },  //  2  here are its tenets
+      { pigs: 0, human: false },  //  3  Effective:
+      { pigs: 0, human: false },  //  4  Altruism:
+      { pigs: 0, human: false },  //  5  who can argue against
+      { pigs: 1, human: true },  //  6  what does that look like
+      { pigs: 2, human: true },  //  7  0.51 math
+      { pigs: 2, human: true },  //  8  not so fast
+      { pigs: 10, human: true },  //  9  five to ten pigs
+      { pigs: 10, human: true },  // 10  it's logical, quote lands here
     ];
 
     // ── how long each line holds, in timeline units ───────
@@ -810,7 +810,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var FIG = 0.16;       // figure fade duration
     var DROP = 0.34;      // frame split and layout change
     var CLEAR = 0.24;     // how long things take to leave
-        var QUOTE_HOLD = 1.6;   // scroll distance the quote owns
+    var QUOTE_HOLD = 1.6;   // scroll distance the quote owns
     var QUOTE_AFTER = 8;    // it takes over after this line index
 
     // ── build the herd to 10 cells ────────────────────────
@@ -1008,7 +1008,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // ── the quote clears for the final line ──────────
         // the copy container returns to full height and
         // centres, so the last line lands on an empty frame
-    
+
 
         // ── the quote owns the frame between two lines ───
         // everything clears, the quote lands alone and holds
@@ -1058,7 +1058,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (i === QUOTE_AFTER) at += QUOTE_HOLD;
       });
 
-            tl.to({}, { duration: 0.01 }, at);
+      tl.to({}, { duration: 0.01 }, at);
 
 
       // ── cleanup ───────────────────────────────────────
@@ -1261,8 +1261,8 @@ document.addEventListener("DOMContentLoaded", function () {
     var listItems =
       list
         ? gsap.utils.toArray(
-            list.querySelectorAll("li")
-          )
+          list.querySelectorAll("li")
+        )
         : [];
 
 
@@ -2318,6 +2318,7 @@ document.addEventListener("DOMContentLoaded", function () {
 //   math_end       data-math-end, absolute, inset 0, z-index 5,
 //                  flex column centered, pointer-events none
 
+/*
 document.addEventListener("DOMContentLoaded", function () {
 
   gsap.registerPlugin(ScrollTrigger);
@@ -2403,13 +2404,13 @@ document.addEventListener("DOMContentLoaded", function () {
     var DOT_SIZE_MIN = 10;
     var DOT_SIZE_MAX = 14;
 
-var PULSE_CHANCE = 0.10;
+    var PULSE_CHANCE = 0.10;
 
-var PULSE_CHANGE_MIN = 3;
-var PULSE_CHANGE_MAX = 5;
+    var PULSE_CHANGE_MIN = 3;
+    var PULSE_CHANGE_MAX = 5;
 
-var PULSE_DURATION_MIN = 1.2;
-var PULSE_DURATION_MAX = 2.4;
+    var PULSE_DURATION_MIN = 1.2;
+    var PULSE_DURATION_MAX = 2.4;
 
     var DOT_COLOR = "#ff684d";
 
@@ -3493,6 +3494,1127 @@ var PULSE_DURATION_MAX = 2.4;
 
   });
 
+}); */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.utils.toArray("[data-math-scene]").forEach(function (sec) {
+
+    var q = gsap.utils.selector(sec);
+
+    var track = q("[data-math-track]")[0];
+
+    var field = q('[data-dot-field="true"]')[0];
+
+    var caption = q("[data-math-caption]")[0];
+    var capHead = q("[data-math-head]")[0];
+    var capSub = q("[data-math-sub]")[0];
+
+    var burst = q("[data-math-burst]")[0];
+    var end = q("[data-math-end]")[0];
+
+
+    if (
+      !track ||
+      !field ||
+      !caption ||
+      !capHead ||
+      !capSub ||
+      !burst ||
+      !end
+    ) {
+      console.warn("Math dots: missing required element.");
+      return;
+    }
+
+
+
+    // =========================================================
+    // CONFIG
+    // =========================================================
+
+    var XFADE = 0.55;
+
+    var DOT_FADED_OPACITY = 0.12;
+
+    var CAP_TOP = "0vh";
+
+    var FIELD_REST = 0;
+
+    var BURST_SCALE = 420;
+
+    var END_HOLD = 1.75;
+
+
+    // Timing for ONLY the remaining dot story
+    var CAPTION_IN = 0.30;
+
+    var FIELD_IN = 0.38;
+
+    // This is the important hold.
+    // Gives the full field time to breathe.
+    var FIELD_HOLD = 2.40;
+
+    var AFTER_SWAP_HOLD = 0.85;
+
+
+
+    // =========================================================
+    // CAPTION COPY
+    // =========================================================
+
+    var CAPTION_1 =
+      "People who do not exist yet";
+
+    var SUB_1 =
+      "10⁵⁸ potential future lives";
+
+
+    var CAPTION_2 =
+      "8,000,000,000";
+
+    var SUB_2 =
+      "Everyone alive today";
+
+
+
+    // =========================================================
+    // DOT CONFIG
+    // =========================================================
+
+    var COLS = 49;
+
+    var ROWS = 25;
+
+
+    var DOT_SIZE_MIN = 10;
+
+    var DOT_SIZE_MAX = 14;
+
+
+    var PULSE_CHANCE = 0.10;
+
+
+    var PULSE_CHANGE_MIN = 3;
+
+    var PULSE_CHANGE_MAX = 5;
+
+
+    var PULSE_DURATION_MIN = 1.2;
+
+    var PULSE_DURATION_MAX = 2.4;
+
+
+    var DOT_COLOR = "#ff684d";
+
+
+
+    function random(min, max) {
+
+      return (
+        Math.random() *
+        (max - min) +
+        min
+      );
+
+    }
+
+
+
+    // =========================================================
+    // BUILD DOT FIELD
+    // =========================================================
+
+    field.innerHTML = "";
+
+
+    var centerCol =
+      Math.floor(COLS / 2);
+
+    var centerRow =
+      Math.floor(ROWS / 2);
+
+
+
+    for (
+      var i = 0;
+      i < COLS * ROWS;
+      i++
+    ) {
+
+      var dot =
+        document.createElement("div");
+
+
+      dot.className =
+        "math-dot";
+
+
+      var col =
+        i % COLS;
+
+
+      var row =
+        Math.floor(i / COLS);
+
+
+      var size =
+        random(
+          DOT_SIZE_MIN,
+          DOT_SIZE_MAX
+        );
+
+
+      dot.style.setProperty(
+        "--dot-size",
+        size.toFixed(2) + "px"
+      );
+
+
+
+      var inCenterBlock =
+        Math.abs(
+          col - centerCol
+        ) <= 1 &&
+        Math.abs(
+          row - centerRow
+        ) <= 1;
+
+
+
+      var exactCenter =
+        col === centerCol &&
+        row === centerRow;
+
+
+
+      // Remove top-left corner from 3×3,
+      // leaving exactly 8 highlighted dots.
+      var excludedCorner =
+        col === centerCol - 1 &&
+        row === centerRow - 1;
+
+
+
+      var fixed =
+        inCenterBlock &&
+        !excludedCorner;
+
+
+
+      if (exactCenter) {
+
+        dot.classList.add(
+          "is-center"
+        );
+
+      }
+
+
+
+      if (fixed) {
+
+        dot.classList.add(
+          "is-fixed"
+        );
+
+      }
+
+      else if (
+        Math.random() <
+        PULSE_CHANCE
+      ) {
+
+        dot.classList.add(
+          "is-pulsing"
+        );
+
+
+        var change =
+          random(
+            PULSE_CHANGE_MIN,
+            PULSE_CHANGE_MAX
+          );
+
+
+        var direction =
+          Math.random() < 0.5
+            ? -1
+            : 1;
+
+
+        var targetSize =
+          Math.max(
+            2,
+            size +
+            change *
+            direction
+          );
+
+
+        dot.style.setProperty(
+          "--pulse-scale",
+          (
+            targetSize /
+            size
+          ).toFixed(3)
+        );
+
+
+        dot.style.setProperty(
+          "--pulse-duration",
+          random(
+            PULSE_DURATION_MIN,
+            PULSE_DURATION_MAX
+          ).toFixed(2) +
+          "s"
+        );
+
+
+        dot.style.setProperty(
+          "--pulse-delay",
+          -random(
+            0,
+            3
+          ).toFixed(2) +
+          "s"
+        );
+
+      }
+
+
+      field.appendChild(dot);
+
+    }
+
+
+
+    // =========================================================
+    // DOT GROUPS
+    // =========================================================
+
+    var normalDots =
+      gsap.utils.toArray(
+        field.querySelectorAll(
+          ".math-dot:not(.is-fixed)"
+        )
+      );
+
+
+    var fixedDots =
+      gsap.utils.toArray(
+        field.querySelectorAll(
+          ".math-dot.is-fixed"
+        )
+      );
+
+
+    var centerDot =
+      field.querySelector(
+        ".math-dot.is-center"
+      );
+
+
+
+    gsap.set(
+      normalDots,
+      {
+        opacity: 1,
+        backgroundColor:
+          DOT_COLOR
+      }
+    );
+
+
+    gsap.set(
+      fixedDots,
+      {
+        opacity: 1,
+        backgroundColor:
+          DOT_COLOR
+      }
+    );
+
+
+
+    // =========================================================
+    // ALIGN BURST TO CENTER DOT
+    // =========================================================
+
+    function alignBurst() {
+
+      if (
+        !centerDot ||
+        !burst
+      ) {
+        return;
+      }
+
+
+      var dotRect =
+        centerDot
+          .getBoundingClientRect();
+
+
+      var parent =
+        burst.offsetParent;
+
+
+      if (!parent) return;
+
+
+      var parentRect =
+        parent
+          .getBoundingClientRect();
+
+
+
+      gsap.set(
+        burst,
+        {
+
+          left:
+            dotRect.left -
+            parentRect.left +
+            dotRect.width / 2,
+
+          top:
+            dotRect.top -
+            parentRect.top +
+            dotRect.height / 2,
+
+          xPercent: -50,
+
+          yPercent: -50,
+
+          marginTop: 0,
+
+          marginLeft: 0
+
+        }
+      );
+
+    }
+
+
+
+    requestAnimationFrame(
+      alignBurst
+    );
+
+
+    window.addEventListener(
+      "resize",
+      alignBurst
+    );
+
+
+    if (
+      document.fonts &&
+      document.fonts.ready
+    ) {
+
+      document.fonts.ready.then(
+        function () {
+
+          alignBurst();
+
+          ScrollTrigger.refresh();
+
+        }
+      );
+
+    }
+
+
+
+    // =========================================================
+    // BUILD CAPTION LAYERS
+    // =========================================================
+
+    function makeCaptionLayers(
+      container,
+      oldText,
+      newText
+    ) {
+
+      container.innerHTML = "";
+
+
+      container.style.position =
+        "relative";
+
+      container.style.overflow =
+        "hidden";
+
+
+      var oldLayer =
+        document.createElement(
+          "span"
+        );
+
+
+      var newLayer =
+        document.createElement(
+          "span"
+        );
+
+
+      oldLayer.textContent =
+        oldText;
+
+
+      newLayer.textContent =
+        newText;
+
+
+
+      oldLayer.style.display =
+        "block";
+
+      oldLayer.style.position =
+        "relative";
+
+
+      newLayer.style.display =
+        "block";
+
+      newLayer.style.position =
+        "absolute";
+
+      newLayer.style.inset =
+        "0";
+
+      newLayer.style.width =
+        "100%";
+
+
+      container.appendChild(
+        oldLayer
+      );
+
+
+      container.appendChild(
+        newLayer
+      );
+
+
+      return {
+
+        old: oldLayer,
+
+        next: newLayer
+
+      };
+
+    }
+
+
+
+    var headLayers =
+      makeCaptionLayers(
+        capHead,
+        CAPTION_1,
+        CAPTION_2
+      );
+
+
+    var subLayers =
+      makeCaptionLayers(
+        capSub,
+        SUB_1,
+        SUB_2
+      );
+
+
+
+    // =========================================================
+    // DESKTOP
+    // =========================================================
+
+    gsap.matchMedia().add(
+      "(min-width: 992px)",
+      function () {
+
+
+        var hasSplit =
+          typeof SplitText !==
+          "undefined";
+
+
+        if (hasSplit) {
+
+          gsap.registerPlugin(
+            SplitText
+          );
+
+        }
+
+
+
+        var splits = [];
+
+
+        function splitWords(el) {
+
+          if (!hasSplit) {
+
+            return [el];
+
+          }
+
+
+          var split =
+            new SplitText(
+              el,
+              {
+                type: "words"
+              }
+            );
+
+
+          splits.push(split);
+
+
+          return split.words;
+
+        }
+
+
+
+        // =====================================================
+        // ONLY THE TEXT THAT STILL EXISTS
+        // =====================================================
+
+        var oldHeadWords =
+          splitWords(
+            headLayers.old
+          );
+
+
+        var oldSubWords =
+          splitWords(
+            subLayers.old
+          );
+
+
+        var newHeadWords =
+          splitWords(
+            headLayers.next
+          );
+
+
+        var newSubWords =
+          splitWords(
+            subLayers.next
+          );
+
+
+        var endWords =
+          splitWords(end);
+
+
+
+        var oldCaptionWords = []
+          .concat(
+            oldHeadWords,
+            oldSubWords
+          )
+          .filter(Boolean);
+
+
+
+        var newCaptionWords = []
+          .concat(
+            newHeadWords,
+            newSubWords
+          )
+          .filter(Boolean);
+
+
+
+        // =====================================================
+        // INITIAL STATES
+        // =====================================================
+
+        gsap.set(
+          field,
+          {
+            opacity: 0,
+
+            yPercent: 100
+          }
+        );
+
+
+        gsap.set(
+          caption,
+          {
+            opacity: 0,
+
+            yPercent: -50
+          }
+        );
+
+
+        gsap.set(
+          oldCaptionWords,
+          {
+            autoAlpha: 0,
+
+            yPercent: 55
+          }
+        );
+
+
+        gsap.set(
+          newCaptionWords,
+          {
+            autoAlpha: 0,
+
+            yPercent: 120
+          }
+        );
+
+
+        gsap.set(
+          burst,
+          {
+            opacity: 0,
+
+            scale: 1,
+
+            xPercent: -50,
+
+            yPercent: -50,
+
+            marginTop: 0,
+
+            marginLeft: 0
+          }
+        );
+
+
+        alignBurst();
+
+
+        gsap.set(
+          end,
+          {
+            autoAlpha: 0
+          }
+        );
+
+
+        gsap.set(
+          endWords,
+          {
+            autoAlpha: 0,
+
+            yPercent: 55
+          }
+        );
+
+
+
+        // =====================================================
+        // TIMELINE
+        //
+        // STARTS AT ZERO WITH THE DOT STORY.
+        // NO DEAD MATH STACK.
+        // =====================================================
+
+        var tl =
+          gsap.timeline({
+
+            scrollTrigger: {
+
+              trigger: track,
+
+              start:
+                "top top",
+
+              end:
+                "bottom bottom",
+
+              scrub:
+                0.4
+
+            }
+
+          });
+
+
+
+        // =====================================================
+        // 1. FIRST CAPTION
+        // =====================================================
+
+        var capAt = 0;
+
+
+        tl.set(
+          caption,
+          {
+            opacity: 1
+          },
+          capAt
+        );
+
+
+        tl.to(
+          oldHeadWords,
+          {
+            autoAlpha: 1,
+
+            yPercent: 0,
+
+            duration:
+              CAPTION_IN,
+
+            ease:
+              "power3.out",
+
+            stagger: {
+              each: 0.05
+            }
+          },
+          capAt
+        );
+
+
+        tl.to(
+          oldSubWords,
+          {
+            autoAlpha: 1,
+
+            yPercent: 0,
+
+            duration: 0.24,
+
+            ease:
+              "power3.out",
+
+            stagger: {
+              each: 0.035
+            }
+          },
+          capAt + 0.10
+        );
+
+
+
+        // =====================================================
+        // 2. DOT FIELD RISES
+        // =====================================================
+
+        var fieldAt =
+          capAt + 0.65;
+
+
+        tl.to(
+          field,
+          {
+            opacity: 1,
+
+            yPercent:
+              FIELD_REST,
+
+            duration:
+              FIELD_IN,
+
+            ease:
+              "power2.out"
+          },
+          fieldAt
+        );
+
+
+        tl.to(
+          caption,
+          {
+            top:
+              CAP_TOP,
+
+            yPercent: 0,
+
+            duration: 0.34,
+
+            ease:
+              "power2.out"
+          },
+          fieldAt + 0.06
+        );
+
+
+
+        // =====================================================
+        // 3. FULL DOT FIELD HOLDS
+        // =====================================================
+
+        var litAt =
+          fieldAt +
+          FIELD_HOLD;
+
+
+
+        // =====================================================
+        // 4. ALL BUT 8 DOTS FADE
+        // =====================================================
+
+        tl.to(
+          normalDots,
+          {
+            opacity:
+              DOT_FADED_OPACITY,
+
+            duration:
+              XFADE,
+
+            ease:
+              "none"
+          },
+          litAt
+        );
+
+
+        tl.set(
+          fixedDots,
+          {
+            opacity: 1
+          },
+          litAt
+        );
+
+
+
+        // =====================================================
+        // 5. CAPTION SWAPS
+        // =====================================================
+
+        var swapAt =
+          litAt +
+          XFADE * 0.8;
+
+
+
+        tl.to(
+          oldHeadWords,
+          {
+            autoAlpha: 0,
+
+            yPercent: -110,
+
+            duration: 0.20,
+
+            ease:
+              "power2.in",
+
+            stagger: {
+              each: 0.035
+            }
+          },
+          swapAt - 0.20
+        );
+
+
+        tl.to(
+          oldSubWords,
+          {
+            autoAlpha: 0,
+
+            yPercent: -110,
+
+            duration: 0.18,
+
+            ease:
+              "power2.in",
+
+            stagger: {
+              each: 0.025
+            }
+          },
+          swapAt - 0.16
+        );
+
+
+        tl.to(
+          newHeadWords,
+          {
+            autoAlpha: 1,
+
+            yPercent: 0,
+
+            duration: 0.30,
+
+            ease:
+              "power3.out",
+
+            stagger: {
+              each: 0.04
+            }
+          },
+          swapAt
+        );
+
+
+        tl.to(
+          newSubWords,
+          {
+            autoAlpha: 1,
+
+            yPercent: 0,
+
+            duration: 0.26,
+
+            ease:
+              "power3.out",
+
+            stagger: {
+              each: 0.035
+            }
+          },
+          swapAt + 0.06
+        );
+
+
+
+        // =====================================================
+        // 6. HOLD THE 8-DOT COMPARISON
+        // =====================================================
+
+        var burstAt =
+          swapAt +
+          AFTER_SWAP_HOLD;
+
+
+
+        // =====================================================
+        // 7. BURST
+        // =====================================================
+
+        tl.call(
+          alignBurst,
+          null,
+          burstAt - 0.01
+        );
+
+
+        tl.to(
+          burst,
+          {
+            opacity: 1,
+
+            duration: 0.06
+          },
+          burstAt
+        );
+
+
+        tl.to(
+          burst,
+          {
+            scale:
+              BURST_SCALE,
+
+            duration: 0.36,
+
+            ease:
+              "power2.in"
+          },
+          burstAt + 0.04
+        );
+
+
+        tl.to(
+          [
+            field,
+            caption
+          ],
+          {
+            opacity: 0,
+
+            duration: 0.14
+          },
+          burstAt + 0.24
+        );
+
+
+
+        // =====================================================
+        // 8. END TEXT
+        // =====================================================
+
+        var endAt =
+          burstAt + 0.44;
+
+
+        tl.set(
+          end,
+          {
+            autoAlpha: 1
+          },
+          endAt
+        );
+
+
+        tl.to(
+          endWords,
+          {
+            autoAlpha: 1,
+
+            yPercent: 0,
+
+            duration: 0.35,
+
+            ease:
+              "power3.out",
+
+            stagger: {
+              each: 0.055
+            }
+          },
+          endAt
+        );
+
+
+        // =====================================================
+        // 9. FINAL HOLD
+        // =====================================================
+
+        tl.to(
+          {},
+          {
+            duration:
+              END_HOLD
+          }
+        );
+
+
+
+        // =====================================================
+        // CLEANUP
+        // =====================================================
+
+        return function () {
+
+          splits.forEach(
+            function (split) {
+
+              split.revert();
+
+            }
+          );
+
+        };
+
+      }
+    );
+
+  });
+
 });
 
 
@@ -3629,12 +4751,12 @@ document.addEventListener("DOMContentLoaded", function () {
       // the previous card underneath.
       // ─────────────────────────────────────────────
 
-var CARD_CLIPS = [
-  "polygon(0 8%, 100% 3%, 100% 100%, 0 100%)",
-  "polygon(0 4%, 100% 9%, 100% 100%, 0 100%)",
-  "polygon(0 10%, 100% 5%, 100% 100%, 0 100%)",
-  "polygon(0 6%, 100% 2%, 100% 100%, 0 100%)"
-];
+      var CARD_CLIPS = [
+        "polygon(0 8%, 100% 3%, 100% 100%, 0 100%)",
+        "polygon(0 4%, 100% 9%, 100% 100%, 0 100%)",
+        "polygon(0 10%, 100% 5%, 100% 100%, 0 100%)",
+        "polygon(0 6%, 100% 2%, 100% 100%, 0 100%)"
+      ];
 
 
       gsap.matchMedia().add(
@@ -3722,8 +4844,8 @@ var CARD_CLIPS = [
               scale: 1,
 
               // Real transparent trapezoid.
-clipPath:
-  CARD_CLIPS[i % CARD_CLIPS.length]
+              clipPath:
+                CARD_CLIPS[i % CARD_CLIPS.length]
 
             });
 
@@ -4295,55 +5417,55 @@ document.addEventListener("DOMContentLoaded", function () {
                   ".ftx-fig[data-ftx-count]"
                 )
               )
-              .map(function (el) {
+                .map(function (el) {
 
 
-                var target =
-                  parseFloat(
+                  var target =
+                    parseFloat(
+                      el.getAttribute(
+                        "data-ftx-count"
+                      )
+                    ) || 0;
+
+
+                  var prefix =
                     el.getAttribute(
-                      "data-ftx-count"
-                    )
-                  ) || 0;
+                      "data-ftx-prefix"
+                    ) || "";
 
 
-                var prefix =
-                  el.getAttribute(
-                    "data-ftx-prefix"
-                  ) || "";
+                  var suffix =
+                    el.getAttribute(
+                      "data-ftx-suffix"
+                    ) || "";
 
 
-                var suffix =
-                  el.getAttribute(
-                    "data-ftx-suffix"
-                  ) || "";
+                  var state = {
+                    value: 0
+                  };
 
 
-                var state = {
-                  value: 0
-                };
+                  el.textContent =
+                    prefix +
+                    "0" +
+                    suffix;
 
 
-                el.textContent =
-                  prefix +
-                  "0" +
-                  suffix;
+                  return {
 
+                    el: el,
 
-                return {
+                    target: target,
 
-                  el: el,
+                    prefix: prefix,
 
-                  target: target,
+                    suffix: suffix,
 
-                  prefix: prefix,
+                    state: state
 
-                  suffix: suffix,
+                  };
 
-                  state: state
-
-                };
-
-              });
+                });
 
 
             return {
@@ -7514,7 +8636,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   gsap.registerPlugin(ScrollTrigger);
 
-  
+
 
 
   gsap.utils
@@ -7557,15 +8679,15 @@ document.addEventListener("DOMContentLoaded", function () {
       var stories =
         reader
           ? gsap.utils.toArray(
-              reader.querySelectorAll("[data-scandal-story]")
-            )
+            reader.querySelectorAll("[data-scandal-story]")
+          )
           : [];
 
-          var intro =
-  sec.querySelector("[data-scandal-intro]");
+      var intro =
+        sec.querySelector("[data-scandal-intro]");
 
-var introTrack =
-  sec.querySelector("[data-scandal-track]");
+      var introTrack =
+        sec.querySelector("[data-scandal-track]");
 
       if (
         !cards.length ||
@@ -7593,7 +8715,7 @@ var introTrack =
         return;
       }
 
-      
+
 
 
       // =============================================
@@ -7627,7 +8749,7 @@ var introTrack =
         pointerEvents: "none"
       });
 
-      
+
 
 
       gsap.set(stories, {
@@ -7635,24 +8757,24 @@ var introTrack =
       });
 
       // =============================================
-// SCANDALS INTRO FADE
-// =============================================
+      // SCANDALS INTRO FADE
+      // =============================================
 
-if (intro && introTrack) {
+      if (intro && introTrack) {
 
-  gsap.to(intro, {
-    autoAlpha: 0,
-    ease: "none",
+        gsap.to(intro, {
+          autoAlpha: 0,
+          ease: "none",
 
-    scrollTrigger: {
-      trigger: introTrack,
-      start: "top top",
-      end: "+=1000",
-      scrub: true
-    }
-  });
+          scrollTrigger: {
+            trigger: introTrack,
+            start: "top top",
+            end: "+=1000",
+            scrub: true
+          }
+        });
 
-}
+      }
 
       cards.forEach(function (card) {
 
@@ -9286,12 +10408,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
                   x:
                     xs[
-                      i % xs.length
+                    i % xs.length
                     ],
 
                   rotation:
                     rotations[
-                      i % rotations.length
+                    i % rotations.length
                     ]
                 }
               );

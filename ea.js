@@ -1545,7 +1545,7 @@ document.addEventListener("DOMContentLoaded", function () {
 //                  left 0, right 0, NO transform
 //
 //   Needs SplitText ticked in Site Settings, Integrations.
-
+/*
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-nuke-scene]").forEach(function (sec) {
     var nq = gsap.utils.selector(sec);
@@ -1738,6 +1738,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
+*/
 // ── MATH ────────────────────────────────────────────────
 // Replaces the MATH block in ea.js
 //

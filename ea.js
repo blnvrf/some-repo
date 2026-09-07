@@ -1739,6 +1739,542 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  gsap.utils.toArray("[data-nuke-scene]").forEach(function (sec) {
+
+    var nq = gsap.utils.selector(sec);
+
+    var track = nq("[data-nuke-track]")[0];
+
+    var land = nq('[data-nuke="land"]');
+    var blast = nq('[data-nuke="blast"]');
+    var bits = nq('[data-nuke="bits"]');
+
+    var title = nq("[data-nuke-title]");
+
+    // NOW THERE ARE 3 OF THESE
+    var bodies = nq("[data-nuke-body]");
+
+    // 3 QUOTES
+    var slides = nq("[data-nuke-slide]");
+
+
+    if (!track) return;
+
+
+    // =========================================================
+    // WHEN THINGS HAPPEN
+    // =========================================================
+
+    var BEATS = {
+
+      land: 0.00,
+
+      blast: 0.40,
+
+      bits: 0.82,
+
+      title: 1.30,
+
+      // first BODY + QUOTE pair begins here
+      slides: 2.30
+
+    };
+
+
+    // =========================================================
+    // DURATIONS
+    // =========================================================
+
+    var DUR = {
+
+      land: 0.34,
+
+      blast: 0.36,
+
+      bits: 0.34,
+
+      title: 0.20,
+
+      body: 0.20,
+
+      slideMove: 0.20
+
+    };
+
+
+    // =========================================================
+    // CONFIG
+    // =========================================================
+
+    var CFG = {
+
+      scrub: 0.4,
+
+      landFrom: "100vh",
+
+      blastFrom: "100vh",
+
+      bitsFrom: "-100vh",
+
+
+      wordRise: 50,
+
+      titleStagger: 0.03,
+
+      bodyStagger: 0.02,
+
+
+      // amount of timeline each quote/body pair owns
+      slideStep: 1.80,
+
+
+      slideFrom: "100vh",
+
+      slideTo: "-100vh",
+
+
+      // final body + quote hold
+      endHold: 2.40
+
+    };
+
+
+
+    // =========================================================
+    // DESKTOP
+    // =========================================================
+
+    gsap.matchMedia().add(
+      "(min-width: 992px)",
+      function () {
+
+
+        var hasSplit =
+          typeof SplitText !== "undefined";
+
+
+        if (hasSplit) {
+          gsap.registerPlugin(SplitText);
+        }
+
+
+
+        // =====================================================
+        // SPLIT TEXT STORAGE
+        // =====================================================
+
+        var splits = [];
+
+
+        function splitWords(el) {
+
+          if (!el) return [];
+
+          if (!hasSplit) {
+            return [el];
+          }
+
+
+          var s =
+            new SplitText(
+              el,
+              {
+                type: "words"
+              }
+            );
+
+
+          splits.push(s);
+
+          return s.words;
+
+        }
+
+
+
+        // =====================================================
+        // TITLE WORDS
+        // =====================================================
+
+        var titleWords =
+          title.length
+            ? splitWords(title[0])
+            : [];
+
+
+
+        // =====================================================
+        // BODY WORD GROUPS
+        //
+        // [
+        //   words of body 1,
+        //   words of body 2,
+        //   words of body 3
+        // ]
+        // =====================================================
+
+        var bodyGroups =
+          bodies.map(function (body) {
+
+            return splitWords(body);
+
+          });
+
+
+
+        // =====================================================
+        // STARTING STATES
+        // =====================================================
+
+
+        // LAND
+        gsap.set(
+          land,
+          {
+            y: CFG.landFrom,
+            opacity: 1
+          }
+        );
+
+
+        // BLAST
+        gsap.set(
+          blast,
+          {
+            y: CFG.blastFrom,
+            xPercent: -50,
+            opacity: 1
+          }
+        );
+
+
+        // BITS
+        gsap.set(
+          bits,
+          {
+            y: CFG.bitsFrom,
+            xPercent: -50,
+            opacity: 1
+          }
+        );
+
+
+
+        // TITLE
+        gsap.set(
+          titleWords,
+          {
+            opacity: 0,
+            yPercent: CFG.wordRise
+          }
+        );
+
+
+
+        // ALL THREE BODY BLOCKS START HIDDEN
+        bodyGroups.forEach(function (words) {
+
+          gsap.set(
+            words,
+            {
+              opacity: 0,
+              yPercent: CFG.wordRise
+            }
+          );
+
+        });
+
+
+
+        // ALL QUOTES WAIT BELOW FRAME
+        gsap.set(
+          slides,
+          {
+            y: CFG.slideFrom,
+            yPercent: -50,
+            opacity: 1
+          }
+        );
+
+
+
+        // =====================================================
+        // MAIN TIMELINE
+        // =====================================================
+
+        var tl =
+          gsap.timeline({
+
+            scrollTrigger: {
+
+              trigger: track,
+
+              start: "top top",
+
+              end: "bottom bottom",
+
+              scrub: CFG.scrub
+
+            }
+
+          });
+
+
+
+        // =====================================================
+        // 1. LAND
+        // =====================================================
+
+        tl.to(
+          land,
+          {
+            y: 0,
+
+            duration: DUR.land,
+
+            ease: "power2.out"
+          },
+          BEATS.land
+        );
+
+
+
+        // =====================================================
+        // 2. BLAST
+        // =====================================================
+
+        tl.to(
+          blast,
+          {
+            y: 0,
+
+            duration: DUR.blast,
+
+            ease: "power2.out"
+          },
+          BEATS.blast
+        );
+
+
+
+        // =====================================================
+        // 3. BITS
+        // =====================================================
+
+        tl.to(
+          bits,
+          {
+            y: 0,
+
+            duration: DUR.bits,
+
+            ease: "power2.out"
+          },
+          BEATS.bits
+        );
+
+
+
+        // =====================================================
+        // 4. TITLE
+        // =====================================================
+
+        tl.to(
+          titleWords,
+          {
+            opacity: 1,
+
+            yPercent: 0,
+
+            duration: DUR.title,
+
+            ease: "power2.out",
+
+            stagger: {
+              each: CFG.titleStagger
+            }
+          },
+          BEATS.title
+        );
+
+
+
+        // =====================================================
+        // 5. BODY + QUOTE PAIRS
+        // =====================================================
+
+        var lastAt =
+          BEATS.slides;
+
+
+        slides.forEach(function (slide, i) {
+
+          var at =
+            BEATS.slides +
+            i * CFG.slideStep;
+
+
+          var last =
+            i === slides.length - 1;
+
+
+          var bodyWords =
+            bodyGroups[i] || [];
+
+
+          // ===================================================
+          // BODY i ENTERS
+          // EXACTLY WHEN QUOTE i ENTERS
+          // ===================================================
+
+          if (bodyWords.length) {
+
+            tl.to(
+              bodyWords,
+              {
+                opacity: 1,
+
+                yPercent: 0,
+
+                duration: DUR.body,
+
+                ease: "power2.out",
+
+                stagger: {
+                  each: CFG.bodyStagger
+                }
+              },
+              at
+            );
+
+          }
+
+
+
+          // ===================================================
+          // QUOTE i ENTERS
+          // ===================================================
+
+          tl.to(
+            slide,
+            {
+              y: 0,
+
+              duration: DUR.slideMove,
+
+              ease: "power3.out"
+            },
+            at
+          );
+
+
+
+          // ===================================================
+          // BODY + QUOTE HOLD
+          // ===================================================
+          //
+          // Nothing happens for most of slideStep.
+
+
+
+          // ===================================================
+          // BODY + QUOTE LEAVE TOGETHER
+          // ===================================================
+
+          if (!last) {
+
+            var outAt =
+              at +
+              CFG.slideStep -
+              DUR.slideMove;
+
+
+            // QUOTE LEAVES UPWARD
+            tl.to(
+              slide,
+              {
+                y: CFG.slideTo,
+
+                duration: DUR.slideMove,
+
+                ease: "power3.in"
+              },
+              outAt
+            );
+
+
+            // BODY LEAVES AT SAME TIME
+            if (bodyWords.length) {
+
+              tl.to(
+                bodyWords,
+                {
+                  opacity: 0,
+
+                  yPercent:
+                    -CFG.wordRise,
+
+                  duration:
+                    DUR.slideMove,
+
+                  ease: "power2.in",
+
+                  stagger: {
+                    each: 0.01
+                  }
+                },
+                outAt
+              );
+
+            }
+
+          }
+
+
+          lastAt = at;
+
+        });
+
+
+
+        // =====================================================
+        // 6. FINAL BODY + QUOTE HOLD
+        // =====================================================
+
+        tl.to(
+          {},
+          {
+            duration: CFG.endHold
+          },
+          lastAt +
+          DUR.slideMove
+        );
+
+
+
+        // =====================================================
+        // CLEANUP
+        // =====================================================
+
+        return function () {
+
+          splits.forEach(function (s) {
+
+            s.revert();
+
+          });
+
+        };
+
+      }
+    );
+
+  });
+
+});
 // ── MATH ────────────────────────────────────────────────
 // Replaces the MATH block in ea.js
 //

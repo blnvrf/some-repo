@@ -1227,6 +1227,271 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.utils.toArray("[data-ideology]").forEach(function (sec) {
+
+    var iq = gsap.utils.selector(sec);
+
+    var track =
+      iq("[data-ideology-track]")[0];
+
+    var heading =
+      iq("[data-ideo-heading]")[0];
+
+    var bodyWrap =
+      iq("[data-ideo-body-wrap]")[0];
+
+    var list =
+      iq("[data-ideo-list]")[0];
+
+    var quote =
+      iq("[data-ideo-quote]")[0];
+
+    var footnote =
+      iq("[data-ideo-footnote]")[0];
+
+
+    if (!track || !heading || !bodyWrap) return;
+
+
+    var listItems =
+      list
+        ? gsap.utils.toArray(
+            list.querySelectorAll("li")
+          )
+        : [];
+
+
+    gsap.matchMedia().add(
+      "(min-width: 992px)",
+      function () {
+
+
+        // =====================================================
+        // INITIAL STATES
+        // =====================================================
+
+        // SCREEN 1
+        gsap.set(heading, {
+          autoAlpha: 1,
+          y: 0
+        });
+
+
+        // SCREEN 2
+        gsap.set(bodyWrap, {
+          autoAlpha: 0,
+          y: 30
+        });
+
+
+        // LIST ITEMS
+        gsap.set(listItems, {
+          autoAlpha: 0,
+          y: 18
+        });
+
+
+        // SCREEN 3
+        if (quote) {
+          gsap.set(quote, {
+            autoAlpha: 0,
+            y: 80
+          });
+        }
+
+
+        if (footnote) {
+          gsap.set(footnote, {
+            autoAlpha: 0
+          });
+        }
+
+
+
+        // =====================================================
+        // TIMELINE
+        // =====================================================
+
+        var tl = gsap.timeline({
+
+          scrollTrigger: {
+
+            trigger: track,
+
+            start: "top top",
+
+            end: "bottom bottom",
+
+            scrub: 0.4
+
+          }
+
+        });
+
+
+
+        // =====================================================
+        // 1. TITLE + SUBTITLE HOLD
+        // =====================================================
+
+        tl.to({}, {
+          duration: 1.2
+        });
+
+
+
+        // =====================================================
+        // 2. TITLE + SUBTITLE LEAVE
+        // =====================================================
+
+        tl.to(
+          heading,
+          {
+            autoAlpha: 0,
+            y: -25,
+
+            duration: 0.25,
+
+            ease: "power2.in"
+          }
+        );
+
+
+
+        // =====================================================
+        // 3. BODY WRAPPER APPEARS
+        // =====================================================
+
+        tl.to(
+          bodyWrap,
+          {
+            autoAlpha: 1,
+            y: 0,
+
+            duration: 0.30,
+
+            ease: "power2.out"
+          }
+        );
+
+
+
+        // =====================================================
+        // 4. LIST ITEMS — ONE AT A TIME
+        // =====================================================
+
+        if (listItems.length) {
+
+          tl.to(
+            listItems,
+            {
+              autoAlpha: 1,
+              y: 0,
+
+              duration: 0.25,
+
+              stagger: 0.30,
+
+              ease: "power2.out"
+            }
+          );
+
+        }
+
+
+
+        // =====================================================
+        // 5. BODY + FULL LIST HOLD
+        // =====================================================
+
+        tl.to({}, {
+          duration: 1.5
+        });
+
+
+
+        // =====================================================
+        // 6. BODY + LIST LEAVE TOGETHER
+        // =====================================================
+
+        tl.to(
+          bodyWrap,
+          {
+            autoAlpha: 0,
+            y: -25,
+
+            duration: 0.25,
+
+            ease: "power2.in"
+          }
+        );
+
+
+
+        // =====================================================
+        // 7. QUOTE ENTERS
+        // =====================================================
+
+        if (quote) {
+
+          tl.to(
+            quote,
+            {
+              autoAlpha: 1,
+              y: 0,
+
+              duration: 0.65,
+
+              ease: "power3.out"
+            }
+          );
+
+        }
+
+
+
+        // =====================================================
+        // 8. FOOTNOTE
+        // =====================================================
+
+        if (footnote) {
+
+          tl.to(
+            footnote,
+            {
+              autoAlpha: 1,
+
+              duration: 0.20,
+
+              ease: "power1.out"
+            },
+            "-=0.15"
+          );
+
+        }
+
+
+
+        // =====================================================
+        // 9. FINAL QUOTE HOLD
+        // =====================================================
+
+        tl.to({}, {
+          duration: 2.0
+        });
+
+      }
+    );
+
+  });
+
+});
+
 // ── NUKE ────────────────────────────────────────────────
 // Replaces the NUKE block in ea.js
 //

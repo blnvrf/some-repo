@@ -26,7 +26,7 @@
 // GLOBAL ANIMATIONS:
 
 
-
+/*
 document.addEventListener('DOMContentLoaded', function () {
   // ── LIBERTY ─────────────────────────────────────────────
   // Replaces the LIBERTY block in ea.js
@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // dark comes up first and light leaves after, so the
         // body is covered before the head disappears. without
         // that overlap you see the background through it.
-        /*
+        
       tl.to(statueDark, {
         opacity: 1,
         duration: DUR.statueDark,
@@ -289,7 +289,7 @@ document.addEventListener('DOMContentLoaded', function () {
         duration: DUR.statueLight,
         ease: "none"
       }, BEATS.statueLight);
-*/
+
 
         tl.set(statueDark, { opacity: 1 }, BEATS.statueSwap);
         tl.set(statueLight, { opacity: 0 }, BEATS.statueSwap);
@@ -487,7 +487,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 
-
+*/
 // ── S03 STACK ───────────────────────────────────────────
 // Replaces the S03 block in ea.js
 //

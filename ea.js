@@ -3426,6 +3426,571 @@ document.addEventListener("DOMContentLoaded", function () {
 
 }); */
 
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  gsap.utils
+    .toArray("[data-nuke-scene]")
+    .forEach(function (sec, index) {
+
+      var nq =
+        gsap.utils.selector(sec);
+
+
+      // =========================================================
+      // ELEMENTS
+      // =========================================================
+
+      var track =
+        nq("[data-nuke-track]")[0];
+
+      var land =
+        nq('[data-nuke="land"]');
+
+      var blast =
+        nq('[data-nuke="blast"]');
+
+      var bits =
+        nq('[data-nuke="bits"]');
+
+      var title =
+        nq("[data-nuke-title]");
+
+      var bodies =
+        nq("[data-nuke-body]");
+
+      var slides =
+        nq("[data-nuke-slide]");
+
+
+      if (!track) {
+        return;
+      }
+
+
+      // =========================================================
+      // GLOBAL MOTION
+      // =========================================================
+
+      var TEXT_FADE =
+        MOTION.textFade.duration;
+
+      var TEXT_EASE =
+        MOTION.textFade.ease;
+
+
+      // =========================================================
+      // WHEN THINGS HAPPEN
+      // =========================================================
+
+      var BEATS = {
+
+        // BAM BAM BAM
+        land: 0.00,
+
+        blast: 0.06,
+
+        bits: 0.15,
+
+        title: 0.38,
+
+
+        // Keep text / quote sequence
+        // separate from the impact animation
+        slides: 1.25
+
+      };
+
+
+      // =========================================================
+      // DURATIONS
+      // =========================================================
+
+      var DUR = {
+
+        land: 0.10,
+
+        blast: 0.11,
+
+        bits: 0.16,
+
+        slideMove: 0.12
+
+      };
+
+
+      // =========================================================
+      // CONFIG
+      // =========================================================
+
+      var CFG = {
+
+        // Much less scroll lag
+        scrub: 0.22,
+
+
+        landFrom:
+          "100vh",
+
+        blastFrom:
+          "100vh",
+
+
+        // Whole-element text movement.
+        // NO WORD SPLITTING.
+        textRise: 20,
+
+
+        // Body + quote pair spacing
+        slideStep: 0.72,
+
+
+        slideFrom:
+          "100vh",
+
+        slideTo:
+          "-100vh",
+
+
+        // Small final reading hold
+        endHold: 0.55
+
+      };
+
+
+      // =========================================================
+      // DESKTOP
+      // =========================================================
+
+      gsap
+        .matchMedia()
+        .add(
+          "(min-width: 992px)",
+          function () {
+
+
+            // =====================================================
+            // INITIAL STATES
+            // =====================================================
+
+
+            // -----------------------------------------------------
+            // LAND
+            // -----------------------------------------------------
+
+            gsap.set(
+              land,
+              {
+                y:
+                  CFG.landFrom,
+
+                opacity: 1
+              }
+            );
+
+
+            // -----------------------------------------------------
+            // BLAST
+            // -----------------------------------------------------
+
+            gsap.set(
+              blast,
+              {
+                y:
+                  CFG.blastFrom,
+
+                xPercent:
+                  -50,
+
+                opacity:
+                  1
+              }
+            );
+
+
+            // -----------------------------------------------------
+            // BITS
+            //
+            // Artwork stays in its final position.
+            // Only the angled clipping mask reveals it.
+            // Bottom → top.
+            // -----------------------------------------------------
+
+            gsap.set(
+              bits,
+              {
+                y: 0,
+
+                xPercent:
+                  -50,
+
+                opacity:
+                  1,
+
+                clipPath:
+                  "polygon(0% 110%, 100% 92%, 100% 110%, 0% 110%)"
+              }
+            );
+
+
+            // =====================================================
+            // TITLE
+            //
+            // WHOLE ELEMENT.
+            // ZERO SplitText.
+            // =====================================================
+
+            gsap.set(
+              title,
+              {
+                opacity: 0,
+
+                y:
+                  CFG.textRise
+              }
+            );
+
+
+            // =====================================================
+            // BODY COPY
+            //
+            // WHOLE ELEMENTS.
+            // ZERO SplitText.
+            // =====================================================
+
+            gsap.set(
+              bodies,
+              {
+                opacity: 0,
+
+                y:
+                  CFG.textRise
+              }
+            );
+
+
+            // =====================================================
+            // QUOTE CARDS
+            // =====================================================
+
+            gsap.set(
+              slides,
+              {
+                y:
+                  CFG.slideFrom,
+
+                yPercent:
+                  -50,
+
+                opacity:
+                  1
+              }
+            );
+
+
+            // =====================================================
+            // MASTER TIMELINE
+            // =====================================================
+
+            var nukeTimeline =
+              gsap.timeline({
+
+                scrollTrigger: {
+
+                  id:
+                    "nuke-main-" +
+                    index,
+
+                  trigger:
+                    track,
+
+                  start:
+                    "top top",
+
+                  end:
+                    "bottom bottom",
+
+                  scrub:
+                    CFG.scrub
+
+                }
+
+              });
+
+
+            // =====================================================
+            // 1. LAND
+            //
+            // VERY FAST
+            // =====================================================
+
+            nukeTimeline.to(
+              land,
+              {
+                y: 0,
+
+                duration:
+                  DUR.land,
+
+                ease:
+                  "power3.out"
+              },
+              BEATS.land
+            );
+
+
+            // =====================================================
+            // 2. EXPLOSION
+            //
+            // Begins almost immediately after land starts.
+            // =====================================================
+
+            nukeTimeline.to(
+              blast,
+              {
+                y: 0,
+
+                duration:
+                  DUR.blast,
+
+                ease:
+                  "power3.out"
+              },
+              BEATS.blast
+            );
+
+
+            // =====================================================
+            // 3. BITS
+            //
+            // Fast diagonal bottom → top reveal.
+            // =====================================================
+
+            nukeTimeline.to(
+              bits,
+              {
+                clipPath:
+                  "polygon(0% -10%, 100% -28%, 100% 110%, 0% 110%)",
+
+                duration:
+                  DUR.bits,
+
+                ease:
+                  "power2.inOut"
+              },
+              BEATS.bits
+            );
+
+
+            // =====================================================
+            // 4. TITLE
+            //
+            // Whole-element fade.
+            // =====================================================
+
+            nukeTimeline.to(
+              title,
+              {
+                opacity:
+                  1,
+
+                y:
+                  0,
+
+                duration:
+                  TEXT_FADE,
+
+                ease:
+                  TEXT_EASE
+              },
+              BEATS.title
+            );
+
+
+            // =====================================================
+            // 5. BODY + QUOTE PAIRS
+            // =====================================================
+
+            var lastAt =
+              BEATS.slides;
+
+
+            slides.forEach(
+              function (
+                slide,
+                i
+              ) {
+
+                var at =
+                  BEATS.slides +
+                  i *
+                  CFG.slideStep;
+
+
+                var last =
+                  i ===
+                  slides.length -
+                    1;
+
+
+                var body =
+                  bodies[i];
+
+
+                // ===============================================
+                // BODY IN
+                //
+                // EXACT same beat as quote.
+                // ===============================================
+
+                if (body) {
+
+                  nukeTimeline.to(
+                    body,
+                    {
+                      opacity:
+                        1,
+
+                      y:
+                        0,
+
+                      duration:
+                        TEXT_FADE,
+
+                      ease:
+                        TEXT_EASE
+                    },
+                    at
+                  );
+
+                }
+
+
+                // ===============================================
+                // QUOTE IN
+                //
+                // EXACT same beat as body.
+                // ===============================================
+
+                nukeTimeline.to(
+                  slide,
+                  {
+                    y:
+                      0,
+
+                    duration:
+                      DUR.slideMove,
+
+                    ease:
+                      "power3.out"
+                  },
+                  at
+                );
+
+
+                // ===============================================
+                // BODY + QUOTE EXIT
+                // ===============================================
+
+                if (!last) {
+
+                  var outAt =
+                    at +
+                    CFG.slideStep -
+                    DUR.slideMove;
+
+
+                  // ---------------------------------------------
+                  // QUOTE OUT
+                  // ---------------------------------------------
+
+                  nukeTimeline.to(
+                    slide,
+                    {
+                      y:
+                        CFG.slideTo,
+
+                      duration:
+                        DUR.slideMove,
+
+                      ease:
+                        "power3.in"
+                    },
+                    outAt
+                  );
+
+
+                  // ---------------------------------------------
+                  // BODY OUT
+                  // SAME EXACT BEAT
+                  // ---------------------------------------------
+
+                  if (body) {
+
+                    nukeTimeline.to(
+                      body,
+                      {
+                        opacity:
+                          0,
+
+                        y:
+                          -CFG.textRise,
+
+                        duration:
+                          DUR.slideMove,
+
+                        ease:
+                          "power2.in"
+                      },
+                      outAt
+                    );
+
+                  }
+
+                }
+
+
+                lastAt =
+                  at;
+
+              }
+            );
+
+
+            // =====================================================
+            // 6. FINAL HOLD
+            // =====================================================
+
+            nukeTimeline.to(
+              {},
+              {
+                duration:
+                  CFG.endHold
+              },
+              lastAt +
+              DUR.slideMove
+            );
+
+
+            // =====================================================
+            // REFRESH
+            // =====================================================
+
+            requestAnimationFrame(
+              function () {
+
+                ScrollTrigger.refresh();
+
+              }
+            );
+
+          }
+        );
+
+    });
+
+});
+
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-math-scene]").forEach(function (sec) {
     var q = gsap.utils.selector(sec);

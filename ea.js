@@ -1666,6 +1666,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 */
+/*
 
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -2202,6 +2203,8 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
 });
+
+*/
 // ── MATH ────────────────────────────────────────────────
 // Replaces the MATH block in ea.js
 //

@@ -664,7 +664,7 @@ document.addEventListener("DOMContentLoaded", function () {
 // height in vh. Current sum is 12.8, so pig_track = 1360vh.
 //
 // Needs SplitText ticked in Site Settings, Integrations.
-
+/*
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-pig]").forEach(function (sec) {
     var pq = gsap.utils.selector(sec);
@@ -995,7 +995,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
-
+*/
 // ── IDEOLOGY ────────────────────────────────────────────
 // Replaces the IDEOLOGY block in ea.js
 //

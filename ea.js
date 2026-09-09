@@ -3423,6 +3423,1379 @@ document.addEventListener("DOMContentLoaded", function () {
 
 }); */
 
+
+  function initLiberty() {
+    var scenes = gsap.utils.toArray('[data-liberty-scene]');
+    if (!scenes.length) return;
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    window.addEventListener('load', function () {
+      document.fonts.ready.then(function () {
+        ScrollTrigger.refresh();
+      });
+    });
+
+    var PRE = 1;
+
+    var BEATS = {
+      bandIn: 0,
+      textIn: 0.08,
+      bg: PRE + 0.5,
+      swap: PRE + 0.62,
+      bits: PRE + 0.85,
+      specks: PRE + 0.75,
+      figures: PRE + 1.55,
+      hold: PRE + 1.12,
+      statueSwap: PRE + 1.1,
+    };
+
+    var DUR = {
+      bandIn: 0.5,
+      textIn: 0.35,
+      bg: 0.6,
+      swap: 0.5,
+      bits: 2,
+      specks: 0.4,
+      figures: 0.75,
+      hold: 2,
+    };
+
+    var CFG = {
+      scrub: 0.4,
+      bandColor: '#080331',
+      figureStagger: 0.08,
+      speckCount: 50,
+      speckColor: '#d85a30',
+      speckStart: 0.35,
+    };
+
+    var mm = gsap.matchMedia();
+
+    scenes.forEach(function (scene) {
+      var q = gsap.utils.selector(scene);
+
+      mm.add(
+        {
+          isDesktop: '(min-width: 992px)',
+          motionOk: '(prefers-reduced-motion: no-preference)',
+        },
+        function (context) {
+          if (!context.conditions.isDesktop) return;
+
+          var motionOk = context.conditions.motionOk;
+
+          var track = q('[data-liberty-track]')[0];
+          var bgDark = q('[data-liberty="bg-dark"]');
+          var band = q('[data-liberty="band"]');
+          var statueLight = q('[data-liberty="light"]');
+          var statueDark = q('[data-liberty="dark"]');
+          var bits = q('[data-liberty="bits"]');
+          var swaps = q('[data-liberty-swap]');
+          var figures = q('[data-figure]');
+          var host = q('[data-liberty-static]')[0];
+          var sticky = q('[data-liberty-sticky]')[0];
+
+          var libertyText = q('[data-liberty-slot-top], [data-liberty-slot-mid], [data-liberty-swap]');
+
+          if (!track) return;
+
+          gsap.set(libertyText, {
+            opacity: 0,
+          });
+
+          var loops = [];
+
+          // Specks
+
+          if (host && motionOk) {
+            var flick = gsap.timeline({
+              paused: true,
+            });
+
+            for (var i = 0; i < CFG.speckCount; i++) {
+              var sp = document.createElement('span');
+
+              sp.style.cssText = 'position:absolute;' + 'display:block;' + 'background:' + CFG.speckColor + ';opacity:0;' + 'will-change:opacity';
+
+              host.appendChild(sp);
+
+              (function (el) {
+                function place() {
+                  var d = gsap.utils.random(2, 4, 1);
+
+                  gsap.set(el, {
+                    width: d,
+                    height: d,
+                    left: gsap.utils.random(0, 100) + '%',
+                    top: gsap.utils.random(0, 100) + '%',
+                  });
+                }
+
+                place();
+
+                flick.to(
+                  el,
+                  {
+                    opacity: 1,
+                    duration: 0.06,
+                    repeat: -1,
+                    repeatRefresh: true,
+                    repeatDelay: gsap.utils.random(0.4, 5),
+                    yoyo: true,
+                    onRepeat: place,
+                  },
+                  gsap.utils.random(0, 3),
+                );
+              })(sp);
+            }
+
+            loops.push(flick);
+
+            ScrollTrigger.create({
+              trigger: track,
+
+              start: 'top top-=' + Math.round(track.offsetHeight * CFG.speckStart),
+
+              end: 'bottom bottom',
+
+              onToggle: function (self) {
+                if (self.isActive) {
+                  flick.play();
+                } else {
+                  flick.pause();
+
+                  gsap.set(host.children, {
+                    opacity: 0,
+                  });
+                }
+              },
+            });
+          }
+
+          // Master timeline
+
+          var libertyTimeline = gsap.timeline({
+            scrollTrigger: {
+              trigger: track,
+              start: 'top top',
+              end: 'bottom bottom',
+              scrub: CFG.scrub,
+            },
+          });
+
+          // Band entrance
+
+          libertyTimeline.to(
+            band,
+            {
+              height: '32%',
+              duration: DUR.bandIn,
+              ease: 'power2.out',
+            },
+            BEATS.bandIn,
+          );
+
+          // Text entrance
+
+          libertyTimeline.to(
+            libertyText,
+            {
+              opacity: 1,
+              duration: DUR.textIn,
+              ease: 'power2.out',
+            },
+            BEATS.textIn,
+          );
+
+          // Word swaps
+
+          swaps.forEach(function (swap) {
+            var out = swap.querySelector('[data-word="out"]');
+
+            var inn = swap.querySelector('[data-word="in"]');
+
+            gsap.set(inn, {
+              yPercent: 100,
+              opacity: 0,
+            });
+
+            libertyTimeline.to(
+              out,
+              {
+                yPercent: -110,
+                opacity: 0,
+                duration: DUR.swap,
+                ease: 'power2.inOut',
+              },
+              BEATS.swap,
+            );
+
+            libertyTimeline.to(
+              inn,
+              {
+                yPercent: 0,
+                opacity: 1,
+                duration: DUR.swap,
+                ease: 'power2.inOut',
+              },
+              BEATS.swap,
+            );
+          });
+
+          // Background
+
+          libertyTimeline.to(
+            bgDark,
+            {
+              opacity: 1,
+              duration: DUR.bg,
+              ease: 'none',
+            },
+            BEATS.bg,
+          );
+
+          libertyTimeline.to(
+            band,
+            {
+              backgroundColor: CFG.bandColor,
+              duration: DUR.bg,
+              ease: 'none',
+            },
+            BEATS.bg,
+          );
+
+          // Statue swap
+
+          libertyTimeline.set(
+            statueDark,
+            {
+              opacity: 1,
+            },
+            BEATS.statueSwap,
+          );
+
+          libertyTimeline.set(
+            statueLight,
+            {
+              opacity: 0,
+            },
+            BEATS.statueSwap,
+          );
+
+          // Bits reveal
+
+          gsap.set(bits, {
+            opacity: 1,
+
+            clipPath: 'polygon(-200% 0%, -100% 0%, 0% 100%, -100% 100%)',
+          });
+
+          libertyTimeline.to(
+            bits,
+            {
+              clipPath: 'polygon(-100% 0%, 100% 0%, 200% 100%, 0% 100%)',
+
+              duration: DUR.bits,
+              ease: 'power2.inOut',
+            },
+            BEATS.bits,
+          );
+
+          var CLEAR = BEATS.hold + DUR.hold;
+
+          // Exit
+
+          figures.forEach(function (fig, i) {
+            var side = fig.getAttribute('data-figure');
+
+            libertyTimeline.to(
+              fig,
+              {
+                x: side === 'left' ? -window.innerWidth : window.innerWidth,
+
+                y: side === 'left' ? 120 : 175,
+
+                opacity: 0,
+                duration: DUR.figures,
+                ease: 'power2.in',
+              },
+              CLEAR + i * CFG.figureStagger,
+            );
+          });
+
+          libertyTimeline.to(
+            bits,
+            {
+              opacity: 0,
+              duration: 0.35,
+              ease: 'power2.in',
+            },
+            CLEAR,
+          );
+
+          libertyTimeline.to(
+            band,
+            {
+              height: '0%',
+              duration: 0.4,
+              ease: 'power2.inOut',
+            },
+            CLEAR + 0.1,
+          );
+
+          libertyTimeline.to(
+            [statueDark, host],
+            {
+              opacity: 0,
+              duration: 0.35,
+              ease: 'power2.in',
+            },
+            CLEAR + 0.1,
+          );
+
+          libertyTimeline.to(
+            [q('[data-liberty-swap]'), q('[data-liberty-slot-mid]')],
+            {
+              opacity: 0,
+              duration: 0.35,
+              ease: 'power2.in',
+            },
+            CLEAR + 0.1,
+          );
+
+          // Pig handoff
+
+          var pig = document.querySelector('[data-pig]');
+
+          if (pig) {
+            ScrollTrigger.create({
+              trigger: pig,
+              start: 'top top',
+
+              onEnter: function () {
+                gsap.set(sticky, {
+                  opacity: 0,
+                });
+              },
+
+              onLeaveBack: function () {
+                gsap.set(sticky, {
+                  opacity: 1,
+                });
+              },
+            });
+          }
+
+          // Specks reveal
+
+          if (host) {
+            libertyTimeline.to(
+              host,
+              {
+                opacity: 1,
+                duration: DUR.specks,
+                ease: 'none',
+              },
+              BEATS.specks,
+            );
+          }
+
+          // Figures enter
+
+          figures.forEach(function (fig, i) {
+            var side = fig.getAttribute('data-figure');
+
+            libertyTimeline.fromTo(
+              fig,
+              {
+                x: side === 'left' ? -window.innerWidth : window.innerWidth,
+
+                y: side === 'left' ? 120 : 175,
+
+                opacity: 0,
+              },
+              {
+                x: 0,
+                y: 0,
+                opacity: 1,
+                duration: DUR.figures,
+                ease: 'power2.out',
+              },
+              BEATS.figures + i * CFG.figureStagger,
+            );
+          });
+
+          // Hold
+
+          libertyTimeline.to(
+            {},
+            {
+              duration: DUR.hold,
+            },
+            BEATS.hold,
+          );
+
+          // Figure float
+
+          if (motionOk && figures.length) {
+            figures.forEach(function (fig, i) {
+              var floatTarget = fig.querySelector('[data-inner-figure="true"]');
+
+              var f = createFloat(floatTarget, MOTION.float, i * 0.4);
+
+              loops.push(f);
+
+              ScrollTrigger.create({
+                trigger: track,
+                start: 'top bottom',
+                end: 'bottom top',
+
+                onToggle: function (self) {
+                  self.isActive ? f.play() : f.pause();
+                },
+              });
+            });
+          }
+
+          // Cleanup
+
+          return function () {
+            loops.forEach(function (t) {
+              t.kill();
+            });
+
+            if (host) {
+              host.innerHTML = '';
+            }
+          };
+        },
+      );
+    });
+  }
+
+  initLiberty();
+
+
+
+  document.addEventListener('DOMContentLoaded', function () {
+    gsap.utils.toArray('[data-pig]').forEach(function (sec) {
+      var pq = gsap.utils.selector(sec);
+
+      var track = pq('[data-pig-track]')[0];
+      var stackWrap = pq('[data-stack-wrapper]')[0];
+      var scale = pq('[data-pig-scale]')[0];
+
+      var lines = pq('[data-pig-line]');
+      var mainTitle = pq('[data-pig-main-title]')[0];
+
+      var closingLine = pq('[data-pig-line-closing]')[0];
+
+      var closingTxt = closingLine ? closingLine.querySelector('[data-pig-txt]') : null;
+
+      var intro = pq('[data-pig-intro="true"]')[0];
+
+      var introTitle = intro ? intro.querySelector('[data-pig-intro-secondary-title]') : null;
+
+      var introLines = intro
+        ? gsap.utils.toArray(intro.querySelectorAll('[data-pig-line]')).filter(function (line) {
+            if (introTitle && line.contains(introTitle)) {
+              return false;
+            }
+
+            return true;
+          })
+        : [];
+
+      // Normal Pig story ONLY.
+      // Closing line has data-pig-line too,
+      // so explicitly remove it here.
+      var storyLines = lines.filter(function (line) {
+        if (line === mainTitle) return false;
+
+        if (line.hasAttribute('data-pig-line-closing')) {
+          return false;
+        }
+
+        if (intro && intro.contains(line)) {
+          return false;
+        }
+
+        return true;
+      });
+
+      var human = pq('[data-pig-human]');
+      var op = pq('[data-pig-op]');
+      var pigSide = pq('[data-pig-pigside]');
+
+      var herdBox = pq('[data-pig-herd]')[0];
+      var pigCount = pq('[data-pig-count="pig"]')[0];
+      var quote = pq('[data-pig-quote]');
+
+      if (!track || !storyLines.length || !herdBox) {
+        return;
+      }
+
+      var seed = herdBox.querySelector('[data-pig-cell]');
+
+      if (!seed) return;
+
+      var BEATS = [
+        { pigs: 1, human: true },
+        { pigs: 2, human: true },
+        { pigs: 2, human: true },
+        { pigs: 10, human: true },
+      ];
+
+      var HOLDS = [0.75, 0.75, 0.6, 0.75];
+
+      var INTRO = {
+        mainIn: 0,
+        mainHold: 0.5,
+
+        introTitleIn: 1,
+        introLinesIn: 1.5,
+
+        introOut: 2,
+        gap: 0.15,
+      };
+
+      var TEXT_FADE = MOTION.textFade.duration;
+      var TEXT_EASE = MOTION.textFade.ease;
+
+      var FIG = 0.12;
+      var DROP = 0.24;
+      var CLEAR = 0.16;
+
+      var QUOTE_HOLD = 0.9;
+      var QUOTE_AFTER = 3;
+
+      function cellSize(n) {
+        if (n <= 1) {
+          return {
+            w: '75%',
+            h: '75%',
+          };
+        }
+
+        if (n === 2) {
+          return {
+            w: '75%',
+            h: '50%',
+          };
+        }
+
+        if (n <= 4) {
+          return {
+            w: '75%',
+            h: '25%',
+          };
+        }
+
+        var cols = Math.ceil(n / 4);
+
+        return {
+          w: 75 / cols + '%',
+          h: '25%',
+        };
+      }
+
+      var HERD_TARGET = 10;
+
+      var existing = herdBox.querySelectorAll('[data-pig-cell]').length;
+
+      for (var p = existing; p < HERD_TARGET; p++) {
+        herdBox.appendChild(seed.cloneNode(true));
+      }
+
+      var herd = gsap.utils.toArray(herdBox.querySelectorAll('[data-pig-cell]'));
+
+      gsap.matchMedia().add('(min-width: 992px)', function () {
+        // Initial figures
+
+        gsap.set([human, op, pigSide], {
+          opacity: 0,
+        });
+
+        gsap.set(herd, {
+          opacity: 0,
+          display: 'none',
+        });
+
+        gsap.set(quote, {
+          opacity: 0,
+          xPercent: -50,
+          yPercent: -50,
+        });
+
+        if (stackWrap) {
+          gsap.set(stackWrap, {
+            height: '100%',
+            top: '0%',
+            opacity: 1,
+          });
+        }
+
+        if (scale) {
+          gsap.set(scale, {
+            yPercent: 100,
+            opacity: 0,
+          });
+        }
+
+        gsap.set(herdBox, {
+          flexDirection: 'column',
+          flexWrap: 'wrap',
+          height: '100%',
+          width: '100%',
+        });
+
+        var first = cellSize(1);
+
+        gsap.set(herd, {
+          width: first.w,
+          height: first.h,
+        });
+
+        // Initial text states
+
+        if (mainTitle) {
+          gsap.set(mainTitle, {
+            opacity: 0,
+          });
+        }
+
+        if (intro) {
+          gsap.set(intro, {
+            opacity: 1,
+          });
+        }
+
+        if (introTitle) {
+          gsap.set(introTitle, {
+            opacity: 0,
+          });
+        }
+
+        if (introLines.length) {
+          gsap.set(introLines, {
+            opacity: 0,
+          });
+        }
+
+        storyLines.forEach(function (line) {
+          var txt = line.querySelector('[data-pig-txt]');
+
+          if (txt) {
+            gsap.set(txt, {
+              opacity: 0,
+            });
+          }
+        });
+
+        // Closing wrapper stays untouched.
+        // Only its inner text starts hidden.
+        if (closingTxt) {
+          gsap.set(closingTxt, {
+            opacity: 0,
+          });
+        }
+
+        var pigTimeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: track,
+            start: 'top top',
+            end: 'bottom bottom',
+            scrub: 0.4,
+          },
+        });
+
+        // MAIN TITLE
+
+        if (mainTitle) {
+          pigTimeline.to(
+            mainTitle,
+            {
+              opacity: 1,
+              duration: TEXT_FADE,
+              ease: TEXT_EASE,
+            },
+            INTRO.mainIn,
+          );
+
+          pigTimeline.to(
+            mainTitle,
+            {
+              opacity: 0,
+              duration: TEXT_FADE,
+              ease: TEXT_EASE,
+            },
+            INTRO.mainHold,
+          );
+        }
+
+        // INTRO MINI TITLE
+
+        if (introTitle) {
+          pigTimeline.to(
+            introTitle,
+            {
+              opacity: 1,
+              duration: TEXT_FADE,
+              ease: TEXT_EASE,
+            },
+            INTRO.introTitleIn,
+          );
+        }
+
+        // INTRO COPY
+
+        if (introLines.length) {
+          pigTimeline.to(
+            introLines,
+            {
+              opacity: 1,
+              duration: TEXT_FADE,
+              ease: TEXT_EASE,
+            },
+            INTRO.introLinesIn,
+          );
+        }
+
+        // INTRO OUT
+
+        if (intro) {
+          pigTimeline.to(
+            intro,
+            {
+              opacity: 0,
+              duration: TEXT_FADE,
+              ease: TEXT_EASE,
+            },
+            INTRO.introOut,
+          );
+        }
+
+        var at = INTRO.introOut + TEXT_FADE + INTRO.gap;
+
+        // PIG STORY
+
+        storyLines.forEach(function (line, i) {
+          var span = HOLDS[i] !== undefined ? HOLDS[i] : 0.75;
+
+          var txt = line.querySelector('[data-pig-txt]');
+
+          var beat = BEATS[i] || BEATS[BEATS.length - 1];
+
+          var prev =
+            i > 0
+              ? BEATS[i - 1]
+              : {
+                  pigs: 0,
+                  human: false,
+                };
+
+          // Text enters
+
+          if (txt) {
+            pigTimeline.to(
+              txt,
+              {
+                opacity: 1,
+                duration: TEXT_FADE,
+                ease: TEXT_EASE,
+              },
+              at,
+            );
+
+            // Lines 1–3 fade normally.
+            // Line 4 fades with full composition.
+
+            if (i !== QUOTE_AFTER) {
+              pigTimeline.to(
+                txt,
+                {
+                  opacity: 0,
+                  duration: TEXT_FADE,
+                  ease: TEXT_EASE,
+                },
+                at + span - TEXT_FADE,
+              );
+            }
+          }
+
+          // First Pig visualization
+
+          if (beat.pigs > 0 && prev.pigs === 0) {
+            if (stackWrap) {
+              pigTimeline.to(
+                stackWrap,
+                {
+                  height: '50%',
+                  top: '50%',
+                  duration: DROP,
+                  ease: 'power2.inOut',
+                },
+                at,
+              );
+            }
+
+            if (scale) {
+              pigTimeline.to(
+                scale,
+                {
+                  yPercent: 0,
+                  opacity: 1,
+                  duration: DROP,
+                  ease: 'power2.out',
+                },
+                at + 0.04,
+              );
+            }
+          }
+
+          // Herd resize
+
+          if (beat.pigs !== prev.pigs && beat.pigs > 0) {
+            var cell = cellSize(beat.pigs);
+
+            pigTimeline.set(
+              herdBox,
+              {
+                justifyContent: beat.pigs <= 2 ? 'center' : 'flex-start',
+
+                alignContent: beat.pigs <= 2 ? 'center' : 'flex-start',
+              },
+              at,
+            );
+
+            pigTimeline.to(
+              herd,
+              {
+                width: cell.w,
+                height: cell.h,
+                duration: DROP,
+                ease: 'power2.inOut',
+              },
+              at,
+            );
+          }
+
+          var revealAt = beat.pigs !== prev.pigs ? at + DROP : at;
+
+          // Human
+
+          pigTimeline.to(
+            human,
+            {
+              opacity: beat.human ? 1 : 0,
+              duration: FIG,
+              ease: 'none',
+            },
+            revealAt,
+          );
+
+          // Operator
+
+          pigTimeline.to(
+            op,
+            {
+              opacity: beat.human && beat.pigs > 0 ? 1 : 0,
+
+              duration: FIG,
+              ease: 'none',
+            },
+            revealAt,
+          );
+
+          // Pig side
+
+          pigTimeline.to(
+            pigSide,
+            {
+              opacity: beat.pigs > 0 ? 1 : 0,
+
+              duration: FIG,
+              ease: 'none',
+            },
+            revealAt,
+          );
+
+          // Herd
+
+          herd.forEach(function (cellEl, idx) {
+            pigTimeline.set(
+              cellEl,
+              {
+                display: idx < beat.pigs ? 'flex' : 'none',
+              },
+              revealAt,
+            );
+
+            pigTimeline.to(
+              cellEl,
+              {
+                opacity: idx < beat.pigs ? 1 : 0,
+
+                duration: FIG,
+                ease: 'none',
+              },
+              revealAt + idx * 0.01,
+            );
+          });
+
+          // Counter
+
+          if (pigCount) {
+            pigTimeline.to(
+              pigCount,
+              {
+                duration: FIG,
+
+                snap: {
+                  innerText: 1,
+                },
+
+                innerText: beat.pigs,
+                ease: 'none',
+              },
+              revealAt,
+            );
+          }
+
+          // PIG LINE 4 → QUOTE → CLOSING LINE
+
+          if (i === QUOTE_AFTER && quote.length) {
+            var transitionStart = at + span - TEXT_FADE;
+
+            var quoteEnd = at + span + QUOTE_HOLD;
+
+            var closingIn = quoteEnd - CLEAR;
+
+            // Last normal Pig line fades with everything else
+
+            if (txt) {
+              pigTimeline.to(
+                txt,
+                {
+                  opacity: 0,
+                  duration: CLEAR,
+                  ease: 'power2.in',
+                },
+                transitionStart,
+              );
+            }
+
+            // Text stack clears
+
+            if (stackWrap) {
+              pigTimeline.to(
+                stackWrap,
+                {
+                  opacity: 0,
+                  duration: CLEAR,
+                  ease: 'power2.in',
+                },
+                transitionStart,
+              );
+            }
+
+            // Pig/human visual clears
+
+            if (scale) {
+              pigTimeline.to(
+                scale,
+                {
+                  opacity: 0,
+                  duration: CLEAR,
+                  ease: 'power2.in',
+                },
+                transitionStart,
+              );
+            }
+
+            // Quote enters immediately
+
+pigTimeline.fromTo(
+  quote,
+  {
+    opacity: 0,
+    y: 60,
+    xPercent: -50,
+    yPercent: -50
+  },
+  {
+    opacity: 1,
+    y: 0,
+    xPercent: -50,
+    yPercent: -50,
+    duration: 0.22,
+    ease: "power3.out"
+  },
+  transitionStart + CLEAR
+);
+
+            // Quote fades OUT
+
+            pigTimeline.to(
+              quote,
+              {
+                opacity: 0,
+                duration: CLEAR,
+                ease: 'power2.in',
+              },
+              closingIn,
+            );
+
+            // Reposition text stage instantly while invisible.
+            // No vertical movement during closing-line reveal.
+
+            if (stackWrap) {
+              pigTimeline.set(
+                stackWrap,
+                {
+                  height: '100%',
+                  top: '0%',
+                },
+                closingIn,
+              );
+
+              pigTimeline.to(
+                stackWrap,
+                {
+                  opacity: 1,
+                  duration: CLEAR,
+                  ease: 'power2.out',
+                },
+                closingIn,
+              );
+            }
+            // Closing line simply fades IN.
+            // No y, no transform, no movement.
+            if (closingTxt) {
+              pigTimeline.to(
+                closingTxt,
+                {
+                  opacity: 1,
+                  duration: TEXT_FADE,
+                  ease: TEXT_EASE,
+                },
+                closingIn,
+              );
+            }
+          }
+          at += span;
+          if (i === QUOTE_AFTER) {
+            at += QUOTE_HOLD;
+          }
+        });
+        pigTimeline.to(
+  {},
+  {
+    duration: 0.3
+  },
+  at
+);
+      });
+    });
+  });
+
+
+
+document.addEventListener("DOMContentLoaded", function () {
+  gsap.utils.toArray("[data-ideology]").forEach(function (sec) {
+    var iq = gsap.utils.selector(sec);
+
+    var track =
+      iq("[data-ideology-track]")[0];
+
+    var title =
+      iq("[data-ideo-title]")[0];
+
+    var subtitle =
+      iq("[data-ideo-subtitle]")[0];
+
+    var body =
+      iq("[data-ideo-body]")[0];
+
+    var paragraph =
+      iq("[data-ideo-paragraph]")[0];
+
+    var list =
+      iq("[data-ideo-list]")[0];
+
+    var quote =
+      iq("[data-ideo-quote]")[0];
+
+    var footnote =
+      iq("[data-ideo-footnote]")[0];
+
+    if (
+      !track ||
+      !title ||
+      !subtitle ||
+      !body
+    ) {
+      return;
+    }
+
+    var listItems = list
+      ? gsap.utils.toArray(
+          list.querySelectorAll("li")
+        )
+      : [];
+
+    var TEXT_FADE =
+      MOTION.textFade.duration;
+
+    var TEXT_EASE =
+      MOTION.textFade.ease;
+
+    gsap.matchMedia().add(
+      "(min-width: 992px)",
+      function () {
+        // ---------------------------------
+        // INITIAL STATES
+        // ---------------------------------
+
+        gsap.set(title, {
+          opacity: 1
+        });
+
+        gsap.set(subtitle, {
+          opacity: 0
+        });
+
+        gsap.set(body, {
+          opacity: 1
+        });
+
+        if (paragraph) {
+          gsap.set(paragraph, {
+            opacity: 0
+          });
+        }
+
+        if (listItems.length) {
+          gsap.set(listItems, {
+            opacity: 0
+          });
+        }
+
+        if (quote) {
+          gsap.set(quote, {
+            opacity: 0
+          });
+        }
+
+        if (footnote) {
+          gsap.set(footnote, {
+            opacity: 0
+          });
+        }
+
+        // ---------------------------------
+        // TIMELINE
+        // ---------------------------------
+
+        var ideologyTimeline =
+          gsap.timeline({
+            scrollTrigger: {
+              trigger: track,
+              start: "top top",
+              end: "bottom bottom",
+              scrub: 0.4
+            }
+          });
+
+        // ---------------------------------
+        // 1. SUBTITLE
+        // Section has arrived.
+        // Title is already visible.
+        // ---------------------------------
+
+        ideologyTimeline.to(
+          subtitle,
+          {
+            opacity: 1,
+            duration: TEXT_FADE,
+            ease: TEXT_EASE
+          },
+          0.1
+        );
+
+        // Small readable hold
+
+        ideologyTimeline.to(
+          {},
+          {
+            duration: 0.35
+          },
+          0.1 + TEXT_FADE
+        );
+
+        // ---------------------------------
+        // 2. TITLE + SUBTITLE LEAVE
+        // ---------------------------------
+
+        var headingOut = 0.7;
+
+        ideologyTimeline.to(
+          [title, subtitle],
+          {
+            opacity: 0,
+            duration: TEXT_FADE,
+            ease: TEXT_EASE
+          },
+          headingOut
+        );
+
+        // ---------------------------------
+        // 3. PARAGRAPH TOP-LEFT
+        // ---------------------------------
+
+        var paragraphIn =
+          headingOut + TEXT_FADE;
+
+        if (paragraph) {
+          ideologyTimeline.to(
+            paragraph,
+            {
+              opacity: 1,
+              duration: TEXT_FADE,
+              ease: TEXT_EASE
+            },
+            paragraphIn
+          );
+        }
+
+        // ---------------------------------
+        // 4. BIG LIST BUILDS
+        // ---------------------------------
+
+        var listIn =
+          paragraphIn +
+          TEXT_FADE +
+          0.2;
+
+        if (listItems.length) {
+          ideologyTimeline.to(
+            listItems,
+            {
+              opacity: 1,
+              duration: TEXT_FADE,
+              stagger: 0.22,
+              ease: TEXT_EASE
+            },
+            listIn
+          );
+        }
+
+        // Work out when final list item finishes
+
+        var listEnd =
+          listIn +
+          TEXT_FADE +
+          Math.max(
+            0,
+            (listItems.length - 1) * 0.22
+          );
+
+        // ---------------------------------
+        // 5. BODY / LIST HOLD
+        // ---------------------------------
+
+        var bodyOut =
+          listEnd + 0.4;
+
+        // ---------------------------------
+        // 6. PARAGRAPH + LIST LEAVE
+        // ---------------------------------
+
+        var bodyTargets = [];
+
+        if (paragraph) {
+          bodyTargets.push(paragraph);
+        }
+
+        if (listItems.length) {
+          bodyTargets =
+            bodyTargets.concat(listItems);
+        }
+
+        if (bodyTargets.length) {
+          ideologyTimeline.to(
+            bodyTargets,
+            {
+              opacity: 0,
+              duration: TEXT_FADE,
+              ease: TEXT_EASE
+            },
+            bodyOut
+          );
+        }
+
+        // ---------------------------------
+        // 7. QUOTE
+        // Back-to-back with body disappearing
+        // ---------------------------------
+
+        var quoteIn =
+          bodyOut + TEXT_FADE;
+
+        if (quote) {
+          ideologyTimeline.to(
+            quote,
+            {
+              opacity: 1,
+              duration: TEXT_FADE,
+              ease: TEXT_EASE
+            },
+            quoteIn
+          );
+        }
+
+        // ---------------------------------
+        // 8. FOOTNOTE
+        // ---------------------------------
+
+        if (footnote) {
+          ideologyTimeline.to(
+            footnote,
+            {
+              opacity: 1,
+              duration: TEXT_FADE,
+              ease: TEXT_EASE
+            },
+            quoteIn +
+              TEXT_FADE +
+              0.08
+          );
+        }
+
+        // ---------------------------------
+        // 9. FINAL HOLD
+        // ---------------------------------
+
+        var finalHoldStart =
+          quoteIn +
+          TEXT_FADE +
+          0.15;
+
+        ideologyTimeline.to(
+          {},
+          {
+            duration: 0.45
+          },
+          finalHoldStart
+        );
+      }
+    );
+  });
+});
+
+
+/*
 document.addEventListener("DOMContentLoaded", function () {
 
   gsap.registerPlugin(ScrollTrigger);
@@ -4544,7 +5917,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
-
+*/
 // ── OPTIMIZED WORLD ─────────────────────────────────────
 // Replaces the OPTIMIZED WORLD block in ea.js
 //

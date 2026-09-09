@@ -9497,40 +9497,28 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
-// ── FAMILY ──────────────────────────────────────────────
-// Vertical scroll driving a horizontal transform. The page
-// never scrolls sideways. fam_track is tall, fam_sticky is
-// viewport-sized, and fam_rail slides inside it.
-//
-// As each card passes the centre it scales up and its role
-// text fades in. The others sit smaller and dimmer, so you
-// read one card at a time at a size that works.
-//
-// Designer: fam_track height 700vh. fam_rail has no width,
-// flex sizes it. Card tilt goes on a combo class so GSAP's
-// scale does not fight it.
-// Check: 6 cards and 6 roles.
-/*
 document.addEventListener("DOMContentLoaded", function () {
-
   gsap.registerPlugin(ScrollTrigger);
-
-  if (typeof SplitText !== "undefined") {
-    gsap.registerPlugin(SplitText);
-  }
 
   gsap.utils
     .toArray("[data-fam-scene]")
-    .forEach(function (sec) {
-
+    .forEach(function (sec, index) {
       var q = gsap.utils.selector(sec);
 
-      var track = q("[data-fam-track]")[0];
-      var rail = q("[data-fam-rail]")[0];
-      var band = q("[data-fam-band]")[0];
+      var track =
+        q("[data-fam-track]")[0];
 
-      var cards = q("[data-fam-card]");
-      var items = q("[data-fam-item]");
+      var rail =
+        q("[data-fam-rail]")[0];
+
+      var band =
+        q("[data-fam-band]")[0];
+
+      var cards =
+        q("[data-fam-card]");
+
+      var items =
+        q("[data-fam-item]");
 
       var title =
         q("[data-fam-title]")[0] ||
@@ -9540,6 +9528,10 @@ document.addEventListener("DOMContentLoaded", function () {
         q("[data-fam-quote]")[0] ||
         items[1];
 
+      // ---------------------------------
+      // VALIDATE FIRST
+      // ---------------------------------
+
       if (
         !track ||
         !rail ||
@@ -9548,385 +9540,325 @@ document.addEventListener("DOMContentLoaded", function () {
         !title ||
         !quote
       ) {
-        console.warn("Family section missing:", {
-          track,
-          rail,
-          band,
-          cards: cards.length,
-          title,
-          quote
-        });
+        console.warn(
+          "Family section missing:",
+          {
+            track: track,
+            rail: rail,
+            band: band,
+            cards: cards.length,
+            items: items.length,
+            title: title,
+            quote: quote
+          }
+        );
 
         return;
       }
 
+      // ---------------------------------
+      // DUPLICATE GUARD
+      //
+      // ONLY AFTER successful validation
+      // ---------------------------------
 
-      // ------------------------------------------------
+      if (
+        sec.dataset.famInitialized ===
+        "true"
+      ) {
+        console.warn(
+          "Family already initialized — skipping duplicate.",
+          sec
+        );
+
+        return;
+      }
+
+      sec.dataset.famInitialized =
+        "true";
+
+      // ---------------------------------
+      // GLOBAL MOTION
+      // ---------------------------------
+
+      var TEXT_FADE =
+        MOTION.textFade.duration;
+
+      var TEXT_EASE =
+        MOTION.textFade.ease;
+
+      // ---------------------------------
       // CONFIG
-      // ------------------------------------------------
+      // ---------------------------------
 
       var END_GUTTER = 48;
 
-      var WORD_DURATION = 0.32;
-      var WORD_STAGGER = 0.05;
+      // Very fast opening
+      var TITLE_AT = 0;
+      var QUOTE_AT = 0.04;
 
-      var TITLE_HOLD = 0.35;
-      var QUOTE_HOLD = 0.55;
+      var ROW_DURATION = 0.55;
+      var ROW_HOLD = 0.18;
 
-      var ROW_DURATION = 0.75;
-      var ROW_HOLD = 0.30;
-
-      var HORIZONTAL_DURATION = 2.8;
-      var FINAL_HOLD = 0.5;
-
-
+      var HORIZONTAL_DURATION = 2.2;
+      var FINAL_HOLD = 0.2;
 
       gsap.matchMedia().add(
         "(min-width: 992px)",
         function () {
+          // ---------------------------------
+          // INITIAL STATES
+          // ---------------------------------
 
-          var splits = [];
-
-
-          // ------------------------------------------------
-          // SPLIT TEXT
-          // ------------------------------------------------
-
-          function makeWords(el) {
-
-            if (typeof SplitText === "undefined") {
-              return [el];
-            }
-
-            var split = new SplitText(el, {
-              type: "words"
-            });
-
-            splits.push(split);
-
-            return split.words;
-          }
-
-
-          var titleWords = makeWords(title);
-          var quoteWords = makeWords(quote);
-
-
-
-          // ------------------------------------------------
-          // CLEAN BASE STATES
-          // ------------------------------------------------
+          // Rail genuinely starts below.
+          // No fromTo / immediateRender conflict.
 
           gsap.set(rail, {
             x: 0,
-            y: 0
+            y: "105vh"
           });
 
           gsap.set(band, {
-            y: 0
+            y: "105vh"
           });
-
-
-          // Cards remain completely untouched.
-          // No focus.
-          // No scaling.
-          // No opacity animation.
 
           gsap.set(cards, {
             opacity: 1,
             scale: 1
           });
 
+          gsap.set(
+            q("[data-fam-role]"),
+            {
+              opacity: 1
+            }
+          );
 
-          // If old code ever touched these,
-          // make sure they're visible.
+          // Whole-element text fade
 
-          gsap.set(q("[data-fam-role]"), {
-            opacity: 1
+          gsap.set(title, {
+            opacity: 0
           });
 
+          gsap.set(quote, {
+            opacity: 0
+          });
 
-
-          // ------------------------------------------------
-          // CALCULATE ACTUAL HORIZONTAL TRAVEL
-          // ------------------------------------------------
-          //
-          // NO 100vw padding required.
-          //
-          // We calculate:
-          //
-          // actual last-card right position
-          // minus
-          // desired right edge.
-          //
-          // ------------------------------------------------
+          // ---------------------------------
+          // HORIZONTAL ENDPOINT
+          // ---------------------------------
 
           function getHorizontalEnd() {
-
             var lastCard =
-              cards[cards.length - 1];
+              cards[
+                cards.length - 1
+              ];
 
-            if (!lastCard) return 0;
+            if (!lastCard) {
+              return 0;
+            }
 
-
-            // Temporarily reason about the rail
-            // as if x = 0.
             var currentX =
               parseFloat(
-                gsap.getProperty(rail, "x")
+                gsap.getProperty(
+                  rail,
+                  "x"
+                )
               ) || 0;
 
-
             var rect =
-              lastCard.getBoundingClientRect();
-
+              lastCard
+                .getBoundingClientRect();
 
             var lastRightAtZero =
-              rect.right - currentX;
-
+              rect.right -
+              currentX;
 
             var desiredRight =
-              window.innerWidth - END_GUTTER;
-
+              window.innerWidth -
+              END_GUTTER;
 
             var distance =
-              desiredRight - lastRightAtZero;
+              desiredRight -
+              lastRightAtZero;
 
-
-            return Math.min(0, distance);
+            return Math.min(
+              0,
+              distance
+            );
           }
 
+          // ---------------------------------
+          // MASTER TIMELINE
+          // ---------------------------------
 
+          var familyTimeline =
+            gsap.timeline({
+              scrollTrigger: {
+                id:
+                  "family-" +
+                  index,
 
-          // ------------------------------------------------
-          // TIMELINE
-          // ------------------------------------------------
+                trigger:
+                  track,
 
-          var tl = gsap.timeline({
+                start:
+                  "top top",
 
-            scrollTrigger: {
+                end:
+                  "bottom bottom",
 
-              trigger: track,
+                scrub:
+                  0.4,
 
-              start: "top top",
-
-              end: "bottom bottom",
-
-              scrub: 0.5,
-
-              invalidateOnRefresh: true,
-
-              // Uncomment while debugging if wanted:
-              // markers: true,
-
-              onRefresh: function () {
-                // make sure dynamic endpoint
-                // gets recalculated cleanly
+                invalidateOnRefresh:
+                  true
               }
+            });
 
-            }
-
-          });
-
-
-
-          // =================================================
+          // ---------------------------------
           // 1. TITLE
-          // =================================================
+          // ---------------------------------
 
-          tl.fromTo(
-            titleWords,
-
+          familyTimeline.to(
+            title,
             {
-              autoAlpha: 0,
-              yPercent: 65
+              opacity: 1,
+
+              duration:
+                TEXT_FADE,
+
+              ease:
+                TEXT_EASE
             },
-
-            {
-              autoAlpha: 1,
-              yPercent: 0,
-
-              duration: WORD_DURATION,
-
-              stagger: {
-                each: WORD_STAGGER
-              },
-
-              ease: "power3.out",
-
-              immediateRender: true
-            }
+            TITLE_AT
           );
 
-
-
-          tl.to({}, {
-            duration: TITLE_HOLD
-          });
-
-
-
-          // =================================================
+          // ---------------------------------
           // 2. QUOTE
-          // =================================================
+          //
+          // Starts basically immediately.
+          // ---------------------------------
 
-          tl.fromTo(
-            quoteWords,
-
+          familyTimeline.to(
+            quote,
             {
-              autoAlpha: 0,
-              yPercent: 65
+              opacity: 1,
+
+              duration:
+                TEXT_FADE,
+
+              ease:
+                TEXT_EASE
             },
-
-            {
-              autoAlpha: 1,
-              yPercent: 0,
-
-              duration: WORD_DURATION,
-
-              stagger: {
-                each: WORD_STAGGER
-              },
-
-              ease: "power3.out",
-
-              immediateRender: true
-            }
+            QUOTE_AT
           );
 
+          // ---------------------------------
+          // 3. RAIL + BAND RISE
+          // ---------------------------------
 
+          var ROW_AT =
+            QUOTE_AT +
+            TEXT_FADE +
+            0.08;
 
-          tl.to({}, {
-            duration: QUOTE_HOLD
-          });
-
-
-
-          // =================================================
-          // 3. CARDS + BAND COME FROM BELOW
-          // =================================================
-          //
-          // fromTo is deliberate here.
-          //
-          // This guarantees that before this point
-          // they're below the viewport.
-          //
-          // =================================================
-
-          tl.fromTo(
+          familyTimeline.to(
             rail,
-
-            {
-              y: "105vh"
-            },
-
             {
               y: 0,
 
-              duration: ROW_DURATION,
+              duration:
+                ROW_DURATION,
 
-              ease: "power3.out",
-
-              immediateRender: true
-            }
+              ease:
+                "power3.out"
+            },
+            ROW_AT
           );
 
-
-          tl.fromTo(
+          familyTimeline.to(
             band,
-
-            {
-              y: "105vh"
-            },
-
             {
               y: 0,
 
-              duration: ROW_DURATION,
+              duration:
+                ROW_DURATION,
 
-              ease: "power3.out",
-
-              immediateRender: true
+              ease:
+                "power3.out"
             },
-
-            "<"
+            ROW_AT
           );
 
+          // ---------------------------------
+          // 4. HORIZONTAL RAIL
+          // ---------------------------------
 
+          var HORIZONTAL_AT =
+            ROW_AT +
+            ROW_DURATION +
+            ROW_HOLD;
 
-          tl.to({}, {
-            duration: ROW_HOLD
-          });
-
-
-
-          // =================================================
-          // 4. HORIZONTAL SCROLL
-          // =================================================
-
-          tl.to(
+          familyTimeline.to(
             rail,
-
             {
               x: function () {
                 return getHorizontalEnd();
               },
 
-              duration: HORIZONTAL_DURATION,
+              duration:
+                HORIZONTAL_DURATION,
 
-              ease: "none"
+              ease:
+                "none"
+            },
+            HORIZONTAL_AT
+          );
+
+          // ---------------------------------
+          // 5. FINAL HOLD
+          // ---------------------------------
+
+          familyTimeline.to(
+            {},
+            {
+              duration:
+                FINAL_HOLD
             }
           );
 
+          requestAnimationFrame(
+            function () {
+              ScrollTrigger.refresh();
+            }
+          );
 
-
-          // =================================================
-          // 5. END HOLD
-          // =================================================
-
-          tl.to({}, {
-            duration: FINAL_HOLD
-          });
-
-
-
-          // ------------------------------------------------
-          // REFRESH AFTER EVERYTHING HAS BEEN MEASURED
-          // ------------------------------------------------
-
-          requestAnimationFrame(function () {
-            ScrollTrigger.refresh();
-          });
-
-
-
-          // ------------------------------------------------
+          // ---------------------------------
           // CLEANUP
-          // ------------------------------------------------
+          // ---------------------------------
 
           return function () {
+            gsap.set(
+              rail,
+              {
+                clearProps:
+                  "transform"
+              }
+            );
 
-            splits.forEach(function (split) {
-              split.revert();
-            });
-
-            gsap.set(rail, {
-              clearProps: "transform"
-            });
-
-            gsap.set(band, {
-              clearProps: "transform"
-            });
-
+            gsap.set(
+              band,
+              {
+                clearProps:
+                  "transform"
+              }
+            );
           };
-
         }
       );
-
     });
-
 });
-*/
 document.addEventListener("DOMContentLoaded", function () {
 
   gsap.registerPlugin(ScrollTrigger);
@@ -12814,3 +12746,195 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+
+
+
+/*
+<script>
+  gsap.registerPlugin(ScrollTrigger);
+  // GLOBAL MOTION SETTINGS
+
+  const MOTION = {
+    textFade: {
+      duration: 0.22,
+      ease: 'power2.out',
+    },
+
+    sceneFade: {
+      duration: 1,
+      ease: 'power2.out',
+    },
+
+    float: {
+      x: [-8, 8],
+      y: [-16, -28],
+      rotate: [-3.2, 3.2],
+      duration: [2.4, 3.6],
+      ease: 'sine.inOut',
+    },
+  };
+
+  // GLOBAL REUSABLE ANIMATIONS
+
+  function fadeIn(target, motion = MOTION.textFade) {
+    return gsap.to(target, {
+      opacity: 1,
+      duration: motion.duration,
+      ease: motion.ease,
+      overwrite: true,
+    });
+  }
+
+  function fadeOut(target, motion = MOTION.textFade) {
+    return gsap.to(target, {
+      opacity: 0,
+      duration: motion.duration,
+      ease: motion.ease,
+      overwrite: true,
+    });
+  }
+
+  function createFloat(target, motion = MOTION.float, delay = 0) {
+    const timeline = gsap.timeline({
+      repeat: -1,
+      yoyo: true,
+      paused: true,
+      defaults: {
+        ease: motion.ease,
+      },
+    });
+
+    timeline.to(
+      target,
+      {
+        x: gsap.utils.random(motion.x[0], motion.x[1]),
+
+        y: gsap.utils.random(motion.y[0], motion.y[1]),
+
+        rotate: gsap.utils.random(motion.rotate[0], motion.rotate[1]),
+
+        duration: gsap.utils.random(motion.duration[0], motion.duration[1]),
+      },
+      delay,
+    );
+
+    return timeline;
+  }
+  // Maduro initial block for scrolling to allow cinematic entrace
+  /*
+  const INTRO_DURATION = 10400; // has to match Webflow's classic animation
+
+  document.body.dataset.maduroLock = 'true';
+
+  setTimeout(() => {
+    delete document.body.dataset.maduroLock;
+  }, INTRO_DURATION);
+*/
+  // end of Maduro scroll blocking
+/*
+  // MADURO SECTION
+
+  function initMaduroScroll() {
+    const maduroTrack = document.querySelector('[data-maduro-track="true"]');
+
+    const maduroVisual = document.querySelector('[data-maduro-visual="true"]');
+
+    const maduroMessages = gsap.utils.toArray('[data-maduro-message]');
+
+    const maduroPoints = [0.0, 0.15, 0.3, 0.45, 0.6, 0.85];
+
+    if (!maduroTrack || !maduroVisual || !maduroMessages.length) return;
+
+    let maduroActive = 0;
+
+    maduroMessages.forEach((message, index) => {
+      gsap.set(message.querySelectorAll('[data-fade]'), {
+        opacity: index === 0 ? 1 : 0,
+      });
+    });
+
+    function showMaduroMessage(index) {
+      if (index === maduroActive) return;
+
+      const oldMessage = maduroMessages[maduroActive];
+      const newMessage = maduroMessages[index];
+
+      fadeOut(oldMessage.querySelectorAll('[data-fade]'));
+
+      fadeIn(newMessage.querySelectorAll('[data-fade]'));
+
+      const maduroDate = newMessage.querySelector('[data-maduro-date]');
+      const maduroShowDate = maduroDate?.dataset.maduroDate === 'true';
+
+      if (maduroShowDate) {
+        gsap.set('[data-maduro-date]', {
+          opacity: 0,
+          visibility: 'hidden',
+        });
+
+        gsap.set(maduroDate, {
+          opacity: 1,
+          visibility: 'visible',
+        });
+      } else {
+        fadeOut('[data-maduro-date]');
+      }
+
+      const maduroIsFinalPhase = index >= maduroMessages.length - 2;
+
+      if (maduroIsFinalPhase) {
+        fadeOut(maduroVisual, MOTION.sceneFade);
+      } else {
+        fadeIn(maduroVisual, MOTION.sceneFade);
+      }
+
+      maduroActive = index;
+    }
+
+    ScrollTrigger.create({
+      trigger: maduroTrack,
+      start: 'top top',
+      end: 'bottom bottom',
+
+      onUpdate(self) {
+        let maduroIndex = 0;
+
+        maduroPoints.forEach((point, index) => {
+          if (self.progress >= point) {
+            maduroIndex = index;
+          }
+        });
+
+        showMaduroMessage(maduroIndex);
+      },
+    });
+
+    ScrollTrigger.refresh();
+  }
+
+  function startMaduroScroll() {
+    const maduroTrack = document.querySelector('[data-maduro-track="true"]');
+
+    if (!maduroTrack) return;
+
+    const maduroStart = maduroTrack.getBoundingClientRect().top + window.scrollY;
+
+    const originalScrollBehavior = document.documentElement.style.scrollBehavior;
+
+    document.documentElement.style.scrollBehavior = 'auto';
+
+    window.scrollTo(0, maduroStart);
+
+    setTimeout(() => {
+      window.scrollTo(0, maduroStart);
+
+      initMaduroScroll();
+      ScrollTrigger.refresh();
+
+      document.documentElement.style.scrollBehavior = originalScrollBehavior;
+    }, 180);
+  }
+
+  //setTimeout(startMaduroScroll, INTRO_DURATION + 20);
+</script>
+*/

@@ -8773,6 +8773,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
+/*
 
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -9554,6 +9555,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+*/
 // - where is claude
 
 document.addEventListener("DOMContentLoaded", function () {

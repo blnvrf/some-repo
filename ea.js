@@ -9556,6 +9556,763 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.utils
+    .toArray("[data-askell-scene]")
+    .forEach(function (sec, index) {
+
+      // =====================================================
+      // ELEMENTS
+      // =====================================================
+
+      var track =
+        sec.querySelector(
+          "[data-askell-track]"
+        );
+
+      var introGroup =
+        sec.querySelector(
+          "[data-askell-intro-group]"
+        );
+
+      var title =
+        sec.querySelector(
+          "[data-askell-title]"
+        );
+
+      var body =
+        sec.querySelector(
+          "[data-askell-body]"
+        );
+
+      var person =
+        sec.querySelector(
+          "[data-askell-person]"
+        );
+
+      var personMedia =
+        person
+          ? person.querySelector(
+              ".askell_person-media"
+            )
+          : null;
+
+      var innerTitle =
+        sec.querySelector(
+          "[data-askell-inner-title]"
+        );
+
+      var floats =
+        gsap.utils.toArray(
+          sec.querySelectorAll(
+            "[data-askell-float]"
+          )
+        );
+
+      var quotes =
+        gsap.utils.toArray(
+          sec.querySelectorAll(
+            "[data-askell-quote]"
+          )
+        );
+
+
+      // =====================================================
+      // VALIDATE
+      // =====================================================
+
+      if (
+        !track ||
+        !introGroup ||
+        !title ||
+        !body ||
+        !person ||
+        !innerTitle ||
+        !floats.length ||
+        quotes.length < 3
+      ) {
+        console.warn(
+          "Askell section missing required element.",
+          {
+            track: track,
+            introGroup: introGroup,
+            title: title,
+            body: body,
+            person: person,
+            innerTitle: innerTitle,
+            floats: floats.length,
+            quotes: quotes.length
+          }
+        );
+
+        return;
+      }
+
+
+      // =====================================================
+      // DUPLICATE GUARD
+      // =====================================================
+
+      if (
+        sec.dataset
+          .askellInitialized ===
+        "true"
+      ) {
+        console.warn(
+          "Askell already initialized — skipping duplicate.",
+          sec
+        );
+
+        return;
+      }
+
+      sec.dataset
+        .askellInitialized =
+        "true";
+
+
+      // =====================================================
+      // GLOBAL MOTION
+      // =====================================================
+
+      var TEXT_FADE =
+        MOTION.textFade.duration;
+
+      var TEXT_EASE =
+        MOTION.textFade.ease;
+
+
+      // =====================================================
+      // CONFIG
+      // =====================================================
+
+      var TEXT_RISE = 24;
+
+      var EMPTY_HOLD = 0.55;
+
+      var TITLE_HOLD = 0.30;
+
+      var BODY_HOLD = 0.90;
+
+      var PERSON_IN = 0.85;
+
+      var FLOAT_IN = 0.45;
+
+      var FLOAT_HOLD = 1.15;
+
+      var FLOAT_OUT = 0.60;
+
+      var QUOTE_HOLD = 1.05;
+
+      var FINAL_HOLD = 1.40;
+
+
+      // =====================================================
+      // DESKTOP
+      // =====================================================
+
+      gsap
+        .matchMedia()
+        .add(
+          "(min-width: 992px)",
+          function () {
+
+
+            // =================================================
+            // INITIAL STATES
+            // =================================================
+
+            gsap.set(
+              introGroup,
+              {
+                y: 0
+              }
+            );
+
+
+            // Intro title
+            // WHOLE ELEMENT
+
+            gsap.set(
+              title,
+              {
+                autoAlpha: 0,
+                y: TEXT_RISE
+              }
+            );
+
+
+            // Intro body
+            // WHOLE ELEMENT
+
+            gsap.set(
+              body,
+              {
+                autoAlpha: 0,
+                y: TEXT_RISE
+              }
+            );
+
+
+            // Amanda begins below viewport
+
+            gsap.set(
+              person,
+              {
+                y: "110vh"
+              }
+            );
+
+
+            if (personMedia) {
+              gsap.set(
+                personMedia,
+                {
+                  x: 0,
+                  y: 0,
+                  rotation: 0
+                }
+              );
+            }
+
+
+            // Floating labels hidden initially
+
+            gsap.set(
+              floats,
+              {
+                autoAlpha: 0,
+                y: 0
+              }
+            );
+
+
+            // New text beside Amanda
+            // visible once Amanda is on-screen
+
+            gsap.set(
+              innerTitle,
+              {
+                autoAlpha: 1
+              }
+            );
+
+
+            // Quotes all occupy the same visual slot,
+            // but start hidden
+
+            gsap.set(
+              quotes,
+              {
+                autoAlpha: 0
+              }
+            );
+
+
+            // =================================================
+            // AMANDA FLOAT
+            //
+            // KEEPING EXISTING MOTION
+            // =================================================
+
+            var personFloat = null;
+
+
+            if (personMedia) {
+
+              personFloat =
+                gsap.to(
+                  personMedia,
+                  {
+                    y: -12,
+
+                    x: 5,
+
+                    rotation: 1.35,
+
+                    duration: 3.4,
+
+                    ease:
+                      "sine.inOut",
+
+                    repeat: -1,
+
+                    yoyo: true
+                  }
+                );
+
+            }
+
+
+            // =================================================
+            // FLOATING LABELS
+            //
+            // ONLY THE 3 ELEMENTS THAT EXIST.
+            // =================================================
+
+            var floatTweens = [];
+
+
+            var floatMotion = [
+
+              {
+                x: -13,
+                y: -8,
+                rotation: -1.5,
+                duration: 2.3
+              },
+
+              {
+                x: 10,
+                y: 12,
+                rotation: 1.2,
+                duration: 2.52
+              },
+
+              {
+                x: -8,
+                y: 14,
+                rotation: -1,
+                duration: 2.74
+              }
+
+            ];
+
+
+            floats.forEach(
+              function (float, i) {
+
+                var inner =
+                  float.querySelector(
+                    ".askell_float-inner"
+                  ) ||
+                  float;
+
+
+                var motion =
+                  floatMotion[i];
+
+                if (!motion) {
+                  return;
+                }
+
+
+                var tween =
+                  gsap.to(
+                    inner,
+                    {
+                      x:
+                        motion.x,
+
+                      y:
+                        motion.y,
+
+                      rotation:
+                        motion.rotation,
+
+                      duration:
+                        motion.duration,
+
+                      ease:
+                        "sine.inOut",
+
+                      repeat:
+                        -1,
+
+                      yoyo:
+                        true
+                    }
+                  );
+
+
+                floatTweens.push(
+                  tween
+                );
+
+              }
+            );
+
+
+            // =================================================
+            // MASTER TIMELINE
+            // =================================================
+
+            var askellTimeline =
+              gsap.timeline({
+
+                scrollTrigger: {
+
+                  id:
+                    "askell-" +
+                    index,
+
+                  trigger:
+                    track,
+
+                  start:
+                    "top top",
+
+                  end:
+                    "bottom bottom",
+
+                  scrub:
+                    0.5,
+
+                  invalidateOnRefresh:
+                    true
+
+                }
+
+              });
+
+
+            // =================================================
+            // 0. BACKGROUND ONLY
+            // =================================================
+
+            askellTimeline.to(
+              {},
+              {
+                duration:
+                  EMPTY_HOLD
+              }
+            );
+
+
+            // =================================================
+            // 1. INTRO TITLE
+            //
+            // WHOLE ELEMENT
+            // =================================================
+
+            askellTimeline.to(
+              title,
+              {
+                autoAlpha: 1,
+
+                y: 0,
+
+                duration:
+                  TEXT_FADE,
+
+                ease:
+                  TEXT_EASE
+              }
+            );
+
+
+            askellTimeline.to(
+              {},
+              {
+                duration:
+                  TITLE_HOLD
+              }
+            );
+
+
+            // =================================================
+            // 2. INTRO BODY
+            //
+            // WHOLE ELEMENT
+            // =================================================
+
+            askellTimeline.to(
+              body,
+              {
+                autoAlpha: 1,
+
+                y: 0,
+
+                duration:
+                  TEXT_FADE,
+
+                ease:
+                  TEXT_EASE
+              }
+            );
+
+
+            askellTimeline.to(
+              {},
+              {
+                duration:
+                  BODY_HOLD
+              }
+            );
+
+
+            // =================================================
+            // 3. AMANDA RISES
+            // =================================================
+
+            askellTimeline.to(
+              person,
+              {
+                y: 0,
+
+                duration:
+                  PERSON_IN,
+
+                ease:
+                  "power3.out"
+              }
+            );
+
+
+            // Intro leaves simultaneously
+
+            askellTimeline.to(
+              introGroup,
+              {
+                y:
+                  "-115vh",
+
+                duration:
+                  PERSON_IN,
+
+                ease:
+                  "power3.inOut"
+              },
+              "<"
+            );
+
+
+            // =================================================
+            // 4. FLOATING LABELS ENTER
+            // =================================================
+
+            askellTimeline.to(
+              floats,
+              {
+                autoAlpha: 1,
+
+                duration:
+                  FLOAT_IN,
+
+                ease:
+                  "power2.out",
+
+                stagger: {
+                  each: 0.075
+                }
+              },
+              "<+0.35"
+            );
+
+
+            askellTimeline.to(
+              {},
+              {
+                duration:
+                  FLOAT_HOLD
+              }
+            );
+
+
+            // =================================================
+            // 5. FLOATING LABELS LEAVE
+            // =================================================
+
+            askellTimeline.to(
+              floats,
+              {
+                autoAlpha: 0,
+
+                y:
+                  "-55vh",
+
+                duration:
+                  FLOAT_OUT,
+
+                ease:
+                  "power2.in",
+
+                stagger: {
+                  each: 0.045
+                }
+              }
+            );
+
+
+            // =================================================
+            // 6. INNER TITLE → QUOTE 1
+            //
+            // DIRECT CROSSFADE.
+            // SAME POSITION.
+            // =================================================
+
+            askellTimeline.to(
+              innerTitle,
+              {
+                autoAlpha: 0,
+
+                duration:
+                  TEXT_FADE,
+
+                ease:
+                  TEXT_EASE
+              }
+            );
+
+
+            askellTimeline.to(
+              quotes[0],
+              {
+                autoAlpha: 1,
+
+                duration:
+                  TEXT_FADE,
+
+                ease:
+                  TEXT_EASE
+              },
+              "<"
+            );
+
+
+            askellTimeline.to(
+              {},
+              {
+                duration:
+                  QUOTE_HOLD
+              }
+            );
+
+
+            // =================================================
+            // 7. QUOTE 1 → QUOTE 2
+            // =================================================
+
+            askellTimeline.to(
+              quotes[0],
+              {
+                autoAlpha: 0,
+
+                duration:
+                  TEXT_FADE,
+
+                ease:
+                  TEXT_EASE
+              }
+            );
+
+
+            askellTimeline.to(
+              quotes[1],
+              {
+                autoAlpha: 1,
+
+                duration:
+                  TEXT_FADE,
+
+                ease:
+                  TEXT_EASE
+              },
+              "<"
+            );
+
+
+            askellTimeline.to(
+              {},
+              {
+                duration:
+                  QUOTE_HOLD
+              }
+            );
+
+
+            // =================================================
+            // 8. QUOTE 2 → QUOTE 3
+            // =================================================
+
+            askellTimeline.to(
+              quotes[1],
+              {
+                autoAlpha: 0,
+
+                duration:
+                  TEXT_FADE,
+
+                ease:
+                  TEXT_EASE
+              }
+            );
+
+
+            askellTimeline.to(
+              quotes[2],
+              {
+                autoAlpha: 1,
+
+                duration:
+                  TEXT_FADE,
+
+                ease:
+                  TEXT_EASE
+              },
+              "<"
+            );
+
+
+            // =================================================
+            // FINAL HOLD
+            //
+            // Quote 3 remains.
+            // =================================================
+
+            askellTimeline.to(
+              {},
+              {
+                duration:
+                  FINAL_HOLD
+              }
+            );
+
+
+            // =================================================
+            // REFRESH
+            // =================================================
+
+            requestAnimationFrame(
+              function () {
+
+                ScrollTrigger.refresh();
+
+              }
+            );
+
+
+            // =================================================
+            // CLEANUP
+            // =================================================
+
+            return function () {
+
+              if (personFloat) {
+                personFloat.kill();
+              }
+
+
+              floatTweens.forEach(
+                function (tween) {
+
+                  tween.kill();
+
+                }
+              );
+
+            };
+
+          }
+        );
+
+    });
+
+});
 // - where is claude
 
 document.addEventListener("DOMContentLoaded", function () {

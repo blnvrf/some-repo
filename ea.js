@@ -3423,6 +3423,715 @@ document.addEventListener("DOMContentLoaded", function () {
 
 }); */
 
+document.addEventListener("DOMContentLoaded", function () {
+  gsap.utils.toArray("[data-math-scene]").forEach(function (sec) {
+    var q = gsap.utils.selector(sec);
+
+    var track =
+      q("[data-math-track]")[0];
+
+    var field =
+      q('[data-dot-field="true"]')[0];
+
+    var caption =
+      q("[data-math-caption]")[0];
+
+    var capHead =
+      q("[data-math-head]")[0];
+
+    var capSub =
+      q("[data-math-sub]")[0];
+
+    var burst =
+      q("[data-math-burst]")[0];
+
+    var end =
+      q("[data-math-end]")[0];
+
+    if (
+      !track ||
+      !field ||
+      !caption ||
+      !capHead ||
+      !capSub ||
+      !burst ||
+      !end
+    ) {
+      console.warn(
+        "Math dots: missing required element."
+      );
+
+      return;
+    }
+
+    // ---------------------------------
+    // MOTION
+    // ---------------------------------
+
+    var TEXT_FADE =
+      MOTION.textFade.duration;
+
+    var TEXT_EASE =
+      MOTION.textFade.ease;
+
+    var DOT_FADED_OPACITY = 0.12;
+
+    var CAP_TOP = "0vh";
+
+    var FIELD_REST = 0;
+
+    var BURST_SCALE = 420;
+
+    // Tight pacing
+    var FIELD_IN = 0.12;
+
+    var FIELD_HOLD = 0.08;
+
+    var DOT_SWAP = 0.12;
+
+    var AFTER_SWAP_HOLD = 0.08;
+
+    var END_HOLD = 0;
+
+    // ---------------------------------
+    // COPY
+    // ---------------------------------
+
+    var CAPTION_1 =
+      "People who do not exist yet";
+
+    var SUB_1 =
+      "10⁵⁸ potential future lives";
+
+    var CAPTION_2 =
+      "8,000,000,000";
+
+    var SUB_2 =
+      "Everyone alive today";
+
+    // ---------------------------------
+    // DOT CONFIG
+    // ---------------------------------
+
+    var COLS = 49;
+    var ROWS = 25;
+
+    var DOT_SIZE_MIN = 10;
+    var DOT_SIZE_MAX = 14;
+
+    var PULSE_CHANCE = 0.10;
+
+    var PULSE_CHANGE_MIN = 3;
+    var PULSE_CHANGE_MAX = 5;
+
+    var PULSE_DURATION_MIN = 1.2;
+    var PULSE_DURATION_MAX = 2.4;
+
+    var DOT_COLOR = "#ff684d";
+
+    function random(min, max) {
+      return (
+        Math.random() *
+          (max - min) +
+        min
+      );
+    }
+
+    // ---------------------------------
+    // BUILD DOT FIELD
+    // ---------------------------------
+
+    field.innerHTML = "";
+
+    var centerCol =
+      Math.floor(COLS / 2);
+
+    var centerRow =
+      Math.floor(ROWS / 2);
+
+    for (
+      var i = 0;
+      i < COLS * ROWS;
+      i++
+    ) {
+      var dot =
+        document.createElement("div");
+
+      dot.className =
+        "math-dot";
+
+      var col =
+        i % COLS;
+
+      var row =
+        Math.floor(i / COLS);
+
+      var size =
+        random(
+          DOT_SIZE_MIN,
+          DOT_SIZE_MAX
+        );
+
+      dot.style.setProperty(
+        "--dot-size",
+        size.toFixed(2) + "px"
+      );
+
+      var inCenterBlock =
+        Math.abs(
+          col - centerCol
+        ) <= 1 &&
+        Math.abs(
+          row - centerRow
+        ) <= 1;
+
+      var exactCenter =
+        col === centerCol &&
+        row === centerRow;
+
+      var excludedCorner =
+        col === centerCol - 1 &&
+        row === centerRow - 1;
+
+      var fixed =
+        inCenterBlock &&
+        !excludedCorner;
+
+      if (exactCenter) {
+        dot.classList.add(
+          "is-center"
+        );
+      }
+
+      if (fixed) {
+        dot.classList.add(
+          "is-fixed"
+        );
+      } else if (
+        Math.random() <
+        PULSE_CHANCE
+      ) {
+        dot.classList.add(
+          "is-pulsing"
+        );
+
+        var change =
+          random(
+            PULSE_CHANGE_MIN,
+            PULSE_CHANGE_MAX
+          );
+
+        var direction =
+          Math.random() < 0.5
+            ? -1
+            : 1;
+
+        var targetSize =
+          Math.max(
+            2,
+            size +
+              change *
+              direction
+          );
+
+        dot.style.setProperty(
+          "--pulse-scale",
+          (
+            targetSize /
+            size
+          ).toFixed(3)
+        );
+
+        dot.style.setProperty(
+          "--pulse-duration",
+          random(
+            PULSE_DURATION_MIN,
+            PULSE_DURATION_MAX
+          ).toFixed(2) + "s"
+        );
+
+        dot.style.setProperty(
+          "--pulse-delay",
+          -random(
+            0,
+            3
+          ).toFixed(2) + "s"
+        );
+      }
+
+      field.appendChild(dot);
+    }
+
+    // ---------------------------------
+    // DOT GROUPS
+    // ---------------------------------
+
+    var normalDots =
+      gsap.utils.toArray(
+        field.querySelectorAll(
+          ".math-dot:not(.is-fixed)"
+        )
+      );
+
+    var fixedDots =
+      gsap.utils.toArray(
+        field.querySelectorAll(
+          ".math-dot.is-fixed"
+        )
+      );
+
+    var centerDot =
+      field.querySelector(
+        ".math-dot.is-center"
+      );
+
+    gsap.set(normalDots, {
+      opacity: 1,
+      backgroundColor:
+        DOT_COLOR
+    });
+
+    gsap.set(fixedDots, {
+      opacity: 1,
+      backgroundColor:
+        DOT_COLOR
+    });
+
+    // ---------------------------------
+    // BURST ALIGNMENT
+    // ---------------------------------
+
+    function alignBurst() {
+      if (
+        !centerDot ||
+        !burst
+      ) {
+        return;
+      }
+
+      var dotRect =
+        centerDot
+          .getBoundingClientRect();
+
+      var parent =
+        burst.offsetParent;
+
+      if (!parent) return;
+
+      var parentRect =
+        parent
+          .getBoundingClientRect();
+
+      gsap.set(burst, {
+        left:
+          dotRect.left -
+          parentRect.left +
+          dotRect.width / 2,
+
+        top:
+          dotRect.top -
+          parentRect.top +
+          dotRect.height / 2,
+
+        xPercent: -50,
+        yPercent: -50,
+
+        marginTop: 0,
+        marginLeft: 0
+      });
+    }
+
+    requestAnimationFrame(
+      alignBurst
+    );
+
+    window.addEventListener(
+      "resize",
+      alignBurst
+    );
+
+    if (
+      document.fonts &&
+      document.fonts.ready
+    ) {
+      document.fonts.ready.then(
+        function () {
+          alignBurst();
+
+          ScrollTrigger.refresh();
+        }
+      );
+    }
+
+    // ---------------------------------
+    // CAPTION LAYERS
+    // ---------------------------------
+
+    function makeCaptionLayers(
+      container,
+      oldText,
+      newText
+    ) {
+      container.innerHTML = "";
+
+      container.style.position =
+        "relative";
+
+      container.style.overflow =
+        "hidden";
+
+      var oldLayer =
+        document.createElement(
+          "span"
+        );
+
+      var newLayer =
+        document.createElement(
+          "span"
+        );
+
+      oldLayer.textContent =
+        oldText;
+
+      newLayer.textContent =
+        newText;
+
+      oldLayer.style.display =
+        "block";
+
+      oldLayer.style.position =
+        "relative";
+
+      newLayer.style.display =
+        "block";
+
+      newLayer.style.position =
+        "absolute";
+
+      newLayer.style.inset =
+        "0";
+
+      newLayer.style.width =
+        "100%";
+
+      container.appendChild(
+        oldLayer
+      );
+
+      container.appendChild(
+        newLayer
+      );
+
+      return {
+        old: oldLayer,
+        next: newLayer
+      };
+    }
+
+    var headLayers =
+      makeCaptionLayers(
+        capHead,
+        CAPTION_1,
+        CAPTION_2
+      );
+
+    var subLayers =
+      makeCaptionLayers(
+        capSub,
+        SUB_1,
+        SUB_2
+      );
+
+    // ---------------------------------
+    // DESKTOP
+    // ---------------------------------
+
+    gsap.matchMedia().add(
+      "(min-width: 992px)",
+      function () {
+        // -----------------------------
+        // INITIAL STATES
+        // -----------------------------
+
+        gsap.set(field, {
+          opacity: 0,
+          yPercent: 100
+        });
+
+        // First Math caption is already
+        // visible when section arrives.
+
+        gsap.set(caption, {
+          opacity: 1,
+          yPercent: -50
+        });
+
+        gsap.set(
+          [
+            headLayers.old,
+            subLayers.old
+          ],
+          {
+            opacity: 1
+          }
+        );
+
+        gsap.set(
+          [
+            headLayers.next,
+            subLayers.next
+          ],
+          {
+            opacity: 0
+          }
+        );
+
+        gsap.set(burst, {
+          opacity: 0,
+          scale: 1,
+
+          xPercent: -50,
+          yPercent: -50,
+
+          marginTop: 0,
+          marginLeft: 0
+        });
+
+        alignBurst();
+
+        gsap.set(end, {
+          opacity: 0
+        });
+
+        // -----------------------------
+        // MASTER TIMELINE
+        // -----------------------------
+
+        var mathTimeline =
+          gsap.timeline({
+            scrollTrigger: {
+              trigger: track,
+              start: "top top",
+              end: "bottom bottom",
+              scrub: 0.35
+            }
+          });
+
+        // -----------------------------
+        // 1. DOT FIELD COMES IN FAST
+        // -----------------------------
+
+        var fieldAt = 0.08;
+
+        mathTimeline.to(
+          field,
+          {
+            opacity: 1,
+            yPercent:
+              FIELD_REST,
+
+            duration:
+              FIELD_IN,
+
+            ease:
+              "power2.out"
+          },
+          fieldAt
+        );
+
+        mathTimeline.to(
+          caption,
+          {
+            top:
+              CAP_TOP,
+
+            yPercent: 0,
+
+            duration: 0.18,
+
+            ease:
+              "power2.out"
+          },
+          fieldAt
+        );
+
+        // -----------------------------
+        // 2. VERY SHORT FULL FIELD
+        // -----------------------------
+
+        var swapAt =
+          fieldAt +
+          FIELD_IN +
+          FIELD_HOLD;
+
+        // -----------------------------
+        // 3. DOTS FADE + TEXT SWAPS
+        //
+        // ALL OF THIS HAPPENS TOGETHER
+        // -----------------------------
+
+        mathTimeline.to(
+          normalDots,
+          {
+            opacity:
+              DOT_FADED_OPACITY,
+
+            duration:
+              DOT_SWAP,
+
+            ease:
+              "none"
+          },
+          swapAt
+        );
+
+        mathTimeline.set(
+          fixedDots,
+          {
+            opacity: 1
+          },
+          swapAt
+        );
+
+        // Old caption fades OUT
+        // during dot transition
+
+        mathTimeline.to(
+          [
+            headLayers.old,
+            subLayers.old
+          ],
+          {
+            opacity: 0,
+
+            duration:
+              TEXT_FADE,
+
+            ease:
+              TEXT_EASE
+          },
+          swapAt
+        );
+
+        // New caption fades IN
+        // during SAME dot transition
+
+        mathTimeline.to(
+          [
+            headLayers.next,
+            subLayers.next
+          ],
+          {
+            opacity: 1,
+
+            duration:
+              TEXT_FADE,
+
+            ease:
+              TEXT_EASE
+          },
+          swapAt
+        );
+
+        // -----------------------------
+        // 4. SHORT 8-DOT BEAT
+        // -----------------------------
+
+        var burstAt =
+          swapAt +
+          Math.max(
+            DOT_SWAP,
+            TEXT_FADE
+          ) +
+          AFTER_SWAP_HOLD;
+
+        // -----------------------------
+        // 5. BURST
+        // -----------------------------
+
+        mathTimeline.call(
+          alignBurst,
+          null,
+          burstAt - 0.01
+        );
+
+        mathTimeline.to(
+          burst,
+          {
+            opacity: 1,
+            duration: 0.04
+          },
+          burstAt
+        );
+
+        mathTimeline.to(
+          burst,
+          {
+            scale:
+              BURST_SCALE,
+
+            duration: 0.24,
+
+            ease:
+              "power2.in"
+          },
+          burstAt + 0.02
+        );
+
+        mathTimeline.to(
+          [
+            field,
+            caption
+          ],
+          {
+            opacity: 0,
+
+            duration:
+              TEXT_FADE,
+
+            ease:
+              TEXT_EASE
+          },
+          burstAt + 0.14
+        );
+
+        // -----------------------------
+        // 6. END TEXT
+        // -----------------------------
+
+        var endAt =
+          burstAt + 0.1;
+
+        mathTimeline.to(
+          end,
+          {
+            opacity: 1,
+
+            duration:
+              TEXT_FADE,
+
+            ease:
+              TEXT_EASE
+          },
+          endAt
+        );
+
+        // -----------------------------
+        // 7. SHORT FINAL HOLD
+        // -----------------------------
+
+        mathTimeline.to(
+          {},
+          {
+            duration:
+              END_HOLD
+          }
+        );
+      }
+    );
+  });
+});
+
 
   function initLiberty() {
     var scenes = gsap.utils.toArray('[data-liberty-scene]');

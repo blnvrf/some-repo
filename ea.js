@@ -7261,7 +7261,7 @@ document.addEventListener("DOMContentLoaded", function () {
 //         !!b.querySelector("[data-opt-quote]")); });
 //
 //   NO opacity values anywhere in this section.
-
+/*
 document.addEventListener("DOMContentLoaded", function () {
 
   gsap.registerPlugin(ScrollTrigger);
@@ -7670,7 +7670,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
-
+*/
 
 document.addEventListener("DOMContentLoaded", function () {
 

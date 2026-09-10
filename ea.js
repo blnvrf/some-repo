@@ -12005,7 +12005,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 // - where is claude
-
+/*
 document.addEventListener("DOMContentLoaded", function () {
 
   gsap.registerPlugin(ScrollTrigger);
@@ -12514,6 +12514,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+*/
 
 document.addEventListener("DOMContentLoaded", function () {
   gsap.registerPlugin(ScrollTrigger);

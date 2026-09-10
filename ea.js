@@ -18383,9 +18383,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // so JS owns this value.
       // =============================================
 
-      gsap.set(groups, {
-        top: "2.5rem"
-      });
+
 
 
 

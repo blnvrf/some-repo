@@ -15974,7 +15974,7 @@ function goToStory(index) {
     });
 
 });
-
+/*
 document.addEventListener("DOMContentLoaded", function () {
 
 
@@ -16094,41 +16094,20 @@ document.addEventListener("DOMContentLoaded", function () {
       // POSITION CONFIG
       // =============================================
 
-      /*
-       * Counter starts LARGE + CENTERED.
-       */
+
 
       var COUNTER_CENTER_LEFT = "50%";
       var COUNTER_CENTER_TOP = "42%";
 
 
-      /*
-       * Once comparison begins:
-       * smaller + near top.
-       *
-       * LEFT is calculated dynamically from
-       * the $7.5B comparison block.
-       */
 
       var COUNTER_SMALL_TOP = "8%";
       var COUNTER_SMALL_SCALE = 0.40;
 
 
-      /*
-       * Comparison blocks.
-       * Kept relatively close together.
-       */
-
       var SCALE_PRIMARY_TOP = "39%";
       var SCALE_SECONDARY_TOP = "52%";
 
-
-      /*
-       * Everything after:
-       * "What does that money buy?"
-       *
-       * sits 15 percentage points higher.
-       */
 
       var LATE_TEXT_TOP = "22%";
 
@@ -17239,8 +17218,8 @@ setInterval(
     });
 
 });
+*/
 
-/* other */
 
 
 

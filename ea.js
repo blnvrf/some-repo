@@ -10061,6 +10061,1193 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 */
 
+
+function initFTX() {
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.utils.toArray(".section_ftx").forEach(function (sec, index) {
+
+    // =========================================================
+    // CORE
+    // =========================================================
+
+    var track = sec.querySelector(".ftx_track");
+    var camera = sec.querySelector(".ftx_camera");
+    var background = sec.querySelector(".ftx_background");
+    var face = sec.querySelector(".ftx_face");
+    var money = sec.querySelector(".ftx_money");
+
+    var blocks = gsap.utils
+      .toArray(sec.querySelectorAll(".ftx_block"))
+      .slice(0, 5);
+
+    if (!track || !camera || !background || blocks.length < 5) {
+      console.warn("FTX missing required elements.", {
+        track: !!track,
+        camera: !!camera,
+        background: !!background,
+        face: !!face,
+        money: !!money,
+        blocks: blocks.length
+      });
+      return;
+    }
+
+    if (sec.dataset.ftxInitialized === "true") return;
+    sec.dataset.ftxInitialized = "true";
+
+
+    // =========================================================
+    // SETTINGS
+    // =========================================================
+
+    var TEXT_FADE =
+      typeof MOTION !== "undefined" && MOTION.textFade
+        ? MOTION.textFade.duration
+        : 0.22;
+
+    var TEXT_EASE =
+      typeof MOTION !== "undefined" && MOTION.textFade
+        ? MOTION.textFade.ease
+        : "power2.out";
+
+    var INTRO_HOLD = 0.45;
+    var BLOCK_HOLD = 0.45;
+
+    var FACE_FADE = 0.35;
+
+    var MONEY_START = "100vh";
+    var MONEY_IN = 0.50;
+
+    // Both tables
+    var ROW_FADE = 0.22;
+    var ROW_GAP = 0.07;
+
+    // Rewrite
+    var TYPE_BEFORE = 0.85;
+    var TYPE_STRIKE = 0.52;
+    var BEFORE_STRIKE_PAUSE = 0.12;
+
+    var STRIKE_DURATION = 0.28;
+    var STRIKE_DIM = 0.50;
+    var STRIKE_DIM_DURATION = 0.22;
+
+    var AFTER_STRIKE_PAUSE = 0.10;
+    var TYPE_AFTER = 0.42;
+    var REWRITE_HOLD = 0.65;
+
+    // Counters
+    var COUNTER_DURATION = 0.55;
+
+    var FINAL_HOLD = 0.90;
+
+    // Camera
+    var FOCUS_SOURCE_X = 67.93;
+    var FOCUS_SOURCE_Y = 22.74;
+    var FINAL_ZOOM = 3.8;
+
+
+    // =========================================================
+    // DESKTOP
+    // =========================================================
+
+    gsap.matchMedia().add("(min-width: 992px)", function () {
+
+      // =====================================================
+      // CAMERA
+      // =====================================================
+
+      function getCameraFocus() {
+        var cw = camera.clientWidth;
+        var ch = camera.clientHeight;
+        var iw = background.naturalWidth || 0;
+        var ih = background.naturalHeight || 0;
+
+        if (!cw || !ch || !iw || !ih) {
+          return {
+            x: FOCUS_SOURCE_X,
+            y: FOCUS_SOURCE_Y
+          };
+        }
+
+        var coverScale = Math.max(cw / iw, ch / ih);
+
+        var renderedWidth = iw * coverScale;
+        var renderedHeight = ih * coverScale;
+
+        var offsetX = (cw - renderedWidth) / 2;
+        var offsetY = (ch - renderedHeight) / 2;
+
+        var focusX =
+          offsetX +
+          renderedWidth * (FOCUS_SOURCE_X / 100);
+
+        var focusY =
+          offsetY +
+          renderedHeight * (FOCUS_SOURCE_Y / 100);
+
+        return {
+          x: focusX / cw * 100,
+          y: focusY / ch * 100
+        };
+      }
+
+
+      function applyCameraFocus() {
+        var focus = getCameraFocus();
+
+        gsap.set(camera, {
+          transformOrigin:
+            focus.x + "% " +
+            focus.y + "%"
+        });
+      }
+
+
+      // =====================================================
+      // BLOCK 3 — CONVICTIONS TABLE
+      // =====================================================
+
+      var convictionRows =
+        gsap.utils.toArray(
+          blocks[2].querySelectorAll(
+            "[data-ftx-row], .ftx-row"
+          )
+        );
+
+
+      // =====================================================
+      // BLOCK 4 — REWRITE
+      // =====================================================
+
+      var rewrite =
+        blocks[3].querySelector(
+          "[data-ftx-rewrite], .ftx_rewrite"
+        );
+
+      var beforeEl =
+        rewrite
+          ? rewrite.querySelector(
+              "[data-ftx-type-before], .ftx_rewrite-before"
+            )
+          : null;
+
+      var strikeEl =
+        rewrite
+          ? rewrite.querySelector(
+              "[data-ftx-type-strike], .ftx_rewrite-strike"
+            )
+          : null;
+
+      var afterEl =
+        rewrite
+          ? rewrite.querySelector(
+              "[data-ftx-type-after], .ftx_rewrite-after"
+            )
+          : null;
+
+
+      // =====================================================
+      // TYPEWRITER BUILDER
+      // =====================================================
+
+      function buildCharacters(el) {
+        if (!el) return null;
+
+        var original = el.textContent;
+        var chars = [];
+        var words = [];
+        var fragment = document.createDocumentFragment();
+
+        el.textContent = "";
+
+        original.split(/(\s+)/).forEach(function (token) {
+          if (!token) return;
+
+          if (/^\s+$/.test(token)) {
+            fragment.appendChild(
+              document.createTextNode(token)
+            );
+            return;
+          }
+
+          var word = document.createElement("span");
+          word.style.whiteSpace = "nowrap";
+
+          Array.from(token).forEach(function (letter) {
+            var char = document.createElement("span");
+
+            char.textContent = letter;
+            char.style.visibility = "hidden";
+            char.style.opacity = "1";
+
+            word.appendChild(char);
+            chars.push(char);
+          });
+
+          words.push(word);
+          fragment.appendChild(word);
+        });
+
+        el.appendChild(fragment);
+
+        return {
+          el: el,
+          original: original,
+          chars: chars,
+          words: words
+        };
+      }
+
+
+      var beforeType = buildCharacters(beforeEl);
+      var strikeType = buildCharacters(strikeEl);
+      var afterType = buildCharacters(afterEl);
+
+
+      // =====================================================
+      // MULTILINE STRIKE
+      // =====================================================
+
+      var strikeLayer = null;
+      var strikeSegments = [];
+      var MAX_STRIKE_LINES = 6;
+
+
+      function createStrikeLayer() {
+        if (!rewrite || !strikeEl || !strikeType) return;
+
+        if (getComputedStyle(rewrite).position === "static") {
+          rewrite.style.position = "relative";
+        }
+
+        strikeLayer = document.createElement("div");
+
+        Object.assign(strikeLayer.style, {
+          position: "absolute",
+          inset: "0",
+          pointerEvents: "none",
+          overflow: "visible",
+          zIndex: "10"
+        });
+
+        rewrite.appendChild(strikeLayer);
+
+        for (var i = 0; i < MAX_STRIKE_LINES; i++) {
+          var line = document.createElement("div");
+
+          Object.assign(line.style, {
+            position: "absolute",
+            height: "3px",
+            backgroundColor: getComputedStyle(strikeEl).color,
+            transformOrigin: "left center",
+            pointerEvents: "none",
+            display: "none"
+          });
+
+          strikeLayer.appendChild(line);
+          strikeSegments.push(line);
+        }
+
+        gsap.set(strikeSegments, {
+          scaleX: 0,
+          opacity: 1
+        });
+
+        updateStrikeGeometry();
+      }
+
+
+      function getStrikeLines() {
+        if (!strikeType || !strikeType.words.length) return [];
+
+        var rects = strikeType.words
+          .map(function (word) {
+            return word.getBoundingClientRect();
+          })
+          .filter(function (rect) {
+            return rect.width > 0 && rect.height > 0;
+          });
+
+        var lines = [];
+
+        rects.forEach(function (rect) {
+          var centerY = rect.top + rect.height / 2;
+
+          var existing = lines.find(function (line) {
+            return Math.abs(line.centerY - centerY) < 5;
+          });
+
+          if (!existing) {
+            lines.push({
+              left: rect.left,
+              right: rect.right,
+              top: rect.top,
+              bottom: rect.bottom,
+              centerY: centerY
+            });
+          } else {
+            existing.left = Math.min(existing.left, rect.left);
+            existing.right = Math.max(existing.right, rect.right);
+            existing.top = Math.min(existing.top, rect.top);
+            existing.bottom = Math.max(existing.bottom, rect.bottom);
+          }
+        });
+
+        return lines;
+      }
+
+
+      function updateStrikeGeometry() {
+        if (!rewrite || !strikeSegments.length) return;
+
+        var parentRect = rewrite.getBoundingClientRect();
+        var lines = getStrikeLines();
+
+        strikeSegments.forEach(function (segment, i) {
+          var line = lines[i];
+
+          if (!line) {
+            segment.style.display = "none";
+            return;
+          }
+
+          var lineHeight = line.bottom - line.top;
+
+          var y =
+            line.top -
+            parentRect.top +
+            lineHeight * 0.52;
+
+          segment.style.display = "block";
+
+          segment.style.left =
+            (line.left - parentRect.left) + "px";
+
+          segment.style.top =
+            (y - 1.5) + "px";
+
+          segment.style.width =
+            (line.right - line.left) + "px";
+
+          segment.style.backgroundColor =
+            getComputedStyle(strikeEl).color;
+        });
+      }
+
+
+      createStrikeLayer();
+
+
+      // =====================================================
+      // BLOCK 5 — FINAL TABLE
+      // =====================================================
+
+      var finalRows =
+        gsap.utils.toArray(
+          blocks[4].querySelectorAll(
+            "[data-ftx-row], .ftx-row"
+          )
+        );
+
+
+      // =====================================================
+      // COUNTERS
+      // =====================================================
+
+      var counters =
+        gsap.utils
+          .toArray(
+            blocks[4].querySelectorAll(
+              "[data-ftx-count]"
+            )
+          )
+          .map(function (el) {
+
+            var raw = String(
+              el.dataset.ftxCount || ""
+            )
+              .replace(/,/g, "")
+              .trim();
+
+            var target = Number(raw);
+
+            if (!Number.isFinite(target)) {
+              console.warn("Bad FTX counter:", el, raw);
+              return null;
+            }
+
+            var prefix =
+              el.dataset.ftxPrefix || "";
+
+            var suffix =
+              el.dataset.ftxSuffix || "";
+
+            var decimals =
+              raw.includes(".")
+                ? raw.split(".")[1].length
+                : 0;
+
+            var originalText =
+              el.textContent;
+
+            var state = {
+              value: 0
+            };
+
+
+            function render() {
+              var number;
+
+              if (decimals > 0) {
+                number =
+                  state.value.toFixed(decimals);
+              } else {
+                number =
+                  Math.round(state.value)
+                    .toLocaleString();
+              }
+
+              el.textContent =
+                prefix +
+                number +
+                suffix;
+            }
+
+
+            render();
+
+            return {
+              el: el,
+              target: target,
+              state: state,
+              render: render,
+              originalText: originalText
+            };
+          })
+          .filter(Boolean);
+
+
+      // =====================================================
+      // INITIAL STATES
+      // =====================================================
+
+      gsap.set(camera, {
+        scale: 1,
+        x: 0,
+        y: 0
+      });
+
+      applyCameraFocus();
+
+      gsap.set(background, {
+        autoAlpha: 1
+      });
+
+
+      if (face) {
+        gsap.set(face, {
+          autoAlpha: 0,
+          x: 0,
+          y: 0
+        });
+      }
+
+
+      if (money) {
+        gsap.set(money, {
+          autoAlpha: 1,
+          x: 0,
+          y: MONEY_START
+        });
+      }
+
+
+      blocks.forEach(function (block, i) {
+        gsap.set(block, {
+          autoAlpha:
+            i === 0 ? 1 : 0
+        });
+      });
+
+
+      if (rewrite) {
+        gsap.set(rewrite, {
+          autoAlpha: 1
+        });
+      }
+
+
+      // Convictions:
+      // block/title can appear,
+      // but rows wait.
+
+      if (convictionRows.length) {
+        gsap.set(convictionRows, {
+          autoAlpha: 0,
+          y: 14
+        });
+      }
+
+
+      // Final table:
+      // exact same idea.
+
+      if (finalRows.length) {
+        gsap.set(finalRows, {
+          autoAlpha: 0,
+          y: 14
+        });
+      }
+
+
+      // =====================================================
+      // TIMELINE
+      // =====================================================
+
+      var ftxTimeline =
+        gsap.timeline({
+          scrollTrigger: {
+            id: "ftx-" + index,
+            trigger: track,
+            start: "top top",
+            end: "bottom bottom",
+            scrub: 0.45,
+            invalidateOnRefresh: true
+          }
+        });
+
+
+      // =====================================================
+      // HELPERS
+      // =====================================================
+
+      function fadeOutBlock(block, at) {
+        if (!block) return at;
+
+        ftxTimeline.to(
+          block,
+          {
+            autoAlpha: 0,
+            duration: TEXT_FADE,
+            ease: "power2.in"
+          },
+          at
+        );
+
+        return at + TEXT_FADE;
+      }
+
+
+      function fadeInBlock(block, at) {
+        if (!block) return at;
+
+        ftxTimeline.to(
+          block,
+          {
+            autoAlpha: 1,
+            duration: TEXT_FADE,
+            ease: TEXT_EASE
+          },
+          at
+        );
+
+        return at + TEXT_FADE;
+      }
+
+
+      function transitionBlocks(
+        outgoing,
+        incoming,
+        at
+      ) {
+        // Absolutely no crossfade.
+
+        at = fadeOutBlock(outgoing, at);
+        at = fadeInBlock(incoming, at);
+
+        return at;
+      }
+
+
+      function revealRows(rows, at) {
+        rows.forEach(function (row) {
+
+          ftxTimeline.to(
+            row,
+            {
+              autoAlpha: 1,
+              y: 0,
+              duration: ROW_FADE,
+              ease: "power2.out"
+            },
+            at
+          );
+
+          // Row must finish before next row.
+          at += ROW_FADE + ROW_GAP;
+        });
+
+        return at;
+      }
+
+
+      function typeCharacters(
+        target,
+        duration,
+        at
+      ) {
+        if (!target || !target.chars.length) {
+          return at + duration;
+        }
+
+        var step =
+          duration /
+          Math.max(
+            1,
+            target.chars.length - 1
+          );
+
+        target.chars.forEach(
+          function (char, i) {
+
+            ftxTimeline.set(
+              char,
+              {
+                visibility: "visible"
+              },
+              at + step * i
+            );
+          }
+        );
+
+        return at + duration;
+      }
+
+
+      function animateCounter(
+        counter,
+        at
+      ) {
+        counter.state.value = 0;
+        counter.render();
+
+        ftxTimeline.to(
+          counter.state,
+          {
+            value: counter.target,
+            duration: COUNTER_DURATION,
+            ease: "power2.out",
+            onUpdate: counter.render
+          },
+          at
+        );
+      }
+
+
+      // =====================================================
+      // STORY
+      // =====================================================
+
+      var at = 0;
+
+
+      // =====================================================
+      // BLOCK 1
+      // =====================================================
+
+      at += INTRO_HOLD;
+
+
+      // =====================================================
+      // BLOCK 1 → 2
+      // =====================================================
+
+      at =
+        transitionBlocks(
+          blocks[0],
+          blocks[1],
+          at
+        );
+
+
+      if (face) {
+        ftxTimeline.to(
+          face,
+          {
+            autoAlpha: 1,
+            duration: FACE_FADE,
+            ease: "power2.out"
+          },
+          at
+        );
+
+        at += FACE_FADE;
+      }
+
+
+      if (money) {
+        ftxTimeline.to(
+          money,
+          {
+            y: 0,
+            duration: MONEY_IN,
+            ease: "power3.out"
+          },
+          at
+        );
+      }
+
+
+      at +=
+        Math.max(
+          BLOCK_HOLD,
+          MONEY_IN
+        );
+
+
+      // =====================================================
+      // BLOCK 2 → 3
+      //
+      // CONVICTIONS TABLE
+      // =====================================================
+
+      at =
+        transitionBlocks(
+          blocks[1],
+          blocks[2],
+          at
+        );
+
+
+      // Block 3 has now fully faded in.
+      // Because its rows began hidden,
+      // only its title/header is showing.
+
+
+      // Small title-only beat.
+
+      at += BLOCK_HOLD;
+
+
+      // Now conviction rows appear one at a time.
+
+      at =
+        revealRows(
+          convictionRows,
+          at
+        );
+
+
+      // Small completed-table hold.
+
+      at += BLOCK_HOLD;
+
+
+      // =====================================================
+      // CAMERA ZOOM START
+      // =====================================================
+
+      var zoomStart = at;
+
+
+      // =====================================================
+      // BLOCK 3 → 4
+      //
+      // REWRITE
+      // =====================================================
+
+      at =
+        transitionBlocks(
+          blocks[2],
+          blocks[3],
+          at
+        );
+
+
+      // =====================================================
+      // TYPE FIRST PART
+      // =====================================================
+
+      at =
+        typeCharacters(
+          beforeType,
+          TYPE_BEFORE,
+          at
+        );
+
+
+      // =====================================================
+      // TYPE CHARITY PHRASE
+      // =====================================================
+
+      at =
+        typeCharacters(
+          strikeType,
+          TYPE_STRIKE,
+          at
+        );
+
+
+      at +=
+        BEFORE_STRIKE_PAUSE;
+
+
+      // =====================================================
+      // DRAW STRIKE
+      // =====================================================
+
+      if (strikeSegments.length) {
+
+        ftxTimeline.to(
+          strikeSegments,
+          {
+            scaleX: 1,
+            duration: STRIKE_DURATION,
+            ease: "power2.out"
+          },
+          at
+        );
+
+        at +=
+          STRIKE_DURATION;
+      }
+
+
+      // =====================================================
+      // DIM STRUCK TEXT + LINE
+      // =====================================================
+
+      if (
+        strikeType &&
+        strikeType.chars.length
+      ) {
+
+        ftxTimeline.to(
+          [
+            ...strikeType.chars,
+            ...strikeSegments
+          ],
+          {
+            opacity: STRIKE_DIM,
+            duration:
+              STRIKE_DIM_DURATION,
+            ease:
+              "power2.out"
+          },
+          at
+        );
+
+        at +=
+          STRIKE_DIM_DURATION;
+      }
+
+
+      at +=
+        AFTER_STRIKE_PAUSE;
+
+
+      // =====================================================
+      // TYPE REPLACEMENT
+      // =====================================================
+
+      at =
+        typeCharacters(
+          afterType,
+          TYPE_AFTER,
+          at
+        );
+
+
+      at +=
+        REWRITE_HOLD;
+
+
+      if (money) {
+        ftxTimeline.to(
+          money,
+          {
+            x: "-25vw",
+            y: "20vh",
+            duration: 0.60,
+            ease: "power2.inOut"
+          },
+          at - REWRITE_HOLD
+        );
+      }
+
+
+      // =====================================================
+      // BLOCK 4 → 5
+      //
+      // FINAL TABLE
+      // =====================================================
+
+      at =
+        transitionBlocks(
+          blocks[3],
+          blocks[4],
+          at
+        );
+
+
+      // Exactly like convictions:
+      // title/header is now visible,
+      // rows remain hidden.
+
+      at += BLOCK_HOLD;
+
+
+      // =====================================================
+      // FINAL TABLE ROWS
+      //
+      // Row appears → counter counts
+      // → next row.
+      // =====================================================
+
+      finalRows.forEach(function (row) {
+
+        // -----------------------------
+        // ROW
+        // -----------------------------
+
+        ftxTimeline.to(
+          row,
+          {
+            autoAlpha: 1,
+            y: 0,
+            duration: ROW_FADE,
+            ease: "power2.out"
+          },
+          at
+        );
+
+        at += ROW_FADE;
+
+
+        // -----------------------------
+        // COUNTER(S) IN THIS ROW
+        // -----------------------------
+
+        var rowCounters =
+          counters.filter(
+            function (counter) {
+              return row.contains(
+                counter.el
+              );
+            }
+          );
+
+
+        rowCounters.forEach(
+          function (counter) {
+
+            animateCounter(
+              counter,
+              at
+            );
+          }
+        );
+
+
+        if (rowCounters.length) {
+          at += COUNTER_DURATION;
+        }
+
+
+        at += ROW_GAP;
+      });
+
+
+      // =====================================================
+      // COUNTERS NOT INSIDE A ROW
+      // =====================================================
+
+      var looseCounters =
+        counters.filter(
+          function (counter) {
+
+            return !finalRows.some(
+              function (row) {
+
+                return row.contains(
+                  counter.el
+                );
+              }
+            );
+          }
+        );
+
+
+      if (looseCounters.length) {
+
+        looseCounters.forEach(
+          function (counter) {
+
+            animateCounter(
+              counter,
+              at
+            );
+          }
+        );
+
+        at += COUNTER_DURATION;
+      }
+
+
+      // =====================================================
+      // FINAL HOLD
+      // =====================================================
+
+      ftxTimeline.to(
+        {},
+        {
+          duration: FINAL_HOLD
+        },
+        at
+      );
+
+      at += FINAL_HOLD;
+
+
+      // =====================================================
+      // CAMERA ZOOM
+      // =====================================================
+
+      var zoomDuration =
+        ftxTimeline.duration() -
+        zoomStart;
+
+
+      if (zoomDuration > 0) {
+
+        ftxTimeline.to(
+          camera,
+          {
+            scale: FINAL_ZOOM,
+            x: 0,
+            y: 0,
+            duration: zoomDuration,
+            ease: "none"
+          },
+          zoomStart
+        );
+      }
+
+
+      // =====================================================
+      // RESIZE / REFLOW
+      // =====================================================
+
+      function refreshGeometry() {
+        applyCameraFocus();
+        updateStrikeGeometry();
+      }
+
+
+      function onResize() {
+        refreshGeometry();
+        ScrollTrigger.refresh();
+      }
+
+
+      window.addEventListener(
+        "resize",
+        onResize
+      );
+
+
+      if (
+        document.fonts &&
+        document.fonts.ready
+      ) {
+
+        document.fonts.ready.then(
+          function () {
+
+            refreshGeometry();
+            ScrollTrigger.refresh();
+          }
+        );
+      }
+
+
+      requestAnimationFrame(
+        function () {
+
+          refreshGeometry();
+          ScrollTrigger.refresh();
+        }
+      );
+
+
+      // =====================================================
+      // CLEANUP
+      // =====================================================
+
+      return function () {
+
+        window.removeEventListener(
+          "resize",
+          onResize
+        );
+
+
+        if (
+          strikeLayer &&
+          strikeLayer.parentNode
+        ) {
+
+          strikeLayer.parentNode
+            .removeChild(
+              strikeLayer
+            );
+        }
+
+
+        if (beforeType) {
+          beforeType.el.textContent =
+            beforeType.original;
+        }
+
+        if (strikeType) {
+          strikeType.el.textContent =
+            strikeType.original;
+        }
+
+        if (afterType) {
+          afterType.el.textContent =
+            afterType.original;
+        }
+
+
+        counters.forEach(
+          function (counter) {
+
+            counter.el.textContent =
+              counter.originalText;
+          }
+        );
+      };
+    });
+  });
+}
+
+
+if (document.readyState === "loading") {
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    initFTX
+  );
+
+} else {
+
+  initFTX();
+}
+
+// ftx end
+
 document.addEventListener("DOMContentLoaded", function () {
 
   gsap.registerPlugin(ScrollTrigger);
@@ -11690,6 +12877,7 @@ document.addEventListener("DOMContentLoaded", function () {
       );
     });
 });
+/*
 document.addEventListener("DOMContentLoaded", function () {
 
   gsap.registerPlugin(ScrollTrigger);
@@ -12971,7 +14159,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
-
+*/
 document.addEventListener("DOMContentLoaded", function () {
 
 

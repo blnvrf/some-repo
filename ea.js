@@ -17220,6 +17220,1125 @@ setInterval(
 });
 */
 
+document.addEventListener("DOMContentLoaded", function () {
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.utils
+    .toArray("[data-wash-scene]")
+    .forEach(function (sec) {
+
+      var q = gsap.utils.selector(sec);
+
+
+      // =========================================================
+      // ELEMENTS
+      // =========================================================
+
+      var track =
+        q("[data-wash-track]")[0];
+
+      var claude =
+        q("[data-wash-claude]")[0];
+
+      var capitol =
+        q("[data-wash-capitol]")[0];
+
+      var bills =
+        q("[data-wash-bill]");
+
+      var intro =
+        q("[data-wash-intro]")[0];
+
+      var title =
+        q("[data-wash-title]")[0];
+
+      var counter =
+        q("[data-wash-counter]")[0];
+
+      var counterValue =
+        q("[data-wash-counter-value]")[0];
+
+      var counterLabel =
+        q("[data-wash-counter-label]")[0];
+
+      var scaleGroup =
+        q("[data-wash-scale]")[0];
+
+      var scalePrimary =
+        q("[data-wash-scale-primary]")[0];
+
+      var scaleSecondary =
+        q("[data-wash-scale-secondary]")[0];
+
+      var question =
+        q("[data-wash-question]")[0];
+
+      var fellows =
+        q('[data-wash-stat="fellows"]')[0];
+
+      var pac =
+        q('[data-wash-stat="pac"]')[0];
+
+      var pledged =
+        q('[data-wash-stat="pledged"]')[0];
+
+
+      if (
+        !track ||
+        !intro ||
+        !title ||
+        !counter ||
+        !counterValue ||
+        !counterLabel ||
+        !scalePrimary ||
+        !scaleSecondary ||
+        !question ||
+        !fellows ||
+        !pac ||
+        !pledged
+      ) {
+
+        console.warn(
+          "Washington section: missing required elements.",
+          {
+            track,
+            intro,
+            title,
+            counter,
+            counterValue,
+            counterLabel,
+            scalePrimary,
+            scaleSecondary,
+            question,
+            fellows,
+            pac,
+            pledged,
+            bills: bills.length
+          }
+        );
+
+        return;
+      }
+
+
+      // =========================================================
+      // SETTINGS
+      // =========================================================
+
+      var COUNTER_CENTER_LEFT = "50%";
+      var COUNTER_CENTER_TOP = "42%";
+
+      var COUNTER_SMALL_TOP = "8%";
+
+      var COUNTER_SMALL_VALUE_SIZE = "3rem";
+
+      // Stays 1rem in BOTH states.
+      var COUNTER_LABEL_SIZE = "1.25rem";
+
+      var SCALE_PRIMARY_TOP = "39%";
+      var SCALE_SECONDARY_TOP = "52%";
+
+      var LATE_TEXT_TOP = "22%";
+
+      var RATE_PER_SECOND = 32;
+
+
+      // =========================================================
+      // LIVE COUNTER
+      // =========================================================
+
+      var pageOpenedAt =
+        performance.now();
+
+
+      function updateCounter() {
+
+        var elapsedSeconds =
+          Math.floor(
+            (performance.now() - pageOpenedAt) / 1000
+          );
+
+        var amount =
+          elapsedSeconds * RATE_PER_SECOND;
+
+        counterValue.textContent =
+          "$" + amount.toLocaleString("en-US");
+      }
+
+
+      updateCounter();
+
+      var counterInterval =
+        setInterval(
+          updateCounter,
+          100
+        );
+
+
+      // =========================================================
+      // DESKTOP
+      // =========================================================
+
+      gsap.matchMedia().add(
+        "(min-width: 992px)",
+        function () {
+
+
+          // =====================================================
+          // TIMING
+          // =====================================================
+
+          var TEXT_FADE = 0.34;
+
+          var INTRO_HOLD = 0.55;
+
+          var COUNTER_IN = 0.55;
+          var COUNTER_HOLD = 0.85;
+
+          var VISUAL_IN = 0.75;
+          var VISUAL_HOLD = 0.65;
+
+          var SCALE_HOLD = 1.25;
+
+          var QUESTION_HOLD = 0.80;
+
+          var STAT_IN = 0.45;
+          var STAT_HOLD = 0.90;
+
+          var FINAL_HOLD = 1.40;
+
+
+          // Large value size comes from Designer.
+          var counterLargeValueSize =
+            getComputedStyle(counterValue)
+              .fontSize;
+
+
+          // =====================================================
+          // HELPERS
+          // =====================================================
+
+          function getComparisonLeft() {
+
+            var scaleRect =
+              scalePrimary
+                .getBoundingClientRect();
+
+            var counterParent =
+              counter.offsetParent;
+
+
+            if (!counterParent) {
+
+              return (
+                scaleRect.left +
+                "px"
+              );
+            }
+
+
+            var parentRect =
+              counterParent
+                .getBoundingClientRect();
+
+
+            return (
+              scaleRect.left -
+              parentRect.left
+            ) + "px";
+          }
+
+
+          // =====================================================
+          // POSITIONING
+          // =====================================================
+
+          gsap.set(
+            scalePrimary,
+            {
+              top:
+                SCALE_PRIMARY_TOP
+            }
+          );
+
+
+          gsap.set(
+            scaleSecondary,
+            {
+              top:
+                SCALE_SECONDARY_TOP
+            }
+          );
+
+
+          gsap.set(
+            question,
+            {
+              top:
+                LATE_TEXT_TOP
+            }
+          );
+
+
+          gsap.set(
+            [
+              fellows,
+              pac,
+              pledged
+            ],
+            {
+              top:
+                LATE_TEXT_TOP
+            }
+          );
+
+
+          // =====================================================
+          // INITIAL STATES
+          // =====================================================
+
+          gsap.set(
+            title,
+            {
+              autoAlpha:
+                0
+            }
+          );
+
+
+          gsap.set(
+            counter,
+            {
+              autoAlpha:
+                0,
+
+              left:
+                COUNTER_CENTER_LEFT,
+
+              top:
+                COUNTER_CENTER_TOP,
+
+              x:
+                0,
+
+              y:
+                0,
+
+              xPercent:
+                -50,
+
+              yPercent:
+                -50
+            }
+          );
+
+
+          gsap.set(
+            counterValue,
+            {
+              fontSize:
+                counterLargeValueSize
+            }
+          );
+
+
+          // Always 1rem.
+          gsap.set(
+            counterLabel,
+            {
+              fontSize:
+                COUNTER_LABEL_SIZE
+            }
+          );
+
+
+          if (capitol) {
+
+            gsap.set(
+              capitol,
+              {
+                yPercent:
+                  100,
+
+                autoAlpha:
+                  0
+              }
+            );
+          }
+
+
+          if (claude) {
+
+            gsap.set(
+              claude,
+              {
+                autoAlpha:
+                  0,
+
+                scale:
+                  0.72,
+
+                rotation:
+                  -8
+              }
+            );
+          }
+
+
+          bills.forEach(
+            function (bill, i) {
+
+              var rotations =
+                [-16, 13, -8];
+
+              var xs =
+                [-70, 45, 80];
+
+
+              gsap.set(
+                bill,
+                {
+                  autoAlpha:
+                    0,
+
+                  y:
+                    "-40vh",
+
+                  x:
+                    xs[
+                      i % xs.length
+                    ],
+
+                  rotation:
+                    rotations[
+                      i % rotations.length
+                    ]
+                }
+              );
+            }
+          );
+
+
+          if (scaleGroup) {
+
+            gsap.set(
+              scaleGroup,
+              {
+                autoAlpha:
+                  1
+              }
+            );
+          }
+
+
+          gsap.set(
+            scalePrimary,
+            {
+              autoAlpha:
+                0,
+
+              y:
+                35
+            }
+          );
+
+
+          gsap.set(
+            scaleSecondary,
+            {
+              autoAlpha:
+                0,
+
+              y:
+                35
+            }
+          );
+
+
+          gsap.set(
+            question,
+            {
+              autoAlpha:
+                0
+            }
+          );
+
+
+          gsap.set(
+            [
+              fellows,
+              pac,
+              pledged
+            ],
+            {
+              autoAlpha:
+                0,
+
+              y:
+                45
+            }
+          );
+
+
+          // =====================================================
+          // BILL FLOAT
+          // =====================================================
+
+          var floatTweens =
+            [];
+
+
+          bills.forEach(
+            function (bill, i) {
+
+              var img =
+                bill.querySelector("img");
+
+
+              if (!img) {
+                return;
+              }
+
+
+              var tween =
+                gsap.to(
+                  img,
+                  {
+                    x:
+                      i % 2 === 0
+                        ? 8
+                        : -8,
+
+                    y:
+                      -10 - i * 2,
+
+                    rotation:
+                      i % 2 === 0
+                        ? 2
+                        : -2,
+
+                    duration:
+                      2.8 + i * 0.35,
+
+                    ease:
+                      "sine.inOut",
+
+                    repeat:
+                      -1,
+
+                    yoyo:
+                      true
+                  }
+                );
+
+
+              floatTweens.push(
+                tween
+              );
+            }
+          );
+
+
+          // =====================================================
+          // MASTER TIMELINE
+          // =====================================================
+
+          var tl =
+            gsap.timeline({
+
+              scrollTrigger: {
+
+                trigger:
+                  track,
+
+                start:
+                  "top top",
+
+                end:
+                  "bottom bottom",
+
+                scrub:
+                  0.55,
+
+                invalidateOnRefresh:
+                  true
+              }
+            });
+
+
+          // =====================================================
+          // 01 — TITLE
+          // =====================================================
+
+          tl.to(
+            title,
+            {
+              autoAlpha:
+                1,
+
+              duration:
+                TEXT_FADE,
+
+              ease:
+                "power2.out"
+            }
+          );
+
+
+          tl.to(
+            {},
+            {
+              duration:
+                INTRO_HOLD
+            }
+          );
+
+
+          // =====================================================
+          // 02 — INTRO OUT
+          // =====================================================
+
+          tl.to(
+            intro,
+            {
+              autoAlpha:
+                0,
+
+              y:
+                "-18vh",
+
+              duration:
+                0.50,
+
+              ease:
+                "power3.in"
+            }
+          );
+
+
+          // =====================================================
+          // 03 — COUNTER
+          // =====================================================
+
+          tl.to(
+            counter,
+            {
+              autoAlpha:
+                1,
+
+              duration:
+                COUNTER_IN,
+
+              ease:
+                "power3.out"
+            },
+
+            "<0.15"
+          );
+
+
+          tl.to(
+            {},
+            {
+              duration:
+                COUNTER_HOLD
+            }
+          );
+
+
+          // =====================================================
+          // 04 — CAPITOL + BILLS + CLAUDE
+          // =====================================================
+
+          if (capitol) {
+
+            tl.to(
+              capitol,
+              {
+                autoAlpha:
+                  1,
+
+                yPercent:
+                  0,
+
+                duration:
+                  VISUAL_IN,
+
+                ease:
+                  "power3.out"
+              }
+            );
+          }
+
+
+          bills.forEach(
+            function (bill, i) {
+
+              tl.to(
+                bill,
+                {
+                  autoAlpha:
+                    1,
+
+                  y:
+                    0,
+
+                  x:
+                    0,
+
+                  rotation:
+                    0,
+
+                  duration:
+                    0.65,
+
+                  ease:
+                    "power3.out"
+                },
+
+                capitol
+                  ? "<" + (0.08 + i * 0.09)
+                  : "<" + (i * 0.09)
+              );
+            }
+          );
+
+
+          if (claude) {
+
+            tl.to(
+              claude,
+              {
+                autoAlpha:
+                  1,
+
+                scale:
+                  1,
+
+                rotation:
+                  0,
+
+                duration:
+                  0.60,
+
+                ease:
+                  "power3.out"
+              },
+
+              "<0.18"
+            );
+          }
+
+
+          tl.to(
+            {},
+            {
+              duration:
+                VISUAL_HOLD
+            }
+          );
+
+
+          // =====================================================
+          // 05 — COUNTER TO COMPARISON
+          // =====================================================
+
+          tl.to(
+            counter,
+            {
+              left:
+                getComparisonLeft,
+
+              top:
+                COUNTER_SMALL_TOP,
+
+              xPercent:
+                0,
+
+              yPercent:
+                0,
+
+              duration:
+                0.72,
+
+              ease:
+                "power4.inOut"
+            }
+          );
+
+
+          // Dollar amount changes actual font-size.
+          tl.to(
+            counterValue,
+            {
+              fontSize:
+                COUNTER_SMALL_VALUE_SIZE,
+
+              duration:
+                0.72,
+
+              ease:
+                "power4.inOut"
+            },
+
+            "<"
+          );
+
+
+          // Explicitly remains 1rem.
+          tl.to(
+            counterLabel,
+            {
+              fontSize:
+                COUNTER_LABEL_SIZE,
+
+              duration:
+                0.72,
+
+              ease:
+                "power4.inOut"
+            },
+
+            "<"
+          );
+
+
+          // =====================================================
+          // $7.5B
+          // =====================================================
+
+          tl.to(
+            scalePrimary,
+            {
+              autoAlpha:
+                1,
+
+              y:
+                0,
+
+              duration:
+                0.55,
+
+              ease:
+                "power3.out"
+            },
+
+            "<0.25"
+          );
+
+
+          // =====================================================
+          // $1B
+          // =====================================================
+
+          tl.to(
+            scaleSecondary,
+            {
+              autoAlpha:
+                1,
+
+              y:
+                0,
+
+              duration:
+                0.48,
+
+              ease:
+                "power3.out"
+            },
+
+            "<0.20"
+          );
+
+
+          tl.to(
+            {},
+            {
+              duration:
+                SCALE_HOLD
+            }
+          );
+
+
+          tl.to(
+            [
+              scalePrimary,
+              scaleSecondary
+            ],
+            {
+              autoAlpha:
+                0,
+
+              y:
+                -30,
+
+              duration:
+                0.35,
+
+              ease:
+                "power2.in"
+            }
+          );
+
+
+          // =====================================================
+          // 06 — QUESTION
+          // =====================================================
+
+          tl.to(
+            question,
+            {
+              autoAlpha:
+                1,
+
+              duration:
+                TEXT_FADE,
+
+              ease:
+                "power2.out"
+            }
+          );
+
+
+          tl.to(
+            {},
+            {
+              duration:
+                QUESTION_HOLD
+            }
+          );
+
+
+          tl.to(
+            question,
+            {
+              autoAlpha:
+                0,
+
+              duration:
+                0.28,
+
+              ease:
+                "power2.in"
+            }
+          );
+
+
+          // =====================================================
+          // 07 — FELLOWS
+          // =====================================================
+
+          tl.to(
+            fellows,
+            {
+              autoAlpha:
+                1,
+
+              y:
+                0,
+
+              duration:
+                STAT_IN,
+
+              ease:
+                "power3.out"
+            }
+          );
+
+
+          tl.to(
+            {},
+            {
+              duration:
+                STAT_HOLD
+            }
+          );
+
+
+          tl.to(
+            fellows,
+            {
+              autoAlpha:
+                0,
+
+              y:
+                -40,
+
+              duration:
+                0.35,
+
+              ease:
+                "power2.in"
+            }
+          );
+
+
+          // =====================================================
+          // 08 — PAC
+          // =====================================================
+
+          tl.to(
+            pac,
+            {
+              autoAlpha:
+                1,
+
+              y:
+                0,
+
+              duration:
+                STAT_IN,
+
+              ease:
+                "power3.out"
+            }
+          );
+
+
+          tl.to(
+            {},
+            {
+              duration:
+                STAT_HOLD
+            }
+          );
+
+
+          tl.to(
+            pac,
+            {
+              autoAlpha:
+                0,
+
+              y:
+                -40,
+
+              duration:
+                0.35,
+
+              ease:
+                "power2.in"
+            }
+          );
+
+
+          // =====================================================
+          // 09 — PLEDGED
+          // =====================================================
+
+          tl.to(
+            pledged,
+            {
+              autoAlpha:
+                1,
+
+              y:
+                0,
+
+              duration:
+                0.60,
+
+              ease:
+                "power4.out"
+            }
+          );
+
+
+          // =====================================================
+          // FINAL
+          // =====================================================
+
+          bills.forEach(
+            function (bill, i) {
+
+              tl.to(
+                bill,
+                {
+                  y:
+                    45 + i * 12,
+
+                  x:
+                    (i - 1) * 30,
+
+                  duration:
+                    0.65,
+
+                  ease:
+                    "power2.inOut"
+                },
+
+                "<"
+              );
+            }
+          );
+
+
+          if (claude) {
+
+            tl.to(
+              claude,
+              {
+                scale:
+                  1.08,
+
+                duration:
+                  0.55,
+
+                ease:
+                  "power2.out"
+              },
+
+              "<"
+            );
+          }
+
+
+          tl.to(
+            {},
+            {
+              duration:
+                FINAL_HOLD
+            }
+          );
+
+
+          // =====================================================
+          // CLEANUP
+          // =====================================================
+
+          return function () {
+
+            floatTweens.forEach(
+              function (tween) {
+
+                tween.kill();
+              }
+            );
+          };
+
+        }
+      );
+
+
+      // =========================================================
+      // PAGE CLEANUP
+      // =========================================================
+
+      window.addEventListener(
+        "beforeunload",
+        function () {
+
+          clearInterval(
+            counterInterval
+          );
+        }
+      );
+
+    });
+
+});
+
 
 
 

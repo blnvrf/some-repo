@@ -18346,19 +18346,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   gsap.registerPlugin(ScrollTrigger);
 
-  if (typeof SplitText !== "undefined") {
-    gsap.registerPlugin(SplitText);
-  }
-
 
   gsap.utils
     .toArray("[data-news-scene]")
     .forEach(function (sec) {
-
-
-      // =============================================
-      // ELEMENTS
-      // =============================================
 
       var groups =
         gsap.utils.toArray(
@@ -18375,85 +18366,40 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
 
-
-      // =============================================
-      // FORCE STICKY OFFSET
-      //
-      // Webflow Preview was outputting top: 0px,
-      // so JS owns this value.
-      // =============================================
-
-
-
-
-
-      // =============================================
-      // SECTION TITLE — "IN THE NEWS"
-      // =============================================
+      // =====================================================
+      // SECTION TITLE
+      // =====================================================
 
       if (sectionTitle) {
 
-        var headerSplit = null;
-        var headerWords = [sectionTitle];
-
-
-        if (typeof SplitText !== "undefined") {
-
-          headerSplit =
-            new SplitText(
-              sectionTitle,
-              {
-                type: "words"
-              }
-            );
-
-          headerWords =
-            headerSplit.words;
-
-        }
-
-
         gsap.fromTo(
-          headerWords,
-
+          sectionTitle,
           {
-            autoAlpha: 0,
-            yPercent: 70
+            autoAlpha: 0
           },
-
           {
             autoAlpha: 1,
-            yPercent: 0,
 
-            duration: 0.5,
+            duration:
+              MOTION.textFade.duration,
 
-            stagger: {
-              each: 0.07
-            },
-
-            ease: "power3.out",
+            ease:
+              MOTION.textFade.ease,
 
             scrollTrigger: {
-
               trigger: sectionTitle,
-
               start: "top 85%",
-
               toggleActions:
                 "play none none reverse"
-
             }
-
           }
         );
-
       }
 
 
-
-      // =============================================
-      // EACH STACKING NEWS GROUP
-      // =============================================
+      // =====================================================
+      // NEWS GROUPS
+      // =====================================================
 
       groups.forEach(function (group) {
 
@@ -18491,41 +18437,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
 
-
-        // ===========================================
-        // CATEGORY TITLE SPLIT
-        // ===========================================
-
-        var titleSplit = null;
-        var titleWords = [title];
-
-
-        if (typeof SplitText !== "undefined") {
-
-          titleSplit =
-            new SplitText(
-              title,
-              {
-                type: "words"
-              }
-            );
-
-          titleWords =
-            titleSplit.words;
-
-        }
-
-
-
-        // ===========================================
-        // INITIAL STATES
-        // ===========================================
+        // Initial states
 
         gsap.set(
-          titleWords,
+          title,
           {
-            autoAlpha: 0,
-            yPercent: 75
+            autoAlpha: 0
           }
         );
 
@@ -18547,10 +18464,7 @@ document.addEventListener("DOMContentLoaded", function () {
         );
 
 
-
-        // ===========================================
-        // GROUP ENTRANCE TIMELINE
-        // ===========================================
+        // Entrance
 
         var tl =
           gsap.timeline({
@@ -18558,40 +18472,23 @@ document.addEventListener("DOMContentLoaded", function () {
           });
 
 
-
-        // -------------------------------------------
-        // TITLE
-        // -------------------------------------------
-
         tl.to(
-          titleWords,
+          title,
           {
-
             autoAlpha: 1,
-            yPercent: 0,
 
-            duration: 0.45,
-
-            stagger: {
-              each: 0.07
-            },
+            duration:
+              MOTION.textFade.duration,
 
             ease:
-              "power3.out"
-
+              MOTION.textFade.ease
           }
         );
 
 
-
-        // -------------------------------------------
-        // THREE ARTICLE CARDS
-        // -------------------------------------------
-
         tl.to(
           cards,
           {
-
             autoAlpha: 1,
             y: 0,
 
@@ -18603,24 +18500,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
             ease:
               "power3.out"
-
           },
 
           "-=0.08"
         );
 
 
-
-        // -------------------------------------------
-        // ARTICLE IMAGES
-        // -------------------------------------------
-
         if (images.length) {
 
           tl.to(
             images,
             {
-
               scale: 1,
 
               duration: 0.65,
@@ -18631,52 +18521,42 @@ document.addEventListener("DOMContentLoaded", function () {
 
               ease:
                 "power3.out"
-
             },
 
             "<"
           );
-
         }
 
 
-
-        // ===========================================
-        // SCROLL TRIGGER
-        // ===========================================
-
         ScrollTrigger.create({
-
           trigger: group,
 
-          start: "top 72%",
+          start:
+            "top 72%",
 
-          onEnter: function () {
-            tl.play();
-          },
+          onEnter:
+            function () {
+              tl.play();
+            },
 
-          onLeaveBack: function () {
-            tl.reverse();
-          }
-
+          onLeaveBack:
+            function () {
+              tl.reverse();
+            }
         });
 
       });
 
 
-
-      // =============================================
-      // REFRESH AFTER WEBFLOW LAYOUT SETTLES
-      // =============================================
-
-      requestAnimationFrame(function () {
-        ScrollTrigger.refresh();
-      });
+      requestAnimationFrame(
+        function () {
+          ScrollTrigger.refresh();
+        }
+      );
 
     });
 
 });
-
 
 
 /*

@@ -18870,3 +18870,305 @@ document.addEventListener("DOMContentLoaded", function () {
   //setTimeout(startMaduroScroll, INTRO_DURATION + 20);
 </script>
 */
+
+function initMapSection() {
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  var track =
+    document.querySelector("[data-map-track]");
+
+  var introText =
+    document.querySelector("[data-map-intro-text]");
+
+  var visualWrapper =
+    document.querySelector("[data-map-visual-wrapper]");
+
+
+  console.log("MAP INIT", {
+    track,
+    introText,
+    visualWrapper
+  });
+
+
+  if (
+    !track ||
+    !introText ||
+    !visualWrapper
+  ) {
+
+    console.warn(
+      "Map section missing elements."
+    );
+
+    return;
+  }
+
+
+  gsap.matchMedia().add(
+    "(min-width: 992px)",
+    function () {
+
+      gsap.set(
+        visualWrapper,
+        {
+          autoAlpha: 0
+        }
+      );
+
+
+      var mapTimeline =
+        gsap.timeline({
+          scrollTrigger: {
+            trigger: track,
+            start: "top top",
+            end: "bottom bottom",
+            scrub: 0.55,
+          }
+        });
+
+
+      mapTimeline.to(
+        introText,
+        {
+          autoAlpha: 0,
+          duration: 0.45,
+          ease: "power2.in"
+        }
+      );
+
+
+      mapTimeline.to(
+        visualWrapper,
+        {
+          autoAlpha: 1,
+          duration: 0.55,
+          ease: "power2.out"
+        }
+      );
+
+    }
+  );
+
+
+  ScrollTrigger.refresh();
+
+}
+
+
+if (document.readyState === "loading") {
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    initMapSection
+  );
+
+} else {
+
+  initMapSection();
+
+}
+
+  function initMapLens() {
+
+  var wrapper =
+    document.querySelector(
+      "[data-map-visual-wrapper]"
+    );
+
+  var visual =
+    document.querySelector(
+      "[data-map-visual]"
+    );
+
+  var image =
+    visual
+      ? visual.querySelector("img")
+      : null;
+
+
+  if (
+    !wrapper ||
+    !visual ||
+    !image
+  ) {
+
+    console.warn(
+      "Map lens missing elements.",
+      {
+        wrapper: !!wrapper,
+        visual: !!visual,
+        image: !!image
+      }
+    );
+
+    return;
+  }
+
+
+  var ZOOM = 1.5;
+
+  var LENS_SIZE =
+    180;
+
+
+  var lens =
+    document.createElement("div");
+
+  lens.className =
+    "map-lens";
+
+  wrapper.appendChild(
+    lens
+  );
+
+
+  function updateSource() {
+
+    var src =
+      image.currentSrc ||
+      image.src;
+
+    if (!src) {
+      return;
+    }
+
+    lens.style.backgroundImage =
+      'url("' + src + '")';
+  }
+
+
+  updateSource();
+
+
+  if (!image.complete) {
+
+    image.addEventListener(
+      "load",
+      updateSource
+    );
+  }
+
+
+  wrapper.addEventListener(
+    "mousemove",
+    function (event) {
+
+      var imageRect =
+        image.getBoundingClientRect();
+
+      var wrapperRect =
+        wrapper.getBoundingClientRect();
+
+
+      // Only activate while mouse is over actual image.
+
+      if (
+        event.clientX < imageRect.left ||
+        event.clientX > imageRect.right ||
+        event.clientY < imageRect.top ||
+        event.clientY > imageRect.bottom
+      ) {
+
+        lens.classList.remove(
+          "is-visible"
+        );
+
+        return;
+      }
+
+
+      var imageX =
+        event.clientX -
+        imageRect.left;
+
+      var imageY =
+        event.clientY -
+        imageRect.top;
+
+
+      // Lens position.
+
+      var lensX =
+        event.clientX -
+        wrapperRect.left -
+        LENS_SIZE / 2;
+
+      var lensY =
+        event.clientY -
+        wrapperRect.top -
+        LENS_SIZE / 2;
+
+
+      lens.style.left =
+        lensX + "px";
+
+      lens.style.top =
+        lensY + "px";
+
+
+      // Enlarged copy of image.
+
+      lens.style.backgroundSize =
+        (
+          imageRect.width *
+          ZOOM
+        ) +
+        "px " +
+        (
+          imageRect.height *
+          ZOOM
+        ) +
+        "px";
+
+
+      // Place hovered coordinate in center of lens.
+
+      lens.style.backgroundPosition =
+        (
+          LENS_SIZE / 2 -
+          imageX * ZOOM
+        ) +
+        "px " +
+        (
+          LENS_SIZE / 2 -
+          imageY * ZOOM
+        ) +
+        "px";
+
+
+      lens.classList.add(
+        "is-visible"
+      );
+
+    }
+  );
+
+
+  wrapper.addEventListener(
+    "mouseleave",
+    function () {
+
+      lens.classList.remove(
+        "is-visible"
+      );
+
+    }
+  );
+
+}
+
+
+if (document.readyState === "loading") {
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    initMapLens
+  );
+
+} else {
+
+  initMapLens();
+
+}

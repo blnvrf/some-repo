@@ -14162,6 +14162,1821 @@ document.addEventListener("DOMContentLoaded", function () {
 */
 document.addEventListener("DOMContentLoaded", function () {
 
+  gsap.registerPlugin(ScrollTrigger);
+
+
+  gsap.utils
+    .toArray("[data-scandal-scene]")
+    .forEach(function (sec) {
+
+
+      // =========================================================
+      // ELEMENTS
+      // =========================================================
+
+      var cards =
+        gsap.utils.toArray(
+          sec.querySelectorAll("[data-scandal-card]")
+        );
+
+      var scandalsGrid =
+        sec.querySelector(".scandals_grid");
+
+      var reader =
+        sec.querySelector("[data-scandal-reader]");
+
+      var readerVisual =
+        reader?.querySelector(".scandal_reader-visual");
+
+      var readerContent =
+        reader?.querySelector(".scandal_reader-content");
+
+      var readerScroll =
+        reader?.querySelector(".scandal_reader-scroll");
+
+      var readerImage =
+        reader?.querySelector("[data-scandal-reader-image]");
+
+      var closeBtn =
+        reader?.querySelector("[data-scandal-close]");
+
+      var prevBtn =
+        reader?.querySelector("[data-scandal-prev]");
+
+      var nextBtn =
+        reader?.querySelector("[data-scandal-next]");
+
+      var stories =
+        reader
+          ? gsap.utils.toArray(
+              reader.querySelectorAll("[data-scandal-story]")
+            )
+          : [];
+
+      var intro =
+        sec.querySelector("[data-scandal-intro]");
+
+      var introTrack =
+        sec.querySelector("[data-scandal-track]");
+
+
+      if (
+        !cards.length ||
+        !scandalsGrid ||
+        !reader ||
+        !readerVisual ||
+        !readerContent ||
+        !readerImage ||
+        !closeBtn ||
+        !stories.length
+      ) {
+
+        console.warn(
+          "Scandals: missing required elements.",
+          {
+            cards: cards.length,
+            scandalsGrid: !!scandalsGrid,
+            reader: !!reader,
+            readerVisual: !!readerVisual,
+            readerContent: !!readerContent,
+            readerImage: !!readerImage,
+            closeBtn: !!closeBtn,
+            stories: stories.length
+          }
+        );
+
+        return;
+      }
+
+
+      // =========================================================
+      // SETTINGS
+      // =========================================================
+
+      var OPEN_DURATION = 0.72;
+      var OPEN_EASE = "power4.inOut";
+
+      var SWAP_OUT_DURATION = 0.18;
+      var SWAP_IN_DURATION = 0.22;
+
+
+      // =========================================================
+      // STATE
+      // =========================================================
+
+      var currentCard = null;
+      var currentStory = null;
+      var currentIndex = -1;
+
+      var isOpen = false;
+      var isAnimating = false;
+
+      var openGeometry = null;
+      var gridGhost = null;
+
+      var oldBodyOverflow = "";
+      var oldHtmlOverflow = "";
+
+
+      // =========================================================
+      // READER ROOT
+      //
+      // Fixed transparent viewport overlay.
+      // =========================================================
+
+      gsap.set(reader, {
+
+        position:
+          "fixed",
+
+        inset:
+          0,
+
+        width:
+          "100vw",
+
+        height:
+          "100vh",
+
+        margin:
+          0,
+
+        backgroundColor:
+          "transparent",
+
+        zIndex:
+          9990
+      });
+
+
+      // =========================================================
+      // INITIAL STATE
+      // =========================================================
+
+      reader.setAttribute(
+        "aria-hidden",
+        "true"
+      );
+
+
+      gsap.set(reader, {
+
+        autoAlpha:
+          0,
+
+        pointerEvents:
+          "none"
+      });
+
+
+      gsap.set(stories, {
+
+        display:
+          "none"
+      });
+
+
+      // =========================================================
+      // INTRO
+      // =========================================================
+
+      if (
+        intro &&
+        introTrack
+      ) {
+
+        gsap.to(intro, {
+
+          autoAlpha:
+            0,
+
+          ease:
+            "none",
+
+          scrollTrigger: {
+
+            trigger:
+              introTrack,
+
+            start:
+              "top top",
+
+            end:
+              "+=1000",
+
+            scrub:
+              true
+          }
+        });
+      }
+
+
+      // =========================================================
+      // CARD ACCESSIBILITY
+      // =========================================================
+
+      cards.forEach(function (card) {
+
+        card.setAttribute(
+          "role",
+          "button"
+        );
+
+        card.setAttribute(
+          "tabindex",
+          "0"
+        );
+      });
+
+
+      // =========================================================
+      // HELPERS
+      // =========================================================
+
+      function getStoryForCard(card) {
+
+        var id =
+          card.getAttribute(
+            "data-story"
+          );
+
+
+        return stories.find(
+          function (story) {
+
+            return (
+              story.getAttribute(
+                "data-scandal-story"
+              ) === id
+            );
+          }
+        );
+      }
+
+
+      function getCardImage(card) {
+
+        return card.querySelector(
+          "[data-scandal-image]"
+        );
+      }
+
+
+      function setReaderImage(card) {
+
+        var source =
+          getCardImage(card);
+
+
+        if (!source) {
+          return;
+        }
+
+
+        var src =
+          source.currentSrc ||
+          source.src;
+
+
+        if (src) {
+
+          readerImage.src =
+            src;
+        }
+
+
+        readerImage.alt =
+          source.alt || "";
+
+
+        var styles =
+          getComputedStyle(source);
+
+
+        readerImage.style.objectPosition =
+          styles.objectPosition;
+      }
+
+
+      function activateStory(story) {
+
+        stories.forEach(
+          function (item) {
+
+            item.classList.remove(
+              "is-active"
+            );
+
+
+            gsap.set(
+              item,
+              {
+                display:
+                  "none"
+              }
+            );
+          }
+        );
+
+
+        story.classList.add(
+          "is-active"
+        );
+
+
+        gsap.set(
+          story,
+          {
+            display:
+              "block"
+          }
+        );
+      }
+
+
+      // =========================================================
+      // PAGE LOCK
+      // =========================================================
+
+      function lockPage() {
+
+        oldBodyOverflow =
+          document.body.style.overflow;
+
+        oldHtmlOverflow =
+          document.documentElement.style.overflow;
+
+
+        document.body.style.overflow =
+          "hidden";
+
+        document.documentElement.style.overflow =
+          "hidden";
+      }
+
+
+      function unlockPage() {
+
+        document.body.style.overflow =
+          oldBodyOverflow;
+
+        document.documentElement.style.overflow =
+          oldHtmlOverflow;
+      }
+
+
+      // =========================================================
+      // GRID GHOST
+      //
+      // Frozen copy of the visible four-card grid underneath
+      // the reader transition.
+      // =========================================================
+
+      function createGridGhost() {
+
+        removeGridGhost();
+
+
+        var rect =
+          scandalsGrid.getBoundingClientRect();
+
+
+        gridGhost =
+          scandalsGrid.cloneNode(true);
+
+
+        gridGhost.setAttribute(
+          "aria-hidden",
+          "true"
+        );
+
+
+        gridGhost.setAttribute(
+          "data-scandal-grid-ghost",
+          "true"
+        );
+
+
+        // ---------------------------------------------
+        // REMOVE DUPLICATE IDS
+        // ---------------------------------------------
+
+        if (gridGhost.id) {
+
+          gridGhost.removeAttribute(
+            "id"
+          );
+        }
+
+
+        gridGhost
+          .querySelectorAll("[id]")
+          .forEach(function (el) {
+
+            el.removeAttribute(
+              "id"
+            );
+          });
+
+
+        // ---------------------------------------------
+        // PURELY VISUAL
+        // ---------------------------------------------
+
+        gridGhost
+          .querySelectorAll("*")
+          .forEach(function (el) {
+
+            el.style.pointerEvents =
+              "none";
+          });
+
+
+        Object.assign(
+          gridGhost.style,
+          {
+
+            position:
+              "fixed",
+
+            left:
+              rect.left + "px",
+
+            top:
+              rect.top + "px",
+
+            width:
+              rect.width + "px",
+
+            height:
+              rect.height + "px",
+
+            margin:
+              "0",
+
+            zIndex:
+              "9980",
+
+            pointerEvents:
+              "none",
+
+            opacity:
+              "1",
+
+            visibility:
+              "visible",
+
+            transform:
+              "none"
+          }
+        );
+
+
+        document.body.appendChild(
+          gridGhost
+        );
+      }
+
+
+      function removeGridGhost() {
+
+        if (!gridGhost) {
+          return;
+        }
+
+
+        gridGhost.remove();
+
+        gridGhost =
+          null;
+      }
+
+
+      // =========================================================
+      // TRANSITION IMAGE
+      // =========================================================
+
+      function createTransitionImage(
+        source,
+        rect
+      ) {
+
+        if (!source) {
+          return null;
+        }
+
+
+        var styles =
+          getComputedStyle(source);
+
+
+        var clone =
+          document.createElement("img");
+
+
+        clone.src =
+          source.currentSrc ||
+          source.src;
+
+        clone.alt =
+          "";
+
+
+        Object.assign(
+          clone.style,
+          {
+
+            position:
+              "fixed",
+
+            left:
+              rect.left + "px",
+
+            top:
+              rect.top + "px",
+
+            width:
+              rect.width + "px",
+
+            height:
+              rect.height + "px",
+
+            objectFit:
+              "cover",
+
+            objectPosition:
+              styles.objectPosition,
+
+            margin:
+              "0",
+
+            padding:
+              "0",
+
+            border:
+              "0",
+
+            maxWidth:
+              "none",
+
+            maxHeight:
+              "none",
+
+            pointerEvents:
+              "none",
+
+            zIndex:
+              "99999",
+
+            transform:
+              "none",
+
+            willChange:
+              "left,width"
+          }
+        );
+
+
+        document.body.appendChild(
+          clone
+        );
+
+
+        return clone;
+      }
+
+
+      // =========================================================
+      // CLEAR TEMP READER GEOMETRY
+      // =========================================================
+
+      function clearReaderGeometry() {
+
+        gsap.set(
+          readerVisual,
+          {
+
+            clearProps:
+              "position,left,top,right,bottom,width,height,margin,transform,overflow"
+          }
+        );
+
+
+        gsap.set(
+          readerContent,
+          {
+
+            clearProps:
+              "position,left,top,right,bottom,width,height,margin,transform,overflow"
+          }
+        );
+
+
+        if (readerScroll) {
+
+          gsap.set(
+            readerScroll,
+            {
+
+              clearProps:
+                "width,height,minWidth"
+            }
+          );
+        }
+      }
+
+
+      // =========================================================
+      // OPEN
+      // =========================================================
+
+      function openStory(card) {
+
+        if (
+          isOpen ||
+          isAnimating
+        ) {
+          return;
+        }
+
+
+        var story =
+          getStoryForCard(card);
+
+        var sourceImage =
+          getCardImage(card);
+
+
+        if (
+          !story ||
+          !sourceImage
+        ) {
+          return;
+        }
+
+
+        isAnimating =
+          true;
+
+
+        currentCard =
+          card;
+
+        currentStory =
+          story;
+
+        currentIndex =
+          cards.indexOf(card);
+
+
+        // =====================================================
+        // SOURCE RECT
+        // =====================================================
+
+        var sourceRect =
+          sourceImage
+            .getBoundingClientRect();
+
+
+        // =====================================================
+        // FREEZE CURRENT FOUR-CARD GRID
+        // =====================================================
+
+        createGridGhost();
+
+
+        // =====================================================
+        // PREPARE READER
+        // =====================================================
+
+        setReaderImage(card);
+
+        activateStory(story);
+
+
+        if (readerScroll) {
+
+          readerScroll.scrollTop =
+            0;
+        }
+
+
+        reader.classList.add(
+          "is-open"
+        );
+
+
+        reader.setAttribute(
+          "aria-hidden",
+          "false"
+        );
+
+
+        gsap.set(
+          reader,
+          {
+
+            autoAlpha:
+              1,
+
+            pointerEvents:
+              "auto",
+
+            backgroundColor:
+              "transparent"
+          }
+        );
+
+
+        // =====================================================
+        // FINAL IMAGE WIDTH
+        //
+        // Use Designer width only.
+        // Final image left is always 0.
+        // =====================================================
+
+        var designerVisualRect =
+          readerVisual
+            .getBoundingClientRect();
+
+
+        var finalImageWidth =
+          designerVisualRect.width;
+
+
+        if (!finalImageWidth) {
+
+          finalImageWidth =
+            window.innerWidth * 0.5;
+        }
+
+
+        finalImageWidth =
+          Math.min(
+            finalImageWidth,
+            window.innerWidth
+          );
+
+
+        // =====================================================
+        // GEOMETRY
+        // =====================================================
+
+        var geometry = {
+
+
+          // SOURCE
+
+          sourceLeft:
+            sourceRect.left,
+
+          sourceRight:
+            sourceRect.right,
+
+          sourceTop:
+            sourceRect.top,
+
+          sourceWidth:
+            sourceRect.width,
+
+          sourceHeight:
+            sourceRect.height,
+
+
+          // FINAL IMAGE
+
+          imageLeft:
+            0,
+
+          imageTop:
+            sourceRect.top,
+
+          imageWidth:
+            finalImageWidth,
+
+          imageHeight:
+            sourceRect.height,
+
+
+          // FINAL READER
+
+          contentLeft:
+            finalImageWidth,
+
+          contentTop:
+            sourceRect.top,
+
+          contentWidth:
+            window.innerWidth -
+            finalImageWidth,
+
+          contentHeight:
+            sourceRect.height
+        };
+
+
+        openGeometry =
+          geometry;
+
+
+        // =====================================================
+        // TRANSITION IMAGE
+        // =====================================================
+
+        var transitionImage =
+          createTransitionImage(
+            sourceImage,
+            sourceRect
+          );
+
+
+        if (!transitionImage) {
+
+          removeGridGhost();
+
+          isAnimating =
+            false;
+
+          return;
+        }
+
+
+        // =====================================================
+        // REAL READER IMAGE
+        // =====================================================
+
+        gsap.set(
+          readerVisual,
+          {
+
+            position:
+              "fixed",
+
+            left:
+              geometry.imageLeft,
+
+            top:
+              geometry.imageTop,
+
+            width:
+              geometry.imageWidth,
+
+            height:
+              geometry.imageHeight,
+
+            margin:
+              0,
+
+            x:
+              0,
+
+            y:
+              0,
+
+            xPercent:
+              0,
+
+            yPercent:
+              0,
+
+            autoAlpha:
+              0,
+
+            overflow:
+              "hidden"
+          }
+        );
+
+
+        // =====================================================
+        // RIGHT PANEL
+        //
+        // Starts at clicked image's right edge with zero width.
+        // =====================================================
+
+        gsap.set(
+          readerContent,
+          {
+
+            position:
+              "fixed",
+
+            left:
+              geometry.sourceRight,
+
+            top:
+              geometry.contentTop,
+
+            width:
+              0,
+
+            height:
+              geometry.contentHeight,
+
+            margin:
+              0,
+
+            x:
+              0,
+
+            y:
+              0,
+
+            xPercent:
+              0,
+
+            yPercent:
+              0,
+
+            overflow:
+              "hidden"
+          }
+        );
+
+
+        // =====================================================
+        // KEEP INNER READER AT FINAL WIDTH
+        //
+        // Prevents text reflow during expansion.
+        // =====================================================
+
+        if (readerScroll) {
+
+          gsap.set(
+            readerScroll,
+            {
+
+              width:
+                geometry.contentWidth,
+
+              minWidth:
+                geometry.contentWidth,
+
+              height:
+                "100%"
+            }
+          );
+        }
+
+
+        // =====================================================
+        // INITIAL STORY STATE
+        // =====================================================
+
+        gsap.set(
+          currentStory,
+          {
+
+            autoAlpha:
+              0,
+
+            x:
+              0,
+
+            y:
+              0
+          }
+        );
+
+
+        gsap.set(
+          closeBtn,
+          {
+
+            autoAlpha:
+              0,
+
+            scale:
+              0.9
+          }
+        );
+
+
+        lockPage();
+
+
+        // =====================================================
+        // OPEN TIMELINE
+        // =====================================================
+
+        var tl =
+          gsap.timeline({
+
+            onComplete:
+              function () {
+
+
+                gsap.set(
+                  readerVisual,
+                  {
+
+                    autoAlpha:
+                      1
+                  }
+                );
+
+
+                transitionImage.remove();
+
+
+                isOpen =
+                  true;
+
+                isAnimating =
+                  false;
+              }
+          });
+
+
+        // =====================================================
+        // IMAGE EXPANDS LEFT
+        // =====================================================
+
+        tl.to(
+          transitionImage,
+          {
+
+            left:
+              geometry.imageLeft,
+
+            width:
+              geometry.imageWidth,
+
+            duration:
+              OPEN_DURATION,
+
+            ease:
+              OPEN_EASE
+          },
+          0
+        );
+
+
+        // =====================================================
+        // READER EXPANDS RIGHT
+        // =====================================================
+
+        tl.to(
+          readerContent,
+          {
+
+            left:
+              geometry.contentLeft,
+
+            width:
+              geometry.contentWidth,
+
+            duration:
+              OPEN_DURATION,
+
+            ease:
+              OPEN_EASE
+          },
+          0
+        );
+
+
+        // =====================================================
+        // STORY IN
+        // =====================================================
+
+        tl.to(
+          currentStory,
+          {
+
+            autoAlpha:
+              1,
+
+            duration:
+              0.25,
+
+            ease:
+              "power2.out"
+          },
+          0.42
+        );
+
+
+        // =====================================================
+        // CLOSE BUTTON IN
+        // =====================================================
+
+        tl.to(
+          closeBtn,
+          {
+
+            autoAlpha:
+              1,
+
+            scale:
+              1,
+
+            duration:
+              0.22,
+
+            ease:
+              "power2.out"
+          },
+          0.48
+        );
+      }
+
+
+      // =========================================================
+      // CLOSE
+      // =========================================================
+
+      function closeStory() {
+
+        if (
+          !isOpen ||
+          isAnimating ||
+          !currentCard ||
+          !openGeometry
+        ) {
+          return;
+        }
+
+
+        isAnimating =
+          true;
+
+
+        var geometry =
+          openGeometry;
+
+
+        // =====================================================
+        // TRANSITION IMAGE AT FINAL OPEN POSITION
+        // =====================================================
+
+        var finalRect = {
+
+          left:
+            geometry.imageLeft,
+
+          top:
+            geometry.imageTop,
+
+          width:
+            geometry.imageWidth,
+
+          height:
+            geometry.imageHeight
+        };
+
+
+        var transitionImage =
+          createTransitionImage(
+            readerImage,
+            finalRect
+          );
+
+
+        if (!transitionImage) {
+
+          isAnimating =
+            false;
+
+          return;
+        }
+
+
+        // Clone replaces real reader image.
+
+        gsap.set(
+          readerVisual,
+          {
+
+            autoAlpha:
+              0
+          }
+        );
+
+
+        // Ensure panel starts fully open.
+
+        gsap.set(
+          readerContent,
+          {
+
+            left:
+              geometry.contentLeft,
+
+            top:
+              geometry.contentTop,
+
+            width:
+              geometry.contentWidth,
+
+            height:
+              geometry.contentHeight
+          }
+        );
+
+
+        // =====================================================
+        // CLOSE TIMELINE
+        // =====================================================
+
+        var tl =
+          gsap.timeline({
+
+            onComplete:
+              function () {
+
+
+                transitionImage.remove();
+
+
+                reader.classList.remove(
+                  "is-open"
+                );
+
+
+                reader.setAttribute(
+                  "aria-hidden",
+                  "true"
+                );
+
+
+                gsap.set(
+                  reader,
+                  {
+
+                    autoAlpha:
+                      0,
+
+                    pointerEvents:
+                      "none"
+                  }
+                );
+
+
+                // Grid ghost remains until reader disappears.
+
+                removeGridGhost();
+
+
+                clearReaderGeometry();
+
+
+                gsap.set(
+                  readerVisual,
+                  {
+
+                    autoAlpha:
+                      1
+                  }
+                );
+
+
+                if (currentStory) {
+
+                  currentStory.classList.remove(
+                    "is-active"
+                  );
+
+
+                  gsap.set(
+                    currentStory,
+                    {
+
+                      display:
+                        "none",
+
+                      clearProps:
+                        "opacity,visibility,transform"
+                    }
+                  );
+                }
+
+
+                if (readerScroll) {
+
+                  readerScroll.scrollTop =
+                    0;
+                }
+
+
+                unlockPage();
+
+
+                isOpen =
+                  false;
+
+                isAnimating =
+                  false;
+
+
+                currentCard =
+                  null;
+
+                currentStory =
+                  null;
+
+                currentIndex =
+                  -1;
+
+                openGeometry =
+                  null;
+              }
+          });
+
+
+        // =====================================================
+        // STORY OUT
+        // =====================================================
+
+        tl.to(
+          currentStory,
+          {
+
+            autoAlpha:
+              0,
+
+            duration:
+              0.20,
+
+            ease:
+              "power2.in"
+          },
+          0
+        );
+
+
+        // =====================================================
+        // BUTTON OUT
+        // =====================================================
+
+        tl.to(
+          closeBtn,
+          {
+
+            autoAlpha:
+              0,
+
+            scale:
+              0.9,
+
+            duration:
+              0.20,
+
+            ease:
+              "power2.in"
+          },
+          0
+        );
+
+
+        // =====================================================
+        // IMAGE CONTRACTS
+        // =====================================================
+
+        tl.to(
+          transitionImage,
+          {
+
+            left:
+              geometry.sourceLeft,
+
+            width:
+              geometry.sourceWidth,
+
+            duration:
+              OPEN_DURATION,
+
+            ease:
+              OPEN_EASE
+          },
+          0
+        );
+
+
+        // =====================================================
+        // READER CONTRACTS
+        // =====================================================
+
+        tl.to(
+          readerContent,
+          {
+
+            left:
+              geometry.sourceRight,
+
+            width:
+              0,
+
+            duration:
+              OPEN_DURATION,
+
+            ease:
+              OPEN_EASE
+          },
+          0
+        );
+      }
+
+
+      // =========================================================
+      // NEXT / PREVIOUS
+      //
+      // VERY SIMPLE:
+      //
+      // fade current image + story OUT
+      // swap
+      // fade new image + story IN
+      //
+      // NO geometry.
+      // NO movement.
+      // NO scale.
+      // =========================================================
+
+function goToStory(index) {
+
+  if (
+    !isOpen ||
+    isAnimating
+  ) {
+    return;
+  }
+
+
+  // =====================================================
+  // LOOP
+  // =====================================================
+
+  if (index < 0) {
+    index = cards.length - 1;
+  }
+
+  if (index >= cards.length) {
+    index = 0;
+  }
+
+  if (index === currentIndex) {
+    return;
+  }
+
+
+  var nextCard =
+    cards[index];
+
+  var nextStory =
+    getStoryForCard(nextCard);
+
+
+  if (!nextStory) {
+    return;
+  }
+
+
+  isAnimating = true;
+
+
+  var oldStory =
+    currentStory;
+
+
+  // =====================================================
+  // GET NEXT IMAGE NOW
+  //
+  // We NEVER animate readerImage opacity.
+  // =====================================================
+
+  var nextSource =
+    getCardImage(nextCard);
+
+
+  if (!nextSource) {
+
+    isAnimating = false;
+
+    return;
+  }
+
+
+  var nextSrc =
+    nextSource.currentSrc ||
+    nextSource.src;
+
+
+  var nextStyles =
+    getComputedStyle(nextSource);
+
+
+  // =====================================================
+  // TIMELINE
+  // =====================================================
+
+  var tl =
+    gsap.timeline({
+
+      onComplete:
+        function () {
+
+          currentIndex =
+            index;
+
+          currentCard =
+            nextCard;
+
+          currentStory =
+            nextStory;
+
+          isAnimating =
+            false;
+        }
+    });
+
+
+  // =====================================================
+  // 1. FADE ONLY OLD STORY/TEXT
+  //
+  // IMAGE REMAINS 100% VISIBLE.
+  // READER BACKGROUND REMAINS UNTOUCHED.
+  // =====================================================
+
+  tl.to(
+    oldStory,
+    {
+      autoAlpha: 0,
+      duration: 0.18,
+      ease: "power1.out"
+    }
+  );
+
+
+  // =====================================================
+  // 2. INSTANT SWAP
+  // =====================================================
+
+  tl.call(function () {
+
+
+    // ---------------------------------------------
+    // INSTANT IMAGE REPLACEMENT
+    // ---------------------------------------------
+
+    if (nextSrc) {
+
+      readerImage.src =
+        nextSrc;
+    }
+
+
+    readerImage.alt =
+      nextSource.alt || "";
+
+
+    readerImage.style.objectPosition =
+      nextStyles.objectPosition;
+
+
+    // IMPORTANT:
+    // Force image to remain fully visible.
+
+    gsap.set(
+      readerImage,
+      {
+        autoAlpha: 1,
+        x: 0,
+        y: 0,
+        scale: 1
+      }
+    );
+
+
+    // ---------------------------------------------
+    // OLD STORY OFF
+    // ---------------------------------------------
+
+    oldStory.classList.remove(
+      "is-active"
+    );
+
+
+    gsap.set(
+      oldStory,
+      {
+        display: "none"
+      }
+    );
+
+
+    // ---------------------------------------------
+    // NEW STORY ON
+    // ---------------------------------------------
+
+    activateStory(
+      nextStory
+    );
+
+
+    gsap.set(
+      nextStory,
+      {
+        autoAlpha: 0,
+        x: 0,
+        y: 0,
+        scale: 1
+      }
+    );
+
+
+    // ---------------------------------------------
+    // RESET TEXT SCROLL
+    // ---------------------------------------------
+
+    if (readerScroll) {
+
+      readerScroll.scrollTop =
+        0;
+    }
+
+  });
+
+
+  // =====================================================
+  // 3. FADE ONLY NEW STORY/TEXT IN
+  // =====================================================
+
+  tl.to(
+    nextStory,
+    {
+      autoAlpha: 1,
+      duration: 0.22,
+      ease: "power1.out"
+    }
+  );
+
+}
+
+      // =========================================================
+      // CARD EVENTS
+      // =========================================================
+
+      cards.forEach(
+        function (card) {
+
+
+          card.addEventListener(
+            "click",
+            function (event) {
+
+              event.preventDefault();
+
+
+              openStory(
+                card
+              );
+            }
+          );
+
+
+          card.addEventListener(
+            "keydown",
+            function (event) {
+
+
+              if (
+                event.key === "Enter" ||
+                event.key === " "
+              ) {
+
+                event.preventDefault();
+
+
+                openStory(
+                  card
+                );
+              }
+            }
+          );
+        }
+      );
+
+
+      // =========================================================
+      // CLOSE
+      // =========================================================
+
+      closeBtn.addEventListener(
+        "click",
+        function (event) {
+
+          event.preventDefault();
+
+
+          closeStory();
+        }
+      );
+
+
+      // =========================================================
+      // PREVIOUS
+      // =========================================================
+
+      if (prevBtn) {
+
+        prevBtn.addEventListener(
+          "click",
+          function (event) {
+
+            event.preventDefault();
+
+
+            goToStory(
+              currentIndex - 1
+            );
+          }
+        );
+
+
+        // Div accessibility.
+
+        prevBtn.addEventListener(
+          "keydown",
+          function (event) {
+
+            if (
+              event.key === "Enter" ||
+              event.key === " "
+            ) {
+
+              event.preventDefault();
+
+              prevBtn.click();
+            }
+          }
+        );
+      }
+
+
+      // =========================================================
+      // NEXT
+      // =========================================================
+
+      if (nextBtn) {
+
+        nextBtn.addEventListener(
+          "click",
+          function (event) {
+
+            event.preventDefault();
+
+
+            goToStory(
+              currentIndex + 1
+            );
+          }
+        );
+
+
+        // Div accessibility.
+
+        nextBtn.addEventListener(
+          "keydown",
+          function (event) {
+
+            if (
+              event.key === "Enter" ||
+              event.key === " "
+            ) {
+
+              event.preventDefault();
+
+              nextBtn.click();
+            }
+          }
+        );
+      }
+
+
+      // =========================================================
+      // ESCAPE
+      // =========================================================
+
+      document.addEventListener(
+        "keydown",
+        function (event) {
+
+          if (
+            event.key === "Escape" &&
+            isOpen
+          ) {
+
+            closeStory();
+          }
+        }
+      );
+
+    });
+
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+
 
   gsap.registerPlugin(ScrollTrigger);
 

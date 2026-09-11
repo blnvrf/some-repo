@@ -5778,7 +5778,7 @@ pigTimeline.fromTo(
   });
 
 
-
+/*
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-ideology]").forEach(function (sec) {
     var iq = gsap.utils.selector(sec);
@@ -6069,6 +6069,367 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     );
   });
+});
+*/
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  gsap.utils
+    .toArray("[data-ideology]")
+    .forEach(function (sec) {
+
+      var iq =
+        gsap.utils.selector(sec);
+
+
+      var track =
+        iq("[data-ideology-track]")[0];
+
+      var title =
+        iq("[data-ideo-title]")[0];
+
+      var subtitle =
+        iq("[data-ideo-subtitle]")[0];
+
+      var body =
+        iq("[data-ideo-body]")[0];
+
+      var paragraph =
+        iq("[data-ideo-paragraph]")[0];
+
+      var list =
+        iq("[data-ideo-list]")[0];
+
+      var quote =
+        iq("[data-ideo-quote]")[0];
+
+
+      if (
+        !track ||
+        !title ||
+        !subtitle ||
+        !body
+      ) {
+        return;
+      }
+
+
+      var listItems =
+        list
+          ? gsap.utils.toArray(
+              list.querySelectorAll("li")
+            )
+          : [];
+
+
+      var TEXT_FADE =
+        MOTION.textFade.duration;
+
+      var TEXT_EASE =
+        MOTION.textFade.ease;
+
+
+      gsap.matchMedia().add(
+        "(min-width: 992px)",
+        function () {
+
+
+          // Initial states
+
+          gsap.set(
+            title,
+            {
+              opacity: 1
+            }
+          );
+
+
+          gsap.set(
+            subtitle,
+            {
+              opacity: 0
+            }
+          );
+
+
+          gsap.set(
+            body,
+            {
+              opacity: 1
+            }
+          );
+
+
+          if (paragraph) {
+
+            gsap.set(
+              paragraph,
+              {
+                opacity: 0
+              }
+            );
+          }
+
+
+          if (listItems.length) {
+
+            gsap.set(
+              listItems,
+              {
+                opacity: 0
+              }
+            );
+          }
+
+
+          if (quote) {
+
+            gsap.set(
+              quote,
+              {
+                opacity: 0
+              }
+            );
+          }
+
+
+          var ideologyTimeline =
+            gsap.timeline({
+
+              scrollTrigger: {
+
+                trigger:
+                  track,
+
+                start:
+                  "top top",
+
+                end:
+                  "bottom bottom",
+
+                scrub:
+                  0.4
+              }
+            });
+
+
+          // Subtitle in
+
+          ideologyTimeline.to(
+            subtitle,
+            {
+              opacity:
+                1,
+
+              duration:
+                TEXT_FADE,
+
+              ease:
+                TEXT_EASE
+            },
+            0.1
+          );
+
+
+          ideologyTimeline.to(
+            {},
+            {
+              duration:
+                0.35
+            },
+            0.1 + TEXT_FADE
+          );
+
+
+          // Heading out
+
+          var headingOut =
+            0.7;
+
+
+          ideologyTimeline.to(
+            [
+              title,
+              subtitle
+            ],
+            {
+              opacity:
+                0,
+
+              duration:
+                TEXT_FADE,
+
+              ease:
+                TEXT_EASE
+            },
+            headingOut
+          );
+
+
+          // Paragraph in
+
+          var paragraphIn =
+            headingOut +
+            TEXT_FADE;
+
+
+          if (paragraph) {
+
+            ideologyTimeline.to(
+              paragraph,
+              {
+                opacity:
+                  1,
+
+                duration:
+                  TEXT_FADE,
+
+                ease:
+                  TEXT_EASE
+              },
+              paragraphIn
+            );
+          }
+
+
+          // List builds
+
+          var listIn =
+            paragraphIn +
+            TEXT_FADE +
+            0.2;
+
+
+          if (listItems.length) {
+
+            ideologyTimeline.to(
+              listItems,
+              {
+                opacity:
+                  1,
+
+                duration:
+                  TEXT_FADE,
+
+                stagger:
+                  0.22,
+
+                ease:
+                  TEXT_EASE
+              },
+              listIn
+            );
+          }
+
+
+          var listEnd =
+            listIn +
+            TEXT_FADE +
+            Math.max(
+              0,
+              (listItems.length - 1) *
+              0.22
+            );
+
+
+          // Body hold
+
+          var bodyOut =
+            listEnd +
+            0.4;
+
+
+          // Paragraph + list out
+
+          var bodyTargets =
+            [];
+
+
+          if (paragraph) {
+
+            bodyTargets.push(
+              paragraph
+            );
+          }
+
+
+          if (listItems.length) {
+
+            bodyTargets =
+              bodyTargets.concat(
+                listItems
+              );
+          }
+
+
+          if (bodyTargets.length) {
+
+            ideologyTimeline.to(
+              bodyTargets,
+              {
+                opacity:
+                  0,
+
+                duration:
+                  TEXT_FADE,
+
+                ease:
+                  TEXT_EASE
+              },
+              bodyOut
+            );
+          }
+
+
+          // Quote wrapper in
+          // Footnote is inside this wrapper,
+          // so both appear together.
+
+          var quoteIn =
+            bodyOut +
+            TEXT_FADE;
+
+
+          if (quote) {
+
+            ideologyTimeline.to(
+              quote,
+              {
+                opacity:
+                  1,
+
+                duration:
+                  TEXT_FADE,
+
+                ease:
+                  TEXT_EASE
+              },
+              quoteIn
+            );
+          }
+
+
+          // Final hold
+
+          var finalHoldStart =
+            quoteIn +
+            TEXT_FADE;
+
+
+          ideologyTimeline.to(
+            {},
+            {
+              duration:
+                0.45
+            },
+            finalHoldStart
+          );
+
+        }
+      );
+
+    });
+
 });
 
 

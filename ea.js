@@ -5364,18 +5364,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
           var CLEAR = BEATS.hold + DUR.hold;
 
-          // Entire Liberty section vanishes quickly
-
-libertyTimeline.to(
-  scene,
-  {
-    autoAlpha: 0,
-    duration: 0.1,
-    ease: 'none',
-  },
-  CLEAR
-);
-
           // Exit
 
           figures.forEach(function (fig, i) {
@@ -5437,7 +5425,7 @@ libertyTimeline.to(
           );
 
           // Pig handoff
-/*
+
           var pig = document.querySelector('[data-pig]');
 
           if (pig) {
@@ -5458,7 +5446,7 @@ libertyTimeline.to(
               },
             });
           }
-*/
+
           // Specks reveal
 
           if (host) {

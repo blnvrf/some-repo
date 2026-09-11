@@ -3646,7 +3646,7 @@ if (takeAction) {
     ScrollTrigger.refresh();
     ScrollTrigger.update();
   }
-*/
+
   // DECIDE WHETHER INTRO SHOULD RUN
 
   window.addEventListener(
@@ -3685,7 +3685,7 @@ if (takeAction) {
       once: true,
     },
   );
-
+*/
   function initClaudeSection() {
     gsap.registerPlugin(ScrollTrigger);
 

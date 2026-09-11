@@ -5425,7 +5425,7 @@ document.addEventListener("DOMContentLoaded", function () {
           );
 
           // Pig handoff
-
+/*
           var pig = document.querySelector('[data-pig]');
 
           if (pig) {
@@ -5446,7 +5446,7 @@ document.addEventListener("DOMContentLoaded", function () {
               },
             });
           }
-
+*/
           // Specks reveal
 
           if (host) {

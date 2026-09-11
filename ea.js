@@ -17693,7 +17693,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       var COUNTER_SMALL_TOP = "8%";
 
-      var COUNTER_SMALL_VALUE_SIZE = "3rem";
+      var COUNTER_SMALL_VALUE_SIZE = "8rem";
 
       // Stays 1rem in BOTH states.
       var COUNTER_LABEL_SIZE = "1.25rem";

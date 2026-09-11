@@ -3499,7 +3499,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // MADURO INTRO
-
+/*
   const INTRO_DURATION = 10400;
 
   // MADURO SECTION
@@ -3646,7 +3646,7 @@ if (takeAction) {
     ScrollTrigger.refresh();
     ScrollTrigger.update();
   }
-
+*/
   // DECIDE WHETHER INTRO SHOULD RUN
 
   window.addEventListener(

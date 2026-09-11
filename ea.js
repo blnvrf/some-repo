@@ -5362,7 +5362,19 @@ document.addEventListener("DOMContentLoaded", function () {
             BEATS.bits,
           );
 
-          //var CLEAR = BEATS.hold + DUR.hold;
+          var CLEAR = BEATS.hold + DUR.hold;
+
+          // Entire Liberty section vanishes quickly
+
+libertyTimeline.to(
+  scene,
+  {
+    autoAlpha: 0,
+    duration: 0.1,
+    ease: 'none',
+  },
+  CLEAR
+);
 
           // Exit
 
@@ -5495,19 +5507,6 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             BEATS.hold,
           );
-
-          var libertyEnd = libertyTimeline.duration();
-
-// Liberty disappears, revealing Pig underneath
-
-libertyTimeline.to(
-  sticky,
-  {
-    autoAlpha: 0,
-    duration: 0.1,
-    ease: 'none',
-  }
-);
 
           // Figure float
 

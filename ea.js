@@ -3610,6 +3610,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     delete document.body.dataset.maduroLock;
+    const takeAction =
+  document.querySelector('[data-take-action]');
+
+if (takeAction) {
+  takeAction.classList.remove('display-none');
+}
 
     const maduroStart = maduroTrack.getBoundingClientRect().top + window.scrollY;
 
@@ -3663,6 +3669,13 @@ document.addEventListener("DOMContentLoaded", function () {
           // Normal fresh visit at top.
 
           document.body.dataset.maduroLock = 'true';
+
+          const takeAction =
+            document.querySelector('[data-take-action]');
+
+          if (takeAction) {
+            takeAction.classList.add('display-none');
+          }
 
           setTimeout(startMaduroScroll, INTRO_DURATION);
         });
@@ -3776,7 +3789,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.addEventListener('DOMContentLoaded', function () {
     var actionScene = document.querySelector('[data-action-scene]');
-
     var takeAction = document.querySelector('[data-take-action]');
 
     if (!actionScene || !takeAction) {

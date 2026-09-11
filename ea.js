@@ -5536,6 +5536,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
   initLiberty();
 
+  function syncPigOverlap() {
+  const libertySticky =
+    document.querySelector('[data-liberty-sticky]');
+
+  const pig =
+    document.querySelector('[data-pig]');
+
+  if (!libertySticky || !pig) return;
+
+  const libertyHeight =
+    libertySticky.getBoundingClientRect().height;
+
+  pig.style.marginTop =
+    `-${libertyHeight}px`;
+}
+
+syncPigOverlap();
+
+window.addEventListener(
+  'resize',
+  syncPigOverlap
+);
+
 
 
 

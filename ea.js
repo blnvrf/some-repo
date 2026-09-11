@@ -5498,14 +5498,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
           var libertyEnd = libertyTimeline.duration();
 
+// Liberty disappears, revealing Pig underneath
+
 libertyTimeline.to(
   sticky,
   {
     autoAlpha: 0,
-    duration: 0.12,
-    ease: 'none'
-  },
-  libertyEnd
+    duration: 0.1,
+    ease: 'none',
+  }
 );
 
           // Figure float

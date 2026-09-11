@@ -5536,29 +5536,37 @@ document.addEventListener("DOMContentLoaded", function () {
 
   initLiberty();
 
-  function syncPigOverlap() {
-  const libertySticky =
-    document.querySelector('[data-liberty-sticky]');
-
+function syncPigOverlap() {
   const pig =
     document.querySelector('[data-pig]');
 
-  if (!libertySticky || !pig) return;
+  if (!pig) return;
 
-  const libertyHeight =
-    libertySticky.getBoundingClientRect().height;
+  const viewportHeight =
+    window.visualViewport
+      ? window.visualViewport.height
+      : document.documentElement.clientHeight;
 
   pig.style.marginTop =
-    `-${libertyHeight}px`;
+    `-${Math.round(viewportHeight)}px`;
 }
 
 syncPigOverlap();
 
 window.addEventListener(
-  'resize',
-  syncPigOverlap
+  'load',
+  function () {
+    setTimeout(syncPigOverlap, 300);
+  },
+  { once: true }
 );
 
+window.addEventListener(
+  'orientationchange',
+  function () {
+    setTimeout(syncPigOverlap, 300);
+  }
+);
 
 
 

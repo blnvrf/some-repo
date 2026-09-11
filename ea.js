@@ -5405,7 +5405,7 @@ document.addEventListener("DOMContentLoaded", function () {
           );
 
           libertyTimeline.to(
-            [statueDark, host],
+            [bgDark, statueDark, host],
             {
               opacity: 0,
               duration: 0.35,

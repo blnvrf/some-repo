@@ -3427,6 +3427,377 @@ document.addEventListener("DOMContentLoaded", function () {
 }); */
 
 
+  gsap.registerPlugin(ScrollTrigger);
+
+  // GLOBAL MOTION SETTINGS
+
+  const MOTION = {
+    textFade: {
+      duration: 0.22,
+      ease: 'power2.out',
+    },
+
+    sceneFade: {
+      duration: 1,
+      ease: 'power2.out',
+    },
+
+    float: {
+      x: [-8, 8],
+      y: [-16, -28],
+      rotate: [-3.2, 3.2],
+      duration: [2.4, 3.6],
+      ease: 'sine.inOut',
+    },
+  };
+
+  // GLOBAL REUSABLE ANIMATIONS
+
+  function fadeIn(target, motion = MOTION.textFade) {
+    return gsap.to(target, {
+      autoAlpha: 1,
+      duration: motion.duration,
+      ease: motion.ease,
+      overwrite: true,
+    });
+  }
+
+  function fadeOut(target, motion = MOTION.textFade) {
+    return gsap.to(target, {
+      autoAlpha: 0,
+      duration: motion.duration,
+      ease: motion.ease,
+      overwrite: true,
+    });
+  }
+
+  function createFloat(target, motion = MOTION.float, delay = 0) {
+    const timeline = gsap.timeline({
+      repeat: -1,
+      yoyo: true,
+      paused: true,
+      defaults: {
+        ease: motion.ease,
+      },
+    });
+
+    timeline.to(
+      target,
+      {
+        x: gsap.utils.random(motion.x[0], motion.x[1]),
+
+        y: gsap.utils.random(motion.y[0], motion.y[1]),
+
+        rotate: gsap.utils.random(motion.rotate[0], motion.rotate[1]),
+
+        duration: gsap.utils.random(motion.duration[0], motion.duration[1]),
+      },
+      delay,
+    );
+
+    return timeline;
+  }
+
+  // MADURO INTRO
+
+  const INTRO_DURATION = 10400;
+
+  // MADURO SECTION
+
+  function initMaduroScroll() {
+    const maduroTrack = document.querySelector('[data-maduro-track="true"]');
+
+    const maduroVisual = document.querySelector('[data-maduro-visual="true"]');
+
+    const maduroMessages = gsap.utils.toArray('[data-maduro-message]');
+
+    const maduroPoints = [0.0, 0.15, 0.3, 0.45, 0.6, 0.85];
+
+    if (!maduroTrack || !maduroVisual || !maduroMessages.length) {
+      return;
+    }
+
+    let maduroActive = 0;
+
+    function getAllTargets(message) {
+      return gsap.utils.toArray(message.querySelectorAll('[data-fade], [data-maduro-date]'));
+    }
+
+    function getVisibleTargets(message) {
+      return getAllTargets(message).filter((element) => {
+        if (element.hasAttribute('data-maduro-date')) {
+          return element.dataset.maduroDate === 'true';
+        }
+
+        return true;
+      });
+    }
+
+    // INITIAL STATE
+    // Hide everything in every message first.
+
+    maduroMessages.forEach(function (message) {
+      gsap.set(getAllTargets(message), {
+        autoAlpha: 0,
+      });
+    });
+
+    gsap.set(getVisibleTargets(maduroMessages[0]), {
+      autoAlpha: 1,
+    });
+
+    function showMaduroMessage(index) {
+      if (index === maduroActive || !maduroMessages[index]) {
+        return;
+      }
+
+      const oldMessage = maduroMessages[maduroActive];
+
+      const newMessage = maduroMessages[index];
+
+      // Everything from old message fades away,
+      // including its date.
+
+      fadeOut(getAllTargets(oldMessage));
+
+      // New message fades in.
+      // Date only participates when
+      // data-maduro-date="true".
+
+      fadeIn(getVisibleTargets(newMessage));
+
+      const maduroIsFinalPhase = index >= maduroMessages.length - 2;
+
+      if (maduroIsFinalPhase) {
+        fadeOut(maduroVisual, MOTION.sceneFade);
+      } else {
+        fadeIn(maduroVisual, MOTION.sceneFade);
+      }
+
+      maduroActive = index;
+    }
+
+    ScrollTrigger.create({
+      trigger: maduroTrack,
+
+      start: 'top top',
+
+      end: 'bottom bottom',
+
+      onUpdate(self) {
+        let maduroIndex = 0;
+
+        maduroPoints.forEach(function (point, index) {
+          if (self.progress >= point) {
+            maduroIndex = index;
+          }
+        });
+
+        showMaduroMessage(maduroIndex);
+      },
+    });
+
+    ScrollTrigger.refresh();
+  }
+
+  // START MADURO AFTER INTRO
+
+  function startMaduroScroll() {
+    const maduroTrack = document.querySelector('[data-maduro-track="true"]');
+
+    if (!maduroTrack) {
+      return;
+    }
+
+    delete document.body.dataset.maduroLock;
+
+    const maduroStart = maduroTrack.getBoundingClientRect().top + window.scrollY;
+
+    const originalScrollBehavior = document.documentElement.style.scrollBehavior;
+
+    document.documentElement.style.scrollBehavior = 'auto';
+
+    window.scrollTo(0, maduroStart);
+
+    setTimeout(function () {
+      window.scrollTo(0, maduroStart);
+
+      initMaduroScroll();
+
+      ScrollTrigger.refresh();
+
+      document.documentElement.style.scrollBehavior = originalScrollBehavior;
+    }, 180);
+  }
+
+  // REFRESH / LOAD SOMEWHERE BELOW HERO
+
+  function resumeMaduroFromCurrentPosition() {
+    delete document.body.dataset.maduroLock;
+
+    initMaduroScroll();
+
+    ScrollTrigger.refresh();
+    ScrollTrigger.update();
+  }
+
+  // DECIDE WHETHER INTRO SHOULD RUN
+
+  window.addEventListener(
+    'pageshow',
+    function () {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          const loadedAwayFromTop = window.scrollY > 100;
+
+          // User refreshed / landed
+          // somewhere below the hero.
+          // Do NOT lock or send them back.
+
+          if (loadedAwayFromTop) {
+            resumeMaduroFromCurrentPosition();
+
+            return;
+          }
+
+          // Normal fresh visit at top.
+
+          document.body.dataset.maduroLock = 'true';
+
+          setTimeout(startMaduroScroll, INTRO_DURATION);
+        });
+      });
+    },
+    {
+      once: true,
+    },
+  );
+
+  function initClaudeSection() {
+    gsap.registerPlugin(ScrollTrigger);
+
+    gsap.utils.toArray('[data-claude-scene]').forEach(function (sec) {
+      var track = sec.querySelector('[data-claude-track]');
+
+      var lines = gsap.utils.toArray(sec.querySelectorAll('[data-claude-line]'));
+
+      var bits = sec.querySelector('[data-claude-bits]');
+
+      if (!track || !lines.length || !bits) {
+        console.warn('Claude section missing:', {
+          track: !!track,
+          lines: lines.length,
+          bits: !!bits,
+        });
+
+        return;
+      }
+
+      var DIM_OPACITY = 0.1;
+
+      var BITS_IN = 0.9;
+
+      var LINE_IN = 0.34;
+      var LINE_HOLD = 0.55;
+
+      var FINAL_HOLD = 0.8;
+
+      gsap.matchMedia().add('(min-width: 992px)', function () {
+        gsap.set(lines, {
+          opacity: DIM_OPACITY,
+          x: 10,
+        });
+
+        gsap.set(bits, {
+          autoAlpha: 1,
+
+          clipPath: 'polygon(0% 100%, 100% 82%, 100% 100%, 0% 100%)',
+        });
+
+        var claudeTimeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: track,
+
+            start: 'top top',
+
+            end: 'bottom bottom',
+
+            scrub: 0.5,
+          },
+        });
+
+        // Bits angled reveal
+
+        claudeTimeline.to(bits, {
+          clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
+
+          duration: BITS_IN,
+
+          ease: 'power3.inOut',
+        });
+
+        // Claude lines revive
+
+        lines.forEach(function (line) {
+          claudeTimeline.to(line, {
+            opacity: 1,
+            x: 0,
+
+            duration: LINE_IN,
+
+            ease: 'power2.out',
+          });
+
+          claudeTimeline.to(
+            {},
+            {
+              duration: LINE_HOLD,
+            },
+          );
+        });
+
+        claudeTimeline.to(
+          {},
+          {
+            duration: FINAL_HOLD,
+          },
+        );
+      });
+    });
+
+    ScrollTrigger.refresh();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initClaudeSection);
+  } else {
+    initClaudeSection();
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var actionScene = document.querySelector('[data-action-scene]');
+
+    var takeAction = document.querySelector('[data-take-action]');
+
+    if (!actionScene || !takeAction) {
+      return;
+    }
+
+    var observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          takeAction.classList.toggle('display-none', entry.isIntersecting);
+        });
+      },
+      {
+        threshold: 0,
+      },
+    );
+
+    observer.observe(actionScene);
+  });
+
+
 document.addEventListener("DOMContentLoaded", function () {
 
   gsap.utils

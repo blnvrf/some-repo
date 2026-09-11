@@ -5136,7 +5136,7 @@ function initLiberty() {
 
     mm.add(
       {
-        isDesktop: '(min-width: 992px)',
+        isDesktop: '(min-width: 9px)',
         motionOk: '(prefers-reduced-motion: no-preference)',
       },
       function (context) {

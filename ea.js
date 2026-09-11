@@ -5083,395 +5083,454 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
+function initLiberty() {
+  var scenes = gsap.utils.toArray('[data-liberty-scene]');
+  if (!scenes.length) return;
 
- function initLiberty() {
-    var scenes = gsap.utils.toArray('[data-liberty-scene]');
-    if (!scenes.length) return;
+  gsap.registerPlugin(ScrollTrigger);
 
-    gsap.registerPlugin(ScrollTrigger);
-
-    window.addEventListener('load', function () {
-      document.fonts.ready.then(function () {
-        ScrollTrigger.refresh();
-      });
+  window.addEventListener('load', function () {
+    document.fonts.ready.then(function () {
+      ScrollTrigger.refresh();
     });
+  });
 
-    var PRE = 1;
+  var PRE = 1;
 
-    var BEATS = {
-      bandIn: 0,
-      textIn: 0.08,
-      bg: PRE + 0.5,
-      swap: PRE + 0.62,
-      bits: PRE + 0.85,
-      specks: PRE + 0.75,
-      figures: PRE + 1.55,
-      hold: PRE + 1.12,
-      statueSwap: PRE + 1.1,
-    };
+  var BEATS = {
+    bandIn: 0,
+    textIn: 0.08,
+    bg: PRE + 0.5,
+    swap: PRE + 0.62,
+    bits: PRE + 0.85,
+    specks: PRE + 0.75,
+    figures: PRE + 1.55,
+    hold: PRE + 1.12,
+    statueSwap: PRE + 1.1,
+  };
 
-    var DUR = {
-      bandIn: 0.5,
-      textIn: 0.35,
-      bg: 0.6,
-      swap: 0.5,
-      bits: 2,
-      specks: 0.4,
-      figures: 0.75,
-      hold: 2,
-    };
+  var DUR = {
+    bandIn: 0.5,
+    textIn: 0.35,
+    bg: 0.6,
+    swap: 0.5,
+    bits: 2,
+    specks: 0.4,
+    figures: 0.75,
+    hold: 2,
+  };
 
-    var CFG = {
-      scrub: 0.4,
-      bandColor: '#080331',
-      figureStagger: 0.08,
-      speckCount: 50,
-      speckColor: '#d85a30',
-      speckStart: 0.35,
-    };
+  var CFG = {
+    scrub: 0.4,
+    bandColor: '#080331',
+    figureStagger: 0.08,
+    speckCount: 50,
+    speckColor: '#d85a30',
+    speckStart: 0.35,
+  };
 
-    var mm = gsap.matchMedia();
+  var mm = gsap.matchMedia();
 
-    scenes.forEach(function (scene) {
-      var q = gsap.utils.selector(scene);
+  scenes.forEach(function (scene) {
+    var q = gsap.utils.selector(scene);
 
-      mm.add(
-        {
-          isDesktop: '(min-width: 2px)',
-          motionOk: '(prefers-reduced-motion: no-preference)',
-        },
-        function (context) {
-          if (!context.conditions.isDesktop) return;
+    mm.add(
+      {
+        isDesktop: '(min-width: 992px)',
+        motionOk: '(prefers-reduced-motion: no-preference)',
+      },
+      function (context) {
+        if (!context.conditions.isDesktop) return;
 
-          var motionOk = context.conditions.motionOk;
+        var motionOk = context.conditions.motionOk;
 
-          var track = q('[data-liberty-track]')[0];
-          var bgDark = q('[data-liberty="bg-dark"]');
-          var band = q('[data-liberty="band"]');
-          var statueLight = q('[data-liberty="light"]');
-          var statueDark = q('[data-liberty="dark"]');
-          var bits = q('[data-liberty="bits"]');
-          var swaps = q('[data-liberty-swap]');
-          var figures = q('[data-figure]');
-          var host = q('[data-liberty-static]')[0];
-          var sticky = q('[data-liberty-sticky]')[0];
+        var track = q('[data-liberty-track]')[0];
+        var bgDark = q('[data-liberty="bg-dark"]');
+        var band = q('[data-liberty="band"]');
+        var statueLight = q('[data-liberty="light"]');
+        var statueDark = q('[data-liberty="dark"]');
+        var bits = q('[data-liberty="bits"]');
+        var swaps = q('[data-liberty-swap]');
+        var figures = q('[data-figure]');
+        var host = q('[data-liberty-static]')[0];
+        var sticky = q('[data-liberty-sticky]')[0];
 
-          var libertyText = q('[data-liberty-slot-top], [data-liberty-slot-mid], [data-liberty-swap]');
+        var libertyText = q(
+          '[data-liberty-slot-top], [data-liberty-slot-mid], [data-liberty-swap]'
+        );
 
-          if (!track) return;
+        if (!track) return;
 
-          gsap.set(libertyText, {
+        gsap.set(libertyText, {
+          opacity: 0,
+        });
+
+        var loops = [];
+
+        // Specks
+
+        if (host && motionOk) {
+          var flick = gsap.timeline({
+            paused: true,
+          });
+
+          for (var i = 0; i < CFG.speckCount; i++) {
+            var sp = document.createElement('span');
+
+            sp.style.cssText =
+              'position:absolute;' +
+              'display:block;' +
+              'background:' +
+              CFG.speckColor +
+              ';opacity:0;' +
+              'will-change:opacity';
+
+            host.appendChild(sp);
+
+            (function (el) {
+              function place() {
+                var d = gsap.utils.random(2, 4, 1);
+
+                gsap.set(el, {
+                  width: d,
+                  height: d,
+                  left: gsap.utils.random(0, 100) + '%',
+                  top: gsap.utils.random(0, 100) + '%',
+                });
+              }
+
+              place();
+
+              flick.to(
+                el,
+                {
+                  opacity: 1,
+                  duration: 0.06,
+                  repeat: -1,
+                  repeatRefresh: true,
+                  repeatDelay: gsap.utils.random(0.4, 5),
+                  yoyo: true,
+                  onRepeat: place,
+                },
+                gsap.utils.random(0, 3)
+              );
+            })(sp);
+          }
+
+          loops.push(flick);
+
+          ScrollTrigger.create({
+            trigger: track,
+
+            start:
+              'top top-=' +
+              Math.round(
+                track.offsetHeight *
+                  CFG.speckStart
+              ),
+
+            end: 'bottom bottom',
+
+            onToggle: function (self) {
+              if (self.isActive) {
+                flick.play();
+              } else {
+                flick.pause();
+
+                gsap.set(host.children, {
+                  opacity: 0,
+                });
+              }
+            },
+          });
+        }
+
+        // Master timeline
+
+        var libertyTimeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: track,
+            start: 'top top',
+            end: 'bottom bottom',
+            scrub: CFG.scrub,
+          },
+        });
+
+        // Band entrance
+
+        libertyTimeline.to(
+          band,
+          {
+            height: '32%',
+            duration: DUR.bandIn,
+            ease: 'power2.out',
+          },
+          BEATS.bandIn
+        );
+
+        // Text entrance
+
+        libertyTimeline.to(
+          libertyText,
+          {
+            opacity: 1,
+            duration: DUR.textIn,
+            ease: 'power2.out',
+          },
+          BEATS.textIn
+        );
+
+        // Word swaps
+
+        swaps.forEach(function (swap) {
+          var out =
+            swap.querySelector(
+              '[data-word="out"]'
+            );
+
+          var inn =
+            swap.querySelector(
+              '[data-word="in"]'
+            );
+
+          gsap.set(inn, {
+            yPercent: 100,
             opacity: 0,
           });
 
-          var loops = [];
-
-          // Specks
-
-          if (host && motionOk) {
-            var flick = gsap.timeline({
-              paused: true,
-            });
-
-            for (var i = 0; i < CFG.speckCount; i++) {
-              var sp = document.createElement('span');
-
-              sp.style.cssText = 'position:absolute;' + 'display:block;' + 'background:' + CFG.speckColor + ';opacity:0;' + 'will-change:opacity';
-
-              host.appendChild(sp);
-
-              (function (el) {
-                function place() {
-                  var d = gsap.utils.random(2, 4, 1);
-
-                  gsap.set(el, {
-                    width: d,
-                    height: d,
-                    left: gsap.utils.random(0, 100) + '%',
-                    top: gsap.utils.random(0, 100) + '%',
-                  });
-                }
-
-                place();
-
-                flick.to(
-                  el,
-                  {
-                    opacity: 1,
-                    duration: 0.06,
-                    repeat: -1,
-                    repeatRefresh: true,
-                    repeatDelay: gsap.utils.random(0.4, 5),
-                    yoyo: true,
-                    onRepeat: place,
-                  },
-                  gsap.utils.random(0, 3),
-                );
-              })(sp);
-            }
-
-            loops.push(flick);
-
-            ScrollTrigger.create({
-              trigger: track,
-
-              start: 'top top-=' + Math.round(track.offsetHeight * CFG.speckStart),
-
-              end: 'bottom bottom',
-
-              onToggle: function (self) {
-                if (self.isActive) {
-                  flick.play();
-                } else {
-                  flick.pause();
-
-                  gsap.set(host.children, {
-                    opacity: 0,
-                  });
-                }
-              },
-            });
-          }
-
-          // Master timeline
-
-          var libertyTimeline = gsap.timeline({
-            scrollTrigger: {
-              trigger: track,
-              start: 'top top',
-              end: 'bottom bottom',
-              scrub: CFG.scrub,
-            },
-          });
-
-          // Band entrance
-
           libertyTimeline.to(
-            band,
+            out,
             {
-              height: '32%',
-              duration: DUR.bandIn,
-              ease: 'power2.out',
-            },
-            BEATS.bandIn,
-          );
-
-          // Text entrance
-
-          libertyTimeline.to(
-            libertyText,
-            {
-              opacity: 1,
-              duration: DUR.textIn,
-              ease: 'power2.out',
-            },
-            BEATS.textIn,
-          );
-
-          // Word swaps
-
-          swaps.forEach(function (swap) {
-            var out = swap.querySelector('[data-word="out"]');
-
-            var inn = swap.querySelector('[data-word="in"]');
-
-            gsap.set(inn, {
-              yPercent: 100,
+              yPercent: -110,
               opacity: 0,
-            });
-
-            libertyTimeline.to(
-              out,
-              {
-                yPercent: -110,
-                opacity: 0,
-                duration: DUR.swap,
-                ease: 'power2.inOut',
-              },
-              BEATS.swap,
-            );
-
-            libertyTimeline.to(
-              inn,
-              {
-                yPercent: 0,
-                opacity: 1,
-                duration: DUR.swap,
-                ease: 'power2.inOut',
-              },
-              BEATS.swap,
-            );
-          });
-
-          // Background
-
-          libertyTimeline.to(
-            bgDark,
-            {
-              opacity: 1,
-              duration: DUR.bg,
-              ease: 'none',
-            },
-            BEATS.bg,
-          );
-
-          libertyTimeline.to(
-            band,
-            {
-              backgroundColor: CFG.bandColor,
-              duration: DUR.bg,
-              ease: 'none',
-            },
-            BEATS.bg,
-          );
-
-          // Statue swap
-
-          libertyTimeline.set(
-            statueDark,
-            {
-              opacity: 1,
-            },
-            BEATS.statueSwap,
-          );
-
-          libertyTimeline.set(
-            statueLight,
-            {
-              opacity: 0,
-            },
-            BEATS.statueSwap,
-          );
-
-          // Bits reveal
-
-          gsap.set(bits, {
-            opacity: 1,
-
-            clipPath: 'polygon(-200% 0%, -100% 0%, 0% 100%, -100% 100%)',
-          });
-
-          libertyTimeline.to(
-            bits,
-            {
-              clipPath: 'polygon(-100% 0%, 100% 0%, 200% 100%, 0% 100%)',
-
-              duration: DUR.bits,
+              duration: DUR.swap,
               ease: 'power2.inOut',
             },
-            BEATS.bits,
+            BEATS.swap
           );
 
-          var CLEAR = BEATS.hold + DUR.hold;
+          libertyTimeline.to(
+            inn,
+            {
+              yPercent: 0,
+              opacity: 1,
+              duration: DUR.swap,
+              ease: 'power2.inOut',
+            },
+            BEATS.swap
+          );
+        });
 
-          // Exit
+        // Background
 
-          figures.forEach(function (fig, i) {
-            var side = fig.getAttribute('data-figure');
+        libertyTimeline.to(
+          bgDark,
+          {
+            opacity: 1,
+            duration: DUR.bg,
+            ease: 'none',
+          },
+          BEATS.bg
+        );
+
+        libertyTimeline.to(
+          band,
+          {
+            backgroundColor:
+              CFG.bandColor,
+            duration: DUR.bg,
+            ease: 'none',
+          },
+          BEATS.bg
+        );
+
+        // Statue swap
+
+        libertyTimeline.set(
+          statueDark,
+          {
+            opacity: 1,
+          },
+          BEATS.statueSwap
+        );
+
+        libertyTimeline.set(
+          statueLight,
+          {
+            opacity: 0,
+          },
+          BEATS.statueSwap
+        );
+
+        // Bits reveal
+
+        gsap.set(bits, {
+          opacity: 1,
+
+          clipPath:
+            'polygon(-200% 0%, -100% 0%, 0% 100%, -100% 100%)',
+        });
+
+        libertyTimeline.to(
+          bits,
+          {
+            clipPath:
+              'polygon(-100% 0%, 100% 0%, 200% 100%, 0% 100%)',
+
+            duration: DUR.bits,
+            ease: 'power2.inOut',
+          },
+          BEATS.bits
+        );
+
+        var CLEAR =
+          BEATS.hold +
+          DUR.hold;
+
+        // Exit
+
+        figures.forEach(
+          function (fig, i) {
+            var side =
+              fig.getAttribute(
+                'data-figure'
+              );
 
             libertyTimeline.to(
               fig,
               {
-                x: side === 'left' ? -window.innerWidth : window.innerWidth,
+                x:
+                  side === 'left'
+                    ? -window.innerWidth
+                    : window.innerWidth,
 
-                y: side === 'left' ? 120 : 175,
+                y:
+                  side === 'left'
+                    ? 120
+                    : 175,
 
                 opacity: 0,
-                duration: DUR.figures,
+                duration:
+                  DUR.figures,
                 ease: 'power2.in',
               },
-              CLEAR + i * CFG.figureStagger,
+              CLEAR +
+                i *
+                  CFG.figureStagger
             );
-          });
+          }
+        );
 
-          libertyTimeline.to(
-            bits,
-            {
-              opacity: 0,
-              duration: 0.35,
-              ease: 'power2.in',
-            },
-            CLEAR,
+        libertyTimeline.to(
+          bits,
+          {
+            opacity: 0,
+            duration: 0.35,
+            ease: 'power2.in',
+          },
+          CLEAR
+        );
+
+        libertyTimeline.to(
+          band,
+          {
+            height: '0%',
+            duration: 0.4,
+            ease: 'power2.inOut',
+          },
+          CLEAR + 0.1
+        );
+
+        libertyTimeline.to(
+          [statueDark, host],
+          {
+            opacity: 0,
+            duration: 0.35,
+            ease: 'power2.in',
+          },
+          CLEAR + 0.1
+        );
+
+        libertyTimeline.to(
+          [
+            q(
+              '[data-liberty-swap]'
+            ),
+            q(
+              '[data-liberty-slot-mid]'
+            ),
+          ],
+          {
+            opacity: 0,
+            duration: 0.35,
+            ease: 'power2.in',
+          },
+          CLEAR + 0.1
+        );
+
+        // Pig handoff
+
+        var pig =
+          document.querySelector(
+            '[data-pig]'
           );
 
-          libertyTimeline.to(
-            band,
-            {
-              height: '0%',
-              duration: 0.4,
-              ease: 'power2.inOut',
+        if (pig) {
+          ScrollTrigger.create({
+            trigger: pig,
+            start: 'top top',
+
+            onEnter: function () {
+              gsap.set(sticky, {
+                opacity: 0,
+              });
             },
-            CLEAR + 0.1,
-          );
 
-          libertyTimeline.to(
-            [statueDark, host],
-            {
-              opacity: 0,
-              duration: 0.35,
-              ease: 'power2.in',
-            },
-            CLEAR + 0.1,
-          );
-
-          libertyTimeline.to(
-            [q('[data-liberty-swap]'), q('[data-liberty-slot-mid]')],
-            {
-              opacity: 0,
-              duration: 0.35,
-              ease: 'power2.in',
-            },
-            CLEAR + 0.1,
-          );
-
-          // Pig handoff
-
-          var pig = document.querySelector('[data-pig]');
-
-          if (pig) {
-            ScrollTrigger.create({
-              trigger: pig,
-              start: 'top top',
-
-              onEnter: function () {
-                gsap.set(sticky, {
-                  opacity: 0,
-                });
-              },
-
-              onLeaveBack: function () {
+            onLeaveBack:
+              function () {
                 gsap.set(sticky, {
                   opacity: 1,
                 });
               },
-            });
-          }
+          });
+        }
 
-          // Specks reveal
+        // Specks reveal
 
-          if (host) {
-            libertyTimeline.to(
-              host,
-              {
-                opacity: 1,
-                duration: DUR.specks,
-                ease: 'none',
-              },
-              BEATS.specks,
-            );
-          }
+        if (host) {
+          libertyTimeline.to(
+            host,
+            {
+              opacity: 1,
+              duration:
+                DUR.specks,
+              ease: 'none',
+            },
+            BEATS.specks
+          );
+        }
 
-          // Figures enter
+        // Figures enter
 
-          figures.forEach(function (fig, i) {
-            var side = fig.getAttribute('data-figure');
+        figures.forEach(
+          function (fig, i) {
+            var side =
+              fig.getAttribute(
+                'data-figure'
+              );
 
             libertyTimeline.fromTo(
               fig,
               {
-                x: side === 'left' ? -window.innerWidth : window.innerWidth,
+                x:
+                  side === 'left'
+                    ? -window.innerWidth
+                    : window.innerWidth,
 
-                y: side === 'left' ? 120 : 175,
+                y:
+                  side === 'left'
+                    ? 120
+                    : 175,
 
                 opacity: 0,
               },
@@ -5479,94 +5538,85 @@ document.addEventListener("DOMContentLoaded", function () {
                 x: 0,
                 y: 0,
                 opacity: 1,
-                duration: DUR.figures,
+                duration:
+                  DUR.figures,
                 ease: 'power2.out',
               },
-              BEATS.figures + i * CFG.figureStagger,
+              BEATS.figures +
+                i *
+                  CFG.figureStagger
             );
-          });
+          }
+        );
 
-          // Hold
+        // Hold
 
-          libertyTimeline.to(
-            {},
-            {
-              duration: DUR.hold,
-            },
-            BEATS.hold,
-          );
+        libertyTimeline.to(
+          {},
+          {
+            duration: DUR.hold,
+          },
+          BEATS.hold
+        );
 
-          // Figure float
+        // Figure float
 
-          if (motionOk && figures.length) {
-            figures.forEach(function (fig, i) {
-              var floatTarget = fig.querySelector('[data-inner-figure="true"]');
+        if (
+          motionOk &&
+          figures.length
+        ) {
+          figures.forEach(
+            function (fig, i) {
+              var floatTarget =
+                fig.querySelector(
+                  '[data-inner-figure="true"]'
+                );
 
-              var f = createFloat(floatTarget, MOTION.float, i * 0.4);
+              var f = createFloat(
+                floatTarget,
+                MOTION.float,
+                i * 0.4
+              );
 
               loops.push(f);
 
               ScrollTrigger.create({
                 trigger: track,
-                start: 'top bottom',
-                end: 'bottom top',
+                start:
+                  'top bottom',
+                end:
+                  'bottom top',
 
-                onToggle: function (self) {
-                  self.isActive ? f.play() : f.pause();
-                },
+                onToggle:
+                  function (self) {
+                    self.isActive
+                      ? f.play()
+                      : f.pause();
+                  },
               });
-            });
-          }
-
-          // Cleanup
-
-          return function () {
-            loops.forEach(function (t) {
-              t.kill();
-            });
-
-            if (host) {
-              host.innerHTML = '';
             }
-          };
-        },
-      );
-    });
-  }
+          );
+        }
 
-  initLiberty();
+        // Cleanup
 
-function syncPigOverlap() {
-  const pig =
-    document.querySelector('[data-pig]');
+        return function () {
+          loops.forEach(
+            function (t) {
+              t.kill();
+            }
+          );
 
-  if (!pig) return;
-
-  const viewportHeight =
-    window.visualViewport
-      ? window.visualViewport.height
-      : document.documentElement.clientHeight;
-
-  pig.style.marginTop =
-    `-${Math.round(viewportHeight)}px`;
+          if (host) {
+            host.innerHTML = '';
+          }
+        };
+      }
+    );
+  });
 }
 
-syncPigOverlap();
-
-window.addEventListener(
-  'load',
-  function () {
-    setTimeout(syncPigOverlap, 300);
-  },
-  { once: true }
-);
-
-window.addEventListener(
-  'orientationchange',
-  function () {
-    setTimeout(syncPigOverlap, 300);
-  }
-);
+initLiberty();
 
 
 

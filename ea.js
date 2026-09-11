@@ -5362,7 +5362,7 @@ document.addEventListener("DOMContentLoaded", function () {
             BEATS.bits,
           );
 
-          var CLEAR = BEATS.hold + DUR.hold;
+          //var CLEAR = BEATS.hold + DUR.hold;
 
           // Exit
 
@@ -5495,6 +5495,18 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             BEATS.hold,
           );
+
+          var libertyEnd = libertyTimeline.duration();
+
+libertyTimeline.to(
+  sticky,
+  {
+    autoAlpha: 0,
+    duration: 0.12,
+    ease: 'none'
+  },
+  libertyEnd
+);
 
           // Figure float
 

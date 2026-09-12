@@ -3429,486 +3429,445 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-  gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger);
 
-  // GLOBAL MOTION SETTINGS
+// GLOBAL MOTION SETTINGS
 
-  const MOTION = {
-    textFade: {
-      duration: 0.22,
-      ease: 'power2.out',
-    },
+const MOTION = {
+  textFade: {
+    duration: 0.22,
+    ease: 'power2.out',
+  },
 
-    sceneFade: {
-      duration: 1,
-      ease: 'power2.out',
-    },
+  sceneFade: {
+    duration: 1,
+    ease: 'power2.out',
+  },
 
-    float: {
-      x: [-8, 8],
-      y: [-16, -28],
-      rotate: [-3.2, 3.2],
-      duration: [2.4, 3.6],
-      ease: 'sine.inOut',
-    },
-  };
+  float: {
+    x: [-8, 8],
+    y: [-16, -28],
+    rotate: [-3.2, 3.2],
+    duration: [2.4, 3.6],
+    ease: 'sine.inOut',
+  },
+};
 
-  // GLOBAL REUSABLE ANIMATIONS
+// GLOBAL REUSABLE ANIMATIONS
 
-  function fadeIn(target, motion = MOTION.textFade) {
-    return gsap.to(target, {
-      autoAlpha: 1,
-      duration: motion.duration,
+function fadeIn(target, motion = MOTION.textFade) {
+  return gsap.to(target, {
+    autoAlpha: 1,
+    duration: motion.duration,
+    ease: motion.ease,
+    overwrite: true,
+  });
+}
+
+function fadeOut(target, motion = MOTION.textFade) {
+  return gsap.to(target, {
+    autoAlpha: 0,
+    duration: motion.duration,
+    ease: motion.ease,
+    overwrite: true,
+  });
+}
+
+function createFloat(target, motion = MOTION.float, delay = 0) {
+  const timeline = gsap.timeline({
+    repeat: -1,
+    yoyo: true,
+    paused: true,
+    defaults: {
       ease: motion.ease,
-      overwrite: true,
-    });
-  }
+    },
+  });
 
-  function fadeOut(target, motion = MOTION.textFade) {
-    return gsap.to(target, {
-      autoAlpha: 0,
-      duration: motion.duration,
-      ease: motion.ease,
-      overwrite: true,
-    });
-  }
+  timeline.to(
+    target,
+    {
+      x: gsap.utils.random(motion.x[0], motion.x[1]),
 
-  function createFloat(target, motion = MOTION.float, delay = 0) {
-    const timeline = gsap.timeline({
-      repeat: -1,
-      yoyo: true,
-      paused: true,
-      defaults: {
-        ease: motion.ease,
-      },
-    });
+      y: gsap.utils.random(motion.y[0], motion.y[1]),
 
-    timeline.to(
-      target,
-      {
-        x: gsap.utils.random(motion.x[0], motion.x[1]),
+      rotate: gsap.utils.random(motion.rotate[0], motion.rotate[1]),
 
-        y: gsap.utils.random(motion.y[0], motion.y[1]),
+      duration: gsap.utils.random(motion.duration[0], motion.duration[1]),
+    },
+    delay,
+  );
 
-        rotate: gsap.utils.random(motion.rotate[0], motion.rotate[1]),
-
-        duration: gsap.utils.random(motion.duration[0], motion.duration[1]),
-      },
-      delay,
-    );
-
-    return timeline;
-  }
+  return timeline;
+}
 
 
-  document.addEventListener('DOMContentLoaded', function () {
-    gsap.utils.toArray('[data-pig]').forEach(function (sec) {
-      var pq = gsap.utils.selector(sec);
+document.addEventListener('DOMContentLoaded', function () {
+  gsap.utils.toArray('[data-pig]').forEach(function (sec) {
+    var pq = gsap.utils.selector(sec);
 
-      var track = pq('[data-pig-track]')[0];
-      var stackWrap = pq('[data-stack-wrapper]')[0];
-      var scale = pq('[data-pig-scale]')[0];
+    var track = pq('[data-pig-track]')[0];
+    var stackWrap = pq('[data-stack-wrapper]')[0];
+    var scale = pq('[data-pig-scale]')[0];
 
-      var lines = pq('[data-pig-line]');
-      var mainTitle = pq('[data-pig-main-title]')[0];
+    var lines = pq('[data-pig-line]');
+    var mainTitle = pq('[data-pig-main-title]')[0];
 
-      var closingLine = pq('[data-pig-line-closing]')[0];
+    var closingLine = pq('[data-pig-line-closing]')[0];
 
-      var closingTxt = closingLine ? closingLine.querySelector('[data-pig-txt]') : null;
+    var closingTxt = closingLine ? closingLine.querySelector('[data-pig-txt]') : null;
 
-      var intro = pq('[data-pig-intro="true"]')[0];
+    var intro = pq('[data-pig-intro="true"]')[0];
 
-      var introTitle = intro ? intro.querySelector('[data-pig-intro-secondary-title]') : null;
+    var introTitle = intro ? intro.querySelector('[data-pig-intro-secondary-title]') : null;
 
-      var introLines = intro
-        ? gsap.utils.toArray(intro.querySelectorAll('[data-pig-line]')).filter(function (line) {
-            if (introTitle && line.contains(introTitle)) {
-              return false;
-            }
-
-            return true;
-          })
-        : [];
-
-      // Normal Pig story ONLY.
-      // Closing line has data-pig-line too,
-      // so explicitly remove it here.
-      var storyLines = lines.filter(function (line) {
-        if (line === mainTitle) return false;
-
-        if (line.hasAttribute('data-pig-line-closing')) {
-          return false;
-        }
-
-        if (intro && intro.contains(line)) {
+    var introLines = intro
+      ? gsap.utils.toArray(intro.querySelectorAll('[data-pig-line]')).filter(function (line) {
+        if (introTitle && line.contains(introTitle)) {
           return false;
         }
 
         return true;
+      })
+      : [];
+
+    // Normal Pig story ONLY.
+    // Closing line has data-pig-line too,
+    // so explicitly remove it here.
+    var storyLines = lines.filter(function (line) {
+      if (line === mainTitle) return false;
+
+      if (line.hasAttribute('data-pig-line-closing')) {
+        return false;
+      }
+
+      if (intro && intro.contains(line)) {
+        return false;
+      }
+
+      return true;
+    });
+
+    var human = pq('[data-pig-human]');
+    var op = pq('[data-pig-op]');
+    var pigSide = pq('[data-pig-pigside]');
+
+    var herdBox = pq('[data-pig-herd]')[0];
+    var pigCount = pq('[data-pig-count="pig"]')[0];
+    var quote = pq('[data-pig-quote]');
+
+    if (!track || !storyLines.length || !herdBox) {
+      return;
+    }
+
+    var seed = herdBox.querySelector('[data-pig-cell]');
+
+    if (!seed) return;
+
+    var BEATS = [
+      { pigs: 1, human: true },
+      { pigs: 2, human: true },
+      { pigs: 2, human: true },
+      { pigs: 10, human: true },
+    ];
+
+    var HOLDS = [0.75, 0.75, 0.6, 0.75];
+
+    var INTRO = {
+      mainIn: 0,
+      mainHold: 0.5,
+
+      introTitleIn: 1,
+      introLinesIn: 1.5,
+
+      introOut: 2,
+      gap: 0.15,
+    };
+
+    var TEXT_FADE = MOTION.textFade.duration;
+    var TEXT_EASE = MOTION.textFade.ease;
+
+    var FIG = 0.12;
+    var DROP = 0.24;
+    var CLEAR = 0.16;
+
+    var QUOTE_HOLD = 0.9;
+    var QUOTE_AFTER = 3;
+
+    function cellSize(n) {
+      const isMobile =
+        window.matchMedia(
+          '(max-width: 991px)'
+        ).matches;
+
+      if (isMobile && n === 10) {
+        return {
+          w: '50%',
+          h: '20%',
+        };
+      }
+
+      if (n <= 1) {
+        return {
+          w: '75%',
+          h: '75%',
+        };
+      }
+
+      if (n === 2) {
+        return {
+          w: '75%',
+          h: '50%',
+        };
+      }
+
+      if (n <= 4) {
+        return {
+          w: '75%',
+          h: '25%',
+        };
+      }
+
+      var cols = Math.ceil(n / 4);
+
+      return {
+        w: 75 / cols + '%',
+        h: '25%',
+      };
+    }
+
+    var HERD_TARGET = 10;
+
+    var existing = herdBox.querySelectorAll('[data-pig-cell]').length;
+
+    for (var p = existing; p < HERD_TARGET; p++) {
+      herdBox.appendChild(seed.cloneNode(true));
+    }
+
+    var herd = gsap.utils.toArray(herdBox.querySelectorAll('[data-pig-cell]'));
+
+    gsap.matchMedia().add('(min-width: 2px)', function () {
+      // Initial figures
+
+      gsap.set([human, op, pigSide], {
+        opacity: 0,
       });
 
-      var human = pq('[data-pig-human]');
-      var op = pq('[data-pig-op]');
-      var pigSide = pq('[data-pig-pigside]');
+      gsap.set(herd, {
+        opacity: 0,
+        display: 'none',
+      });
 
-      var herdBox = pq('[data-pig-herd]')[0];
-      var pigCount = pq('[data-pig-count="pig"]')[0];
-      var quote = pq('[data-pig-quote]');
+      gsap.set(quote, {
+        opacity: 0,
+        xPercent: -50,
+        yPercent: -50,
+      });
 
-      if (!track || !storyLines.length || !herdBox) {
-        return;
-      }
-
-      var seed = herdBox.querySelector('[data-pig-cell]');
-
-      if (!seed) return;
-
-      var BEATS = [
-        { pigs: 1, human: true },
-        { pigs: 2, human: true },
-        { pigs: 2, human: true },
-        { pigs: 10, human: true },
-      ];
-
-      var HOLDS = [0.75, 0.75, 0.6, 0.75];
-
-      var INTRO = {
-        mainIn: 0,
-        mainHold: 0.5,
-
-        introTitleIn: 1,
-        introLinesIn: 1.5,
-
-        introOut: 2,
-        gap: 0.15,
-      };
-
-      var TEXT_FADE = MOTION.textFade.duration;
-      var TEXT_EASE = MOTION.textFade.ease;
-
-      var FIG = 0.12;
-      var DROP = 0.24;
-      var CLEAR = 0.16;
-
-      var QUOTE_HOLD = 0.9;
-      var QUOTE_AFTER = 3;
-
-function cellSize(n) {
-  const isMobile =
-    window.matchMedia(
-      '(max-width: 991px)'
-    ).matches;
-
-  if (isMobile && n === 10) {
-    return {
-      w: '50%',
-      h: '20%',
-    };
-  }
-
-  if (n <= 1) {
-    return {
-      w: '75%',
-      h: '75%',
-    };
-  }
-
-  if (n === 2) {
-    return {
-      w: '75%',
-      h: '50%',
-    };
-  }
-
-  if (n <= 4) {
-    return {
-      w: '75%',
-      h: '25%',
-    };
-  }
-
-  var cols = Math.ceil(n / 4);
-
-  return {
-    w: 75 / cols + '%',
-    h: '25%',
-  };
-}
-
-      var HERD_TARGET = 10;
-
-      var existing = herdBox.querySelectorAll('[data-pig-cell]').length;
-
-      for (var p = existing; p < HERD_TARGET; p++) {
-        herdBox.appendChild(seed.cloneNode(true));
-      }
-
-      var herd = gsap.utils.toArray(herdBox.querySelectorAll('[data-pig-cell]'));
-
-      gsap.matchMedia().add('(min-width: 2px)', function () {
-        // Initial figures
-
-        gsap.set([human, op, pigSide], {
-          opacity: 0,
-        });
-
-        gsap.set(herd, {
-          opacity: 0,
-          display: 'none',
-        });
-
-        gsap.set(quote, {
-          opacity: 0,
-          xPercent: -50,
-          yPercent: -50,
-        });
-
-        if (stackWrap) {
-          gsap.set(stackWrap, {
-            height: '100%',
-            top: '0%',
-            opacity: 1,
-          });
-        }
-
-        if (scale) {
-          gsap.set(scale, {
-            yPercent: 100,
-            opacity: 0,
-          });
-        }
-
-        gsap.set(herdBox, {
-          flexDirection: 'column',
-          flexWrap: 'wrap',
+      if (stackWrap) {
+        gsap.set(stackWrap, {
           height: '100%',
-          width: '100%',
+          top: '0%',
+          opacity: 1,
         });
+      }
 
-        var first = cellSize(1);
-
-        gsap.set(herd, {
-          width: first.w,
-          height: first.h,
+      if (scale) {
+        gsap.set(scale, {
+          yPercent: 100,
+          opacity: 0,
         });
+      }
 
-        // Initial text states
+      gsap.set(herdBox, {
+        flexDirection: 'column',
+        flexWrap: 'wrap',
+        height: '100%',
+        width: '100%',
+      });
 
-        if (mainTitle) {
-          gsap.set(mainTitle, {
+      var first = cellSize(1);
+
+      gsap.set(herd, {
+        width: first.w,
+        height: first.h,
+      });
+
+      // Initial text states
+
+      if (mainTitle) {
+        gsap.set(mainTitle, {
+          opacity: 0,
+        });
+      }
+
+      if (intro) {
+        gsap.set(intro, {
+          opacity: 1,
+        });
+      }
+
+      if (introTitle) {
+        gsap.set(introTitle, {
+          opacity: 0,
+        });
+      }
+
+      if (introLines.length) {
+        gsap.set(introLines, {
+          opacity: 0,
+        });
+      }
+
+      storyLines.forEach(function (line) {
+        var txt = line.querySelector('[data-pig-txt]');
+
+        if (txt) {
+          gsap.set(txt, {
             opacity: 0,
           });
         }
+      });
 
-        if (intro) {
-          gsap.set(intro, {
+      // Closing wrapper stays untouched.
+      // Only its inner text starts hidden.
+      if (closingTxt) {
+        gsap.set(closingTxt, {
+          opacity: 0,
+        });
+      }
+
+      var pigTimeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: track,
+          start: 'top top',
+          end: 'bottom bottom',
+          scrub: 0.4,
+        },
+      });
+
+      // MAIN TITLE
+
+      if (mainTitle) {
+        pigTimeline.to(
+          mainTitle,
+          {
             opacity: 1,
-          });
-        }
-
-        if (introTitle) {
-          gsap.set(introTitle, {
-            opacity: 0,
-          });
-        }
-
-        if (introLines.length) {
-          gsap.set(introLines, {
-            opacity: 0,
-          });
-        }
-
-        storyLines.forEach(function (line) {
-          var txt = line.querySelector('[data-pig-txt]');
-
-          if (txt) {
-            gsap.set(txt, {
-              opacity: 0,
-            });
-          }
-        });
-
-        // Closing wrapper stays untouched.
-        // Only its inner text starts hidden.
-        if (closingTxt) {
-          gsap.set(closingTxt, {
-            opacity: 0,
-          });
-        }
-
-        var pigTimeline = gsap.timeline({
-          scrollTrigger: {
-            trigger: track,
-            start: 'top top',
-            end: 'bottom bottom',
-            scrub: 0.4,
+            duration: TEXT_FADE,
+            ease: TEXT_EASE,
           },
-        });
+          INTRO.mainIn,
+        );
 
-        // MAIN TITLE
+        pigTimeline.to(
+          mainTitle,
+          {
+            opacity: 0,
+            duration: TEXT_FADE,
+            ease: TEXT_EASE,
+          },
+          INTRO.mainHold,
+        );
+      }
 
-        if (mainTitle) {
+      // INTRO MINI TITLE
+
+      if (introTitle) {
+        pigTimeline.to(
+          introTitle,
+          {
+            opacity: 1,
+            duration: TEXT_FADE,
+            ease: TEXT_EASE,
+          },
+          INTRO.introTitleIn,
+        );
+      }
+
+      // INTRO COPY
+
+      if (introLines.length) {
+        pigTimeline.to(
+          introLines,
+          {
+            opacity: 1,
+            duration: TEXT_FADE,
+            ease: TEXT_EASE,
+          },
+          INTRO.introLinesIn,
+        );
+      }
+
+      // INTRO OUT
+
+      if (intro) {
+        pigTimeline.to(
+          intro,
+          {
+            opacity: 0,
+            duration: TEXT_FADE,
+            ease: TEXT_EASE,
+          },
+          INTRO.introOut,
+        );
+      }
+
+      var at = INTRO.introOut + TEXT_FADE + INTRO.gap;
+
+      // PIG STORY
+
+      storyLines.forEach(function (line, i) {
+        var span = HOLDS[i] !== undefined ? HOLDS[i] : 0.75;
+
+        var txt = line.querySelector('[data-pig-txt]');
+
+        var beat = BEATS[i] || BEATS[BEATS.length - 1];
+
+        var prev =
+          i > 0
+            ? BEATS[i - 1]
+            : {
+              pigs: 0,
+              human: false,
+            };
+
+        // Text enters
+
+        if (txt) {
           pigTimeline.to(
-            mainTitle,
+            txt,
             {
               opacity: 1,
               duration: TEXT_FADE,
               ease: TEXT_EASE,
             },
-            INTRO.mainIn,
+            at,
           );
 
-          pigTimeline.to(
-            mainTitle,
-            {
-              opacity: 0,
-              duration: TEXT_FADE,
-              ease: TEXT_EASE,
-            },
-            INTRO.mainHold,
-          );
-        }
+          // Lines 1–3 fade normally.
+          // Line 4 fades with full composition.
 
-        // INTRO MINI TITLE
-
-        if (introTitle) {
-          pigTimeline.to(
-            introTitle,
-            {
-              opacity: 1,
-              duration: TEXT_FADE,
-              ease: TEXT_EASE,
-            },
-            INTRO.introTitleIn,
-          );
-        }
-
-        // INTRO COPY
-
-        if (introLines.length) {
-          pigTimeline.to(
-            introLines,
-            {
-              opacity: 1,
-              duration: TEXT_FADE,
-              ease: TEXT_EASE,
-            },
-            INTRO.introLinesIn,
-          );
-        }
-
-        // INTRO OUT
-
-        if (intro) {
-          pigTimeline.to(
-            intro,
-            {
-              opacity: 0,
-              duration: TEXT_FADE,
-              ease: TEXT_EASE,
-            },
-            INTRO.introOut,
-          );
-        }
-
-        var at = INTRO.introOut + TEXT_FADE + INTRO.gap;
-
-        // PIG STORY
-
-        storyLines.forEach(function (line, i) {
-          var span = HOLDS[i] !== undefined ? HOLDS[i] : 0.75;
-
-          var txt = line.querySelector('[data-pig-txt]');
-
-          var beat = BEATS[i] || BEATS[BEATS.length - 1];
-
-          var prev =
-            i > 0
-              ? BEATS[i - 1]
-              : {
-                  pigs: 0,
-                  human: false,
-                };
-
-          // Text enters
-
-          if (txt) {
+          if (i !== QUOTE_AFTER) {
             pigTimeline.to(
               txt,
               {
-                opacity: 1,
+                opacity: 0,
                 duration: TEXT_FADE,
                 ease: TEXT_EASE,
               },
-              at,
+              at + span - TEXT_FADE,
             );
-
-            // Lines 1–3 fade normally.
-            // Line 4 fades with full composition.
-
-            if (i !== QUOTE_AFTER) {
-              pigTimeline.to(
-                txt,
-                {
-                  opacity: 0,
-                  duration: TEXT_FADE,
-                  ease: TEXT_EASE,
-                },
-                at + span - TEXT_FADE,
-              );
-            }
           }
+        }
 
-          // First Pig visualization
+        // First Pig visualization
 
-          if (beat.pigs > 0 && prev.pigs === 0) {
-            if (stackWrap) {
-              pigTimeline.to(
-                stackWrap,
-                {
-                  height: '50%',
-                  top: '50%',
-                  duration: DROP,
-                  ease: 'power2.inOut',
-                },
-                at,
-              );
-            }
-
-            if (scale) {
-              pigTimeline.to(
-                scale,
-                {
-                  yPercent: 0,
-                  opacity: 1,
-                  duration: DROP,
-                  ease: 'power2.out',
-                },
-                at + 0.04,
-              );
-            }
-          }
-
-          // Herd resize
-
-          if (beat.pigs !== prev.pigs && beat.pigs > 0) {
-            var cell = cellSize(beat.pigs);
-
-            pigTimeline.set(
-              herdBox,
-              {
-                justifyContent: beat.pigs <= 2 ? 'center' : 'flex-start',
-
-                alignContent: beat.pigs <= 2 ? 'center' : 'flex-start',
-              },
-              at,
-            );
-
+        if (beat.pigs > 0 && prev.pigs === 0) {
+          if (stackWrap) {
             pigTimeline.to(
-              herd,
+              stackWrap,
               {
-                width: cell.w,
-                height: cell.h,
+                height: '50%',
+                top: '50%',
                 duration: DROP,
                 ease: 'power2.inOut',
               },
@@ -3916,227 +3875,268 @@ function cellSize(n) {
             );
           }
 
-          var revealAt = beat.pigs !== prev.pigs ? at + DROP : at;
-
-          // Human
-
-          pigTimeline.to(
-            human,
-            {
-              opacity: beat.human ? 1 : 0,
-              duration: FIG,
-              ease: 'none',
-            },
-            revealAt,
-          );
-
-          // Operator
-
-          pigTimeline.to(
-            op,
-            {
-              opacity: beat.human && beat.pigs > 0 ? 1 : 0,
-
-              duration: FIG,
-              ease: 'none',
-            },
-            revealAt,
-          );
-
-          // Pig side
-
-          pigTimeline.to(
-            pigSide,
-            {
-              opacity: beat.pigs > 0 ? 1 : 0,
-
-              duration: FIG,
-              ease: 'none',
-            },
-            revealAt,
-          );
-
-          // Herd
-
-          herd.forEach(function (cellEl, idx) {
-            pigTimeline.set(
-              cellEl,
-              {
-                display: idx < beat.pigs ? 'flex' : 'none',
-              },
-              revealAt,
-            );
-
+          if (scale) {
             pigTimeline.to(
-              cellEl,
+              scale,
               {
-                opacity: idx < beat.pigs ? 1 : 0,
-
-                duration: FIG,
-                ease: 'none',
+                yPercent: 0,
+                opacity: 1,
+                duration: DROP,
+                ease: 'power2.out',
               },
-              revealAt + idx * 0.01,
-            );
-          });
-
-          // Counter
-
-          if (pigCount) {
-            pigTimeline.to(
-              pigCount,
-              {
-                duration: FIG,
-
-                snap: {
-                  innerText: 1,
-                },
-
-                innerText: beat.pigs,
-                ease: 'none',
-              },
-              revealAt,
+              at + 0.04,
             );
           }
+        }
 
-          // PIG LINE 4 → QUOTE → CLOSING LINE
+        // Herd resize
 
-          if (i === QUOTE_AFTER && quote.length) {
-            var transitionStart = at + span - TEXT_FADE;
+        if (beat.pigs !== prev.pigs && beat.pigs > 0) {
+          var cell = cellSize(beat.pigs);
 
-            var quoteEnd = at + span + QUOTE_HOLD;
+          pigTimeline.set(
+            herdBox,
+            {
+              justifyContent: beat.pigs <= 2 ? 'center' : 'flex-start',
 
-            var closingIn = quoteEnd - CLEAR;
+              alignContent: beat.pigs <= 2 ? 'center' : 'flex-start',
+            },
+            at,
+          );
 
-            // Last normal Pig line fades with everything else
+          pigTimeline.to(
+            herd,
+            {
+              width: cell.w,
+              height: cell.h,
+              duration: DROP,
+              ease: 'power2.inOut',
+            },
+            at,
+          );
+        }
 
-            if (txt) {
-              pigTimeline.to(
-                txt,
-                {
-                  opacity: 0,
-                  duration: CLEAR,
-                  ease: 'power2.in',
-                },
-                transitionStart,
-              );
-            }
+        var revealAt = beat.pigs !== prev.pigs ? at + DROP : at;
 
-            // Text stack clears
+        // Human
 
-            if (stackWrap) {
-              pigTimeline.to(
-                stackWrap,
-                {
-                  opacity: 0,
-                  duration: CLEAR,
-                  ease: 'power2.in',
-                },
-                transitionStart,
-              );
-            }
+        pigTimeline.to(
+          human,
+          {
+            opacity: beat.human ? 1 : 0,
+            duration: FIG,
+            ease: 'none',
+          },
+          revealAt,
+        );
 
-            // Pig/human visual clears
+        // Operator
 
-            if (scale) {
-              pigTimeline.to(
-                scale,
-                {
-                  opacity: 0,
-                  duration: CLEAR,
-                  ease: 'power2.in',
-                },
-                transitionStart,
-              );
-            }
+        pigTimeline.to(
+          op,
+          {
+            opacity: beat.human && beat.pigs > 0 ? 1 : 0,
 
-            // Quote enters immediately
+            duration: FIG,
+            ease: 'none',
+          },
+          revealAt,
+        );
 
-pigTimeline.fromTo(
-  quote,
-  {
-    opacity: 0,
-    y: 60,
-    xPercent: -50,
-    yPercent: -50
-  },
-  {
-    opacity: 1,
-    y: 0,
-    xPercent: -50,
-    yPercent: -50,
-    duration: 0.22,
-    ease: "power3.out"
-  },
-  transitionStart + CLEAR
-);
+        // Pig side
 
-            // Quote fades OUT
+        pigTimeline.to(
+          pigSide,
+          {
+            opacity: beat.pigs > 0 ? 1 : 0,
 
+            duration: FIG,
+            ease: 'none',
+          },
+          revealAt,
+        );
+
+        // Herd
+
+        herd.forEach(function (cellEl, idx) {
+          pigTimeline.set(
+            cellEl,
+            {
+              display: idx < beat.pigs ? 'flex' : 'none',
+            },
+            revealAt,
+          );
+
+          pigTimeline.to(
+            cellEl,
+            {
+              opacity: idx < beat.pigs ? 1 : 0,
+
+              duration: FIG,
+              ease: 'none',
+            },
+            revealAt + idx * 0.01,
+          );
+        });
+
+        // Counter
+
+        if (pigCount) {
+          pigTimeline.to(
+            pigCount,
+            {
+              duration: FIG,
+
+              snap: {
+                innerText: 1,
+              },
+
+              innerText: beat.pigs,
+              ease: 'none',
+            },
+            revealAt,
+          );
+        }
+
+        // PIG LINE 4 → QUOTE → CLOSING LINE
+
+        if (i === QUOTE_AFTER && quote.length) {
+          var transitionStart = at + span - TEXT_FADE;
+
+          var quoteEnd = at + span + QUOTE_HOLD;
+
+          var closingIn = quoteEnd - CLEAR;
+
+          // Last normal Pig line fades with everything else
+
+          if (txt) {
             pigTimeline.to(
-              quote,
+              txt,
               {
                 opacity: 0,
                 duration: CLEAR,
                 ease: 'power2.in',
               },
+              transitionStart,
+            );
+          }
+
+          // Text stack clears
+
+          if (stackWrap) {
+            pigTimeline.to(
+              stackWrap,
+              {
+                opacity: 0,
+                duration: CLEAR,
+                ease: 'power2.in',
+              },
+              transitionStart,
+            );
+          }
+
+          // Pig/human visual clears
+
+          if (scale) {
+            pigTimeline.to(
+              scale,
+              {
+                opacity: 0,
+                duration: CLEAR,
+                ease: 'power2.in',
+              },
+              transitionStart,
+            );
+          }
+
+          // Quote enters immediately
+
+          pigTimeline.fromTo(
+            quote,
+            {
+              opacity: 0,
+              y: 60,
+              xPercent: -50,
+              yPercent: -50
+            },
+            {
+              opacity: 1,
+              y: 0,
+              xPercent: -50,
+              yPercent: -50,
+              duration: 0.22,
+              ease: "power3.out"
+            },
+            transitionStart + CLEAR
+          );
+
+          // Quote fades OUT
+
+          pigTimeline.to(
+            quote,
+            {
+              opacity: 0,
+              duration: CLEAR,
+              ease: 'power2.in',
+            },
+            closingIn,
+          );
+
+          // Reposition text stage instantly while invisible.
+          // No vertical movement during closing-line reveal.
+
+          if (stackWrap) {
+            pigTimeline.set(
+              stackWrap,
+              {
+                height: '100%',
+                top: '0%',
+              },
               closingIn,
             );
 
-            // Reposition text stage instantly while invisible.
-            // No vertical movement during closing-line reveal.
-
-            if (stackWrap) {
-              pigTimeline.set(
-                stackWrap,
-                {
-                  height: '100%',
-                  top: '0%',
-                },
-                closingIn,
-              );
-
-              pigTimeline.to(
-                stackWrap,
-                {
-                  opacity: 1,
-                  duration: CLEAR,
-                  ease: 'power2.out',
-                },
-                closingIn,
-              );
-            }
-            // Closing line simply fades IN.
-            // No y, no transform, no movement.
-            if (closingTxt) {
-              pigTimeline.to(
-                closingTxt,
-                {
-                  opacity: 1,
-                  duration: TEXT_FADE,
-                  ease: TEXT_EASE,
-                },
-                closingIn,
-              );
-            }
+            pigTimeline.to(
+              stackWrap,
+              {
+                opacity: 1,
+                duration: CLEAR,
+                ease: 'power2.out',
+              },
+              closingIn,
+            );
           }
-          at += span;
-          if (i === QUOTE_AFTER) {
-            at += QUOTE_HOLD;
+          // Closing line simply fades IN.
+          // No y, no transform, no movement.
+          if (closingTxt) {
+            pigTimeline.to(
+              closingTxt,
+              {
+                opacity: 1,
+                duration: TEXT_FADE,
+                ease: TEXT_EASE,
+              },
+              closingIn,
+            );
           }
-        });
-        pigTimeline.to(
-  {},
-  {
-    duration: 0.3
-  },
-  at
-);
+        }
+        at += span;
+        if (i === QUOTE_AFTER) {
+          at += QUOTE_HOLD;
+        }
       });
+      pigTimeline.to(
+        {},
+        {
+          duration: 0.3
+        },
+        at
+      );
     });
   });
+});
 
 
-  // MADURO INTRO
+// MADURO INTRO
 /*
   const INTRO_DURATION = 10400;
 
@@ -4324,128 +4324,128 @@ if (takeAction) {
     },
   );
 */
-  function initClaudeSection() {
-    gsap.registerPlugin(ScrollTrigger);
+function initClaudeSection() {
+  gsap.registerPlugin(ScrollTrigger);
 
-    gsap.utils.toArray('[data-claude-scene]').forEach(function (sec) {
-      var track = sec.querySelector('[data-claude-track]');
+  gsap.utils.toArray('[data-claude-scene]').forEach(function (sec) {
+    var track = sec.querySelector('[data-claude-track]');
 
-      var lines = gsap.utils.toArray(sec.querySelectorAll('[data-claude-line]'));
+    var lines = gsap.utils.toArray(sec.querySelectorAll('[data-claude-line]'));
 
-      var bits = sec.querySelector('[data-claude-bits]');
+    var bits = sec.querySelector('[data-claude-bits]');
 
-      if (!track || !lines.length || !bits) {
-        console.warn('Claude section missing:', {
-          track: !!track,
-          lines: lines.length,
-          bits: !!bits,
-        });
+    if (!track || !lines.length || !bits) {
+      console.warn('Claude section missing:', {
+        track: !!track,
+        lines: lines.length,
+        bits: !!bits,
+      });
 
-        return;
-      }
+      return;
+    }
 
-      var DIM_OPACITY = 0.1;
+    var DIM_OPACITY = 0.1;
 
-      var BITS_IN = 0.9;
+    var BITS_IN = 0.9;
 
-      var LINE_IN = 0.34;
-      var LINE_HOLD = 0.55;
+    var LINE_IN = 0.34;
+    var LINE_HOLD = 0.55;
 
-      var FINAL_HOLD = 0.8;
+    var FINAL_HOLD = 0.8;
 
-      gsap.matchMedia().add('(min-width: 992px)', function () {
-        gsap.set(lines, {
-          opacity: DIM_OPACITY,
-          x: 10,
-        });
+    gsap.matchMedia().add('(min-width: 992px)', function () {
+      gsap.set(lines, {
+        opacity: DIM_OPACITY,
+        x: 10,
+      });
 
-        gsap.set(bits, {
-          autoAlpha: 1,
+      gsap.set(bits, {
+        autoAlpha: 1,
 
-          clipPath: 'polygon(0% 100%, 100% 82%, 100% 100%, 0% 100%)',
-        });
+        clipPath: 'polygon(0% 100%, 100% 82%, 100% 100%, 0% 100%)',
+      });
 
-        var claudeTimeline = gsap.timeline({
-          scrollTrigger: {
-            trigger: track,
+      var claudeTimeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: track,
 
-            start: 'top top',
+          start: 'top top',
 
-            end: 'bottom bottom',
+          end: 'bottom bottom',
 
-            scrub: 0.5,
-          },
-        });
+          scrub: 0.5,
+        },
+      });
 
-        // Bits angled reveal
+      // Bits angled reveal
 
-        claudeTimeline.to(bits, {
-          clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
+      claudeTimeline.to(bits, {
+        clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
 
-          duration: BITS_IN,
+        duration: BITS_IN,
 
-          ease: 'power3.inOut',
-        });
+        ease: 'power3.inOut',
+      });
 
-        // Claude lines revive
+      // Claude lines revive
 
-        lines.forEach(function (line) {
-          claudeTimeline.to(line, {
-            opacity: 1,
-            x: 0,
+      lines.forEach(function (line) {
+        claudeTimeline.to(line, {
+          opacity: 1,
+          x: 0,
 
-            duration: LINE_IN,
+          duration: LINE_IN,
 
-            ease: 'power2.out',
-          });
-
-          claudeTimeline.to(
-            {},
-            {
-              duration: LINE_HOLD,
-            },
-          );
+          ease: 'power2.out',
         });
 
         claudeTimeline.to(
           {},
           {
-            duration: FINAL_HOLD,
+            duration: LINE_HOLD,
           },
         );
       });
+
+      claudeTimeline.to(
+        {},
+        {
+          duration: FINAL_HOLD,
+        },
+      );
     });
-
-    ScrollTrigger.refresh();
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initClaudeSection);
-  } else {
-    initClaudeSection();
-  }
-
-  document.addEventListener('DOMContentLoaded', function () {
-    var actionScene = document.querySelector('[data-action-scene]');
-    var takeAction = document.querySelector('[data-take-action]');
-
-    if (!actionScene || !takeAction) {
-      return;
-    }
-
-    var observer = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (entry) {
-          takeAction.classList.toggle('display-none', entry.isIntersecting);
-        });
-      },
-      {
-        threshold: 0,
-      },
-    );
-
-    observer.observe(actionScene);
   });
+
+  ScrollTrigger.refresh();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initClaudeSection);
+} else {
+  initClaudeSection();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  var actionScene = document.querySelector('[data-action-scene]');
+  var takeAction = document.querySelector('[data-take-action]');
+
+  if (!actionScene || !takeAction) {
+    return;
+  }
+
+  var observer = new IntersectionObserver(
+    function (entries) {
+      entries.forEach(function (entry) {
+        takeAction.classList.toggle('display-none', entry.isIntersecting);
+      });
+    },
+    {
+      threshold: 0,
+    },
+  );
+
+  observer.observe(actionScene);
+});
 
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -4851,7 +4851,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 var last =
                   i ===
                   slides.length -
-                    1;
+                  1;
 
 
                 var body =
@@ -5102,16 +5102,16 @@ document.addEventListener("DOMContentLoaded", function () {
     // DOT CONFIG
     // ---------------------------------
 
-var isMobile =
-  window.matchMedia(
-    "(max-width: 991px)"
-  ).matches;
+    var isMobile =
+      window.matchMedia(
+        "(max-width: 991px)"
+      ).matches;
 
-var COLS =
-  isMobile ? 17 : 49;
+    var COLS =
+      isMobile ? 17 : 49;
 
-var ROWS =
-  isMobile ? 25 : 25;
+    var ROWS =
+      isMobile ? 25 : 25;
 
     var DOT_SIZE_MIN = 10;
     var DOT_SIZE_MAX = 14;
@@ -5129,7 +5129,7 @@ var ROWS =
     function random(min, max) {
       return (
         Math.random() *
-          (max - min) +
+        (max - min) +
         min
       );
     }
@@ -5227,8 +5227,8 @@ var ROWS =
           Math.max(
             2,
             size +
-              change *
-              direction
+            change *
+            direction
           );
 
         dot.style.setProperty(
@@ -5405,17 +5405,17 @@ var ROWS =
       newLayer.style.position =
         "absolute";
 
-newLayer.style.top =
-  "0";
+      newLayer.style.top =
+        "0";
 
-newLayer.style.left =
-  "0";
+      newLayer.style.left =
+        "0";
 
-newLayer.style.width =
-  "100%";
+      newLayer.style.width =
+        "100%";
 
-newLayer.style.height =
-  "auto";
+      newLayer.style.height =
+        "auto";
 
       container.appendChild(
         oldLayer
@@ -5438,15 +5438,15 @@ newLayer.style.height =
         CAPTION_2
       );
 
-      var headOldHeight =
-  headLayers.old.offsetHeight;
+    var headOldHeight =
+      headLayers.old.offsetHeight;
 
-var headNewHeight =
-  headLayers.next.scrollHeight;
+    var headNewHeight =
+      headLayers.next.scrollHeight;
 
-gsap.set(capHead, {
-  height: headOldHeight
-});
+    gsap.set(capHead, {
+      height: headOldHeight
+    });
 
     var subLayers =
       makeCaptionLayers(
@@ -5455,19 +5455,19 @@ gsap.set(capHead, {
         SUB_2
       );
 
-      var headOldHeight =
-  headLayers.old
-    .getBoundingClientRect()
-    .height;
+    var headOldHeight =
+      headLayers.old
+        .getBoundingClientRect()
+        .height;
 
-var headNewHeight =
-  headLayers.next
-    .getBoundingClientRect()
-    .height;
+    var headNewHeight =
+      headLayers.next
+        .getBoundingClientRect()
+        .height;
 
-gsap.set(capHead, {
-  height: headOldHeight
-});
+    gsap.set(capHead, {
+      height: headOldHeight
+    });
 
     // ---------------------------------
     // DESKTOP
@@ -5583,14 +5583,14 @@ gsap.set(capHead, {
         );
 
         mathTimeline.to(
-  capHead,
-  {
-    height: headNewHeight,
-    duration: TEXT_FADE,
-    ease: TEXT_EASE
-  },
-  swapAt
-);
+          capHead,
+          {
+            height: headNewHeight,
+            duration: TEXT_FADE,
+            ease: TEXT_EASE
+          },
+          swapAt
+        );
 
         // -----------------------------
         // 2. VERY SHORT FULL FIELD
@@ -5634,14 +5634,14 @@ gsap.set(capHead, {
         // during dot transition
 
         mathTimeline.to(
-  capHead,
-  {
-    height: headNewHeight,
-    duration: TEXT_FADE,
-    ease: TEXT_EASE
-  },
-  swapAt
-);
+          capHead,
+          {
+            height: headNewHeight,
+            duration: TEXT_FADE,
+            ease: TEXT_EASE
+          },
+          swapAt
+        );
 
         mathTimeline.to(
           [
@@ -5922,7 +5922,7 @@ function initLiberty() {
               'top top-=' +
               Math.round(
                 track.offsetHeight *
-                  CFG.speckStart
+                CFG.speckStart
               ),
 
             end: 'bottom bottom',
@@ -6111,8 +6111,8 @@ function initLiberty() {
                 ease: 'power2.in',
               },
               CLEAR +
-                i *
-                  CFG.figureStagger
+              i *
+              CFG.figureStagger
             );
           }
         );
@@ -6239,8 +6239,8 @@ function initLiberty() {
                 ease: 'power2.out',
               },
               BEATS.figures +
-                i *
-                  CFG.figureStagger
+              i *
+              CFG.figureStagger
             );
           }
         );
@@ -6658,8 +6658,8 @@ document.addEventListener("DOMContentLoaded", function () {
       var listItems =
         list
           ? gsap.utils.toArray(
-              list.querySelectorAll("li")
-            )
+            list.querySelectorAll("li")
+          )
           : [];
 
 
@@ -8774,8 +8774,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     clipPath:
                       CARD_CLIPS[
-                        i %
-                        CARD_CLIPS.length
+                      i %
+                      CARD_CLIPS.length
                       ]
                   }
                 );
@@ -11130,22 +11130,22 @@ function initFTX() {
       var beforeEl =
         rewrite
           ? rewrite.querySelector(
-              "[data-ftx-type-before], .ftx_rewrite-before"
-            )
+            "[data-ftx-type-before], .ftx_rewrite-before"
+          )
           : null;
 
       var strikeEl =
         rewrite
           ? rewrite.querySelector(
-              "[data-ftx-type-strike], .ftx_rewrite-strike"
-            )
+            "[data-ftx-type-strike], .ftx_rewrite-strike"
+          )
           : null;
 
       var afterEl =
         rewrite
           ? rewrite.querySelector(
-              "[data-ftx-type-after], .ftx_rewrite-after"
-            )
+            "[data-ftx-type-after], .ftx_rewrite-after"
+          )
           : null;
 
 
@@ -12190,8 +12190,8 @@ document.addEventListener("DOMContentLoaded", function () {
       var personMedia =
         person
           ? person.querySelector(
-              ".askell_person-media"
-            )
+            ".askell_person-media"
+          )
           : null;
 
       var innerTitle =
@@ -13572,7 +13572,7 @@ document.addEventListener("DOMContentLoaded", function () {
           function getHorizontalEnd() {
             var lastCard =
               cards[
-                cards.length - 1
+              cards.length - 1
               ];
 
             if (!lastCard) {
@@ -13678,43 +13678,46 @@ document.addEventListener("DOMContentLoaded", function () {
           // ---------------------------------
           // 3. RAIL + BAND RISE
           // ---------------------------------
+var isMobile =
+  window.matchMedia(
+    "(max-width: 991px)"
+  ).matches;
+          var ROW_AT =
+            QUOTE_AT +
+            TEXT_FADE +
+            0.08;
 
-var ROW_AT =
-  QUOTE_AT +
-  TEXT_FADE +
-  0.08;
+          if (isMobile) {
+            familyTimeline.to(
+              quote,
+              {
+                opacity: 0,
+                duration: TEXT_FADE,
+                ease: TEXT_EASE
+              },
+              ROW_AT
+            );
+          }
 
-if (isMobile) {
-  familyTimeline.to(
-    quote,
-    {
-      opacity: 0,
-      duration: TEXT_FADE,
-      ease: TEXT_EASE
-    },
-    ROW_AT
-  );
-}
+          familyTimeline.to(
+            rail,
+            {
+              y: 0,
+              duration: ROW_DURATION,
+              ease: "power3.out"
+            },
+            ROW_AT
+          );
 
-familyTimeline.to(
-  rail,
-  {
-    y: 0,
-    duration: ROW_DURATION,
-    ease: "power3.out"
-  },
-  ROW_AT
-);
-
-familyTimeline.to(
-  band,
-  {
-    y: 0,
-    duration: ROW_DURATION,
-    ease: "power3.out"
-  },
-  ROW_AT
-);
+          familyTimeline.to(
+            band,
+            {
+              y: 0,
+              duration: ROW_DURATION,
+              ease: "power3.out"
+            },
+            ROW_AT
+          );
 
           familyTimeline.to(
             rail,
@@ -15144,8 +15147,8 @@ document.addEventListener("DOMContentLoaded", function () {
       var stories =
         reader
           ? gsap.utils.toArray(
-              reader.querySelectorAll("[data-scandal-story]")
-            )
+            reader.querySelectorAll("[data-scandal-story]")
+          )
           : [];
 
       var intro =
@@ -16527,225 +16530,225 @@ document.addEventListener("DOMContentLoaded", function () {
       // NO scale.
       // =========================================================
 
-function goToStory(index) {
+      function goToStory(index) {
 
-  if (
-    !isOpen ||
-    isAnimating
-  ) {
-    return;
-  }
-
-
-  // =====================================================
-  // LOOP
-  // =====================================================
-
-  if (index < 0) {
-    index = cards.length - 1;
-  }
-
-  if (index >= cards.length) {
-    index = 0;
-  }
-
-  if (index === currentIndex) {
-    return;
-  }
-
-
-  var nextCard =
-    cards[index];
-
-  var nextStory =
-    getStoryForCard(nextCard);
-
-
-  if (!nextStory) {
-    return;
-  }
-
-
-  isAnimating = true;
-
-
-  var oldStory =
-    currentStory;
-
-
-  // =====================================================
-  // GET NEXT IMAGE NOW
-  //
-  // We NEVER animate readerImage opacity.
-  // =====================================================
-
-  var nextSource =
-    getCardImage(nextCard);
-
-
-  if (!nextSource) {
-
-    isAnimating = false;
-
-    return;
-  }
-
-
-  var nextSrc =
-    nextSource.currentSrc ||
-    nextSource.src;
-
-
-  var nextStyles =
-    getComputedStyle(nextSource);
-
-
-  // =====================================================
-  // TIMELINE
-  // =====================================================
-
-  var tl =
-    gsap.timeline({
-
-      onComplete:
-        function () {
-
-          currentIndex =
-            index;
-
-          currentCard =
-            nextCard;
-
-          currentStory =
-            nextStory;
-
-          isAnimating =
-            false;
+        if (
+          !isOpen ||
+          isAnimating
+        ) {
+          return;
         }
-    });
 
 
-  // =====================================================
-  // 1. FADE ONLY OLD STORY/TEXT
-  //
-  // IMAGE REMAINS 100% VISIBLE.
-  // READER BACKGROUND REMAINS UNTOUCHED.
-  // =====================================================
+        // =====================================================
+        // LOOP
+        // =====================================================
 
-  tl.to(
-    oldStory,
-    {
-      autoAlpha: 0,
-      duration: 0.18,
-      ease: "power1.out"
-    }
-  );
+        if (index < 0) {
+          index = cards.length - 1;
+        }
 
+        if (index >= cards.length) {
+          index = 0;
+        }
 
-  // =====================================================
-  // 2. INSTANT SWAP
-  // =====================================================
-
-  tl.call(function () {
+        if (index === currentIndex) {
+          return;
+        }
 
 
-    // ---------------------------------------------
-    // INSTANT IMAGE REPLACEMENT
-    // ---------------------------------------------
+        var nextCard =
+          cards[index];
 
-    if (nextSrc) {
-
-      readerImage.src =
-        nextSrc;
-    }
+        var nextStory =
+          getStoryForCard(nextCard);
 
 
-    readerImage.alt =
-      nextSource.alt || "";
+        if (!nextStory) {
+          return;
+        }
 
 
-    readerImage.style.objectPosition =
-      nextStyles.objectPosition;
+        isAnimating = true;
 
 
-    // IMPORTANT:
-    // Force image to remain fully visible.
+        var oldStory =
+          currentStory;
 
-    gsap.set(
-      readerImage,
-      {
-        autoAlpha: 1,
-        x: 0,
-        y: 0,
-        scale: 1
+
+        // =====================================================
+        // GET NEXT IMAGE NOW
+        //
+        // We NEVER animate readerImage opacity.
+        // =====================================================
+
+        var nextSource =
+          getCardImage(nextCard);
+
+
+        if (!nextSource) {
+
+          isAnimating = false;
+
+          return;
+        }
+
+
+        var nextSrc =
+          nextSource.currentSrc ||
+          nextSource.src;
+
+
+        var nextStyles =
+          getComputedStyle(nextSource);
+
+
+        // =====================================================
+        // TIMELINE
+        // =====================================================
+
+        var tl =
+          gsap.timeline({
+
+            onComplete:
+              function () {
+
+                currentIndex =
+                  index;
+
+                currentCard =
+                  nextCard;
+
+                currentStory =
+                  nextStory;
+
+                isAnimating =
+                  false;
+              }
+          });
+
+
+        // =====================================================
+        // 1. FADE ONLY OLD STORY/TEXT
+        //
+        // IMAGE REMAINS 100% VISIBLE.
+        // READER BACKGROUND REMAINS UNTOUCHED.
+        // =====================================================
+
+        tl.to(
+          oldStory,
+          {
+            autoAlpha: 0,
+            duration: 0.18,
+            ease: "power1.out"
+          }
+        );
+
+
+        // =====================================================
+        // 2. INSTANT SWAP
+        // =====================================================
+
+        tl.call(function () {
+
+
+          // ---------------------------------------------
+          // INSTANT IMAGE REPLACEMENT
+          // ---------------------------------------------
+
+          if (nextSrc) {
+
+            readerImage.src =
+              nextSrc;
+          }
+
+
+          readerImage.alt =
+            nextSource.alt || "";
+
+
+          readerImage.style.objectPosition =
+            nextStyles.objectPosition;
+
+
+          // IMPORTANT:
+          // Force image to remain fully visible.
+
+          gsap.set(
+            readerImage,
+            {
+              autoAlpha: 1,
+              x: 0,
+              y: 0,
+              scale: 1
+            }
+          );
+
+
+          // ---------------------------------------------
+          // OLD STORY OFF
+          // ---------------------------------------------
+
+          oldStory.classList.remove(
+            "is-active"
+          );
+
+
+          gsap.set(
+            oldStory,
+            {
+              display: "none"
+            }
+          );
+
+
+          // ---------------------------------------------
+          // NEW STORY ON
+          // ---------------------------------------------
+
+          activateStory(
+            nextStory
+          );
+
+
+          gsap.set(
+            nextStory,
+            {
+              autoAlpha: 0,
+              x: 0,
+              y: 0,
+              scale: 1
+            }
+          );
+
+
+          // ---------------------------------------------
+          // RESET TEXT SCROLL
+          // ---------------------------------------------
+
+          if (readerScroll) {
+
+            readerScroll.scrollTop =
+              0;
+          }
+
+        });
+
+
+        // =====================================================
+        // 3. FADE ONLY NEW STORY/TEXT IN
+        // =====================================================
+
+        tl.to(
+          nextStory,
+          {
+            autoAlpha: 1,
+            duration: 0.22,
+            ease: "power1.out"
+          }
+        );
+
       }
-    );
-
-
-    // ---------------------------------------------
-    // OLD STORY OFF
-    // ---------------------------------------------
-
-    oldStory.classList.remove(
-      "is-active"
-    );
-
-
-    gsap.set(
-      oldStory,
-      {
-        display: "none"
-      }
-    );
-
-
-    // ---------------------------------------------
-    // NEW STORY ON
-    // ---------------------------------------------
-
-    activateStory(
-      nextStory
-    );
-
-
-    gsap.set(
-      nextStory,
-      {
-        autoAlpha: 0,
-        x: 0,
-        y: 0,
-        scale: 1
-      }
-    );
-
-
-    // ---------------------------------------------
-    // RESET TEXT SCROLL
-    // ---------------------------------------------
-
-    if (readerScroll) {
-
-      readerScroll.scrollTop =
-        0;
-    }
-
-  });
-
-
-  // =====================================================
-  // 3. FADE ONLY NEW STORY/TEXT IN
-  // =====================================================
-
-  tl.to(
-    nextStory,
-    {
-      autoAlpha: 1,
-      duration: 0.22,
-      ease: "power1.out"
-    }
-  );
-
-}
 
       // =========================================================
       // CARD EVENTS
@@ -18542,12 +18545,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
                   x:
                     xs[
-                      i % xs.length
+                    i % xs.length
                     ],
 
                   rotation:
                     rotations[
-                      i % rotations.length
+                    i % rotations.length
                     ]
                 }
               );
@@ -19575,7 +19578,7 @@ document.addEventListener("DOMContentLoaded", function () {
     delete document.body.dataset.maduroLock;
   }, INTRO_DURATION);
 */
-  // end of Maduro scroll blocking
+// end of Maduro scroll blocking
 /*
   // MADURO SECTION
 
@@ -19783,7 +19786,7 @@ if (document.readyState === "loading") {
 
 }
 
-  function initMapLens() {
+function initMapLens() {
 
   var wrapper =
     document.querySelector(

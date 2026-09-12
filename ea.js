@@ -18344,10 +18344,10 @@ document.addEventListener("DOMContentLoaded", function () {
       // Stays 1rem in BOTH states.
       var COUNTER_LABEL_SIZE = "1.25rem";
 
-      var SCALE_PRIMARY_TOP = "39%";
-      var SCALE_SECONDARY_TOP = "52%";
+      //var SCALE_PRIMARY_TOP = "39%";
+      //var SCALE_SECONDARY_TOP = "52%";
 
-      var LATE_TEXT_TOP = "22%";
+      //var LATE_TEXT_TOP = "22%";
 
       var RATE_PER_SECOND = 32;
 
@@ -18462,44 +18462,12 @@ document.addEventListener("DOMContentLoaded", function () {
           // POSITIONING
           // =====================================================
 
-          gsap.set(
-            scalePrimary,
-            {
-              top:
-                SCALE_PRIMARY_TOP
-            }
-          );
 
 
-          gsap.set(
-            scaleSecondary,
-            {
-              top:
-                SCALE_SECONDARY_TOP
-            }
-          );
 
 
-          gsap.set(
-            question,
-            {
-              top:
-                LATE_TEXT_TOP
-            }
-          );
 
-
-          gsap.set(
-            [
-              fellows,
-              pac,
-              pledged
-            ],
-            {
-              top:
-                LATE_TEXT_TOP
-            }
-          );
+ 
 
 
           // =====================================================

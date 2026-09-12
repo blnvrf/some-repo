@@ -4506,78 +4506,41 @@ document.addEventListener(
         // WHEN THINGS HAPPEN
         // =========================================================
 
-        var BEATS = {
+var BEATS = {
+  land: 0.00,
+  blast: 0.04,
+  bits: 0.09,
+  title: 0.18,
 
-          // BAM BAM BAM
-          land: 0.00,
+  // Quotes start basically immediately
+  slides: 0.42
+};
 
-          blast: 0.06,
+var DUR = {
+  land: 0.07,
+  blast: 0.07,
+  bits: 0.09,
 
-          bits: 0.15,
+  // Fast card movement
+  slideMove: 0.06
+};
 
-          title: 0.38,
+var CFG = {
+  scrub: 0.12,
 
+  landFrom: "100vh",
+  blastFrom: "100vh",
 
-          // Start almost immediately
-          // after title has appeared.
-          slides: 0.66
+  textRise: 20,
 
-        };
+  // VERY tight quote sequence
+  slideStep: 0.16,
 
+  slideFrom: "100vh",
+  slideTo: "-100vh",
 
-        // =========================================================
-        // DURATIONS
-        // =========================================================
-
-        var DUR = {
-
-          land: 0.10,
-
-          blast: 0.11,
-
-          bits: 0.16,
-
-          slideMove: 0.12
-
-        };
-
-
-        // =========================================================
-        // CONFIG
-        // =========================================================
-
-        var CFG = {
-
-          scrub: 0.22,
-
-
-          landFrom:
-            "100vh",
-
-          blastFrom:
-            "100vh",
-
-
-          textRise: 20,
-
-
-          // Tight sequence.
-          // Very little dead scroll
-          // between quote events.
-          slideStep: 0.34,
-
-
-          slideFrom:
-            "100vh",
-
-          slideTo:
-            "-100vh",
-
-
-          // Tiny final hold.
-          endHold: 0.18
-
-        };
+  endHold: 0.05
+};
 
 
         // =========================================================
@@ -4894,10 +4857,9 @@ document.addEventListener(
 
                   if (!last) {
 
-                    var outAt =
-                      at +
-                      CFG.slideStep -
-                      DUR.slideMove;
+var outAt =
+  at +
+  CFG.slideStep;
 
 
                     // ---------------------------------------------

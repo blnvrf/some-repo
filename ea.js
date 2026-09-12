@@ -1,3 +1,4 @@
+gsap.registerPlugin(ScrollTrigger);
 // GLOBAL MOTION SETTINGS
 const MOTION = {
   textFade: {
@@ -82,9 +83,6 @@ gsap.fromTo(
     }
   }
 );
-
-
-gsap.registerPlugin(ScrollTrigger);
 
 
   // MADURO SECTION
@@ -942,7 +940,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 function initClaudeSection() {
-  gsap.registerPlugin(ScrollTrigger);
+
 
   gsap.utils.toArray('[data-claude-scene]').forEach(function (sec) {
     var track = sec.querySelector('[data-claude-track]');
@@ -2338,7 +2336,7 @@ function initLiberty() {
   var scenes = gsap.utils.toArray('[data-liberty-scene]');
   if (!scenes.length) return;
 
-  gsap.registerPlugin(ScrollTrigger);
+  
 
   window.addEventListener('load', function () {
     document.fonts.ready.then(function () {
@@ -3231,7 +3229,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.addEventListener("DOMContentLoaded", function () {
 
-  gsap.registerPlugin(ScrollTrigger);
+
 
   gsap.utils
     .toArray("[data-opt-scene]")
@@ -3738,7 +3736,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function initFTX() {
-  gsap.registerPlugin(ScrollTrigger);
+ 
 
   gsap.utils.toArray(".section_ftx").forEach(function (sec, index) {
 
@@ -4948,7 +4946,7 @@ if (document.readyState === "loading") {
 
 document.addEventListener("DOMContentLoaded", function () {
 
-  gsap.registerPlugin(ScrollTrigger);
+
 
   gsap.utils
     .toArray("[data-askell-scene]")
@@ -5705,7 +5703,7 @@ document.addEventListener("DOMContentLoaded", function () {
 // - where is claude
 
 document.addEventListener("DOMContentLoaded", function () {
-  gsap.registerPlugin(ScrollTrigger);
+
 
   gsap.utils
     .toArray("[data-fam-scene]")
@@ -6104,7 +6102,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.addEventListener("DOMContentLoaded", function () {
 
-  gsap.registerPlugin(ScrollTrigger);
+
 
 
   gsap.utils
@@ -8024,7 +8022,7 @@ document.addEventListener(
   "DOMContentLoaded",
   function () {
 
-    gsap.registerPlugin(ScrollTrigger);
+  
 
 
     gsap.utils
@@ -9339,7 +9337,7 @@ var MOBILE_COUNTER_SMALL_VALUE_SIZE =
 
 document.addEventListener("DOMContentLoaded", function () {
 
-  gsap.registerPlugin(ScrollTrigger);
+
 
 
   gsap.utils

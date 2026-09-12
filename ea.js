@@ -5009,7 +5009,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     var FIELD_REST = 0;
 
-    var BURST_SCALE = 420;
+    //var BURST_SCALE = 420;
 
     // Tight pacing
     var FIELD_IN = 0.12;
@@ -5453,16 +5453,16 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         );
 
-        gsap.set(burst, {
-          opacity: 0,
-          scale: 1,
+gsap.set(burst, {
+  opacity: 0,
+  scale: 0.005,
 
-          xPercent: -50,
-          yPercent: -50,
+  xPercent: -50,
+  yPercent: -50,
 
-          marginTop: 0,
-          marginLeft: 0
-        });
+  marginTop: 0,
+  marginLeft: 0
+});
 
         alignBurst();
 
@@ -5651,19 +5651,17 @@ document.addEventListener("DOMContentLoaded", function () {
           burstAt
         );
 
-        mathTimeline.to(
-          burst,
-          {
-            scale:
-              BURST_SCALE,
+mathTimeline.to(
+  burst,
+  {
+    scale: 1,
 
-            duration: 0.24,
+    duration: 0.24,
 
-            ease:
-              "power2.in"
-          },
-          burstAt + 0.02
-        );
+    ease: "power2.in"
+  },
+  burstAt + 0.02
+);
 
         mathTimeline.to(
           [

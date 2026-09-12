@@ -1,3 +1,73 @@
+// GLOBAL MOTION SETTINGS
+
+const MOTION = {
+  textFade: {
+    duration: 0.22,
+    ease: 'power2.out',
+  },
+
+  sceneFade: {
+    duration: 1,
+    ease: 'power2.out',
+  },
+
+  float: {
+    x: [-8, 8],
+    y: [-16, -28],
+    rotate: [-3.2, 3.2],
+    duration: [2.4, 3.6],
+    ease: 'sine.inOut',
+  },
+};
+
+// GLOBAL REUSABLE ANIMATIONS
+
+function fadeIn(target, motion = MOTION.textFade) {
+  return gsap.to(target, {
+    autoAlpha: 1,
+    duration: motion.duration,
+    ease: motion.ease,
+    overwrite: true,
+  });
+}
+
+function fadeOut(target, motion = MOTION.textFade) {
+  return gsap.to(target, {
+    autoAlpha: 0,
+    duration: motion.duration,
+    ease: motion.ease,
+    overwrite: true,
+  });
+}
+
+function createFloat(target, motion = MOTION.float, delay = 0) {
+  const timeline = gsap.timeline({
+    repeat: -1,
+    yoyo: true,
+    paused: true,
+    defaults: {
+      ease: motion.ease,
+    },
+  });
+
+  timeline.to(
+    target,
+    {
+      x: gsap.utils.random(motion.x[0], motion.x[1]),
+
+      y: gsap.utils.random(motion.y[0], motion.y[1]),
+
+      rotate: gsap.utils.random(motion.rotate[0], motion.rotate[1]),
+
+      duration: gsap.utils.random(motion.duration[0], motion.duration[1]),
+    },
+    delay,
+  );
+
+  return timeline;
+}
+
+
 // ============================================================
 // EA SITE git log -1 --format=%h
 // Loaded via jsDelivr. Do not wrap this file in script tags.
@@ -3666,74 +3736,6 @@ if (
 
 
 
-// GLOBAL MOTION SETTINGS
-
-const MOTION = {
-  textFade: {
-    duration: 0.22,
-    ease: 'power2.out',
-  },
-
-  sceneFade: {
-    duration: 1,
-    ease: 'power2.out',
-  },
-
-  float: {
-    x: [-8, 8],
-    y: [-16, -28],
-    rotate: [-3.2, 3.2],
-    duration: [2.4, 3.6],
-    ease: 'sine.inOut',
-  },
-};
-
-// GLOBAL REUSABLE ANIMATIONS
-
-function fadeIn(target, motion = MOTION.textFade) {
-  return gsap.to(target, {
-    autoAlpha: 1,
-    duration: motion.duration,
-    ease: motion.ease,
-    overwrite: true,
-  });
-}
-
-function fadeOut(target, motion = MOTION.textFade) {
-  return gsap.to(target, {
-    autoAlpha: 0,
-    duration: motion.duration,
-    ease: motion.ease,
-    overwrite: true,
-  });
-}
-
-function createFloat(target, motion = MOTION.float, delay = 0) {
-  const timeline = gsap.timeline({
-    repeat: -1,
-    yoyo: true,
-    paused: true,
-    defaults: {
-      ease: motion.ease,
-    },
-  });
-
-  timeline.to(
-    target,
-    {
-      x: gsap.utils.random(motion.x[0], motion.x[1]),
-
-      y: gsap.utils.random(motion.y[0], motion.y[1]),
-
-      rotate: gsap.utils.random(motion.rotate[0], motion.rotate[1]),
-
-      duration: gsap.utils.random(motion.duration[0], motion.duration[1]),
-    },
-    delay,
-  );
-
-  return timeline;
-}
 
 
 document.addEventListener('DOMContentLoaded', function () {

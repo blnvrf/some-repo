@@ -5432,6 +5432,16 @@ var ROWS =
         CAPTION_2
       );
 
+      var headOldHeight =
+  headLayers.old.offsetHeight;
+
+var headNewHeight =
+  headLayers.next.scrollHeight;
+
+gsap.set(capHead, {
+  height: headOldHeight
+});
+
     var subLayers =
       makeCaptionLayers(
         capSub,
@@ -5551,6 +5561,16 @@ var ROWS =
           },
           fieldAt
         );
+
+        mathTimeline.to(
+  capHead,
+  {
+    height: headNewHeight,
+    duration: TEXT_FADE,
+    ease: TEXT_EASE
+  },
+  swapAt
+);
 
         // -----------------------------
         // 2. VERY SHORT FULL FIELD

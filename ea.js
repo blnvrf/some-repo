@@ -4553,7 +4553,10 @@ var CFG = {
             "(min-width: 2px)",
             function () {
 
-
+var isMobile =
+  window.matchMedia(
+    "(max-width: 991px)"
+  ).matches;
               // =====================================================
               // INITIAL STATES
               // =====================================================

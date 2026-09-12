@@ -11039,15 +11039,38 @@ function initFTX() {
       }
 
 
-      function applyCameraFocus() {
-        var focus = getCameraFocus();
+function applyCameraFocus() {
+  var focus = getCameraFocus();
 
-        gsap.set(camera, {
-          transformOrigin:
-            focus.x + "% " +
-            focus.y + "%"
-        });
-      }
+  var mobile =
+    window.matchMedia(
+      "(max-width: 991px)"
+    ).matches;
+
+  if (mobile) {
+
+    focus.x =
+      gsap.utils.clamp(
+        15,
+        85,
+        focus.x
+      );
+
+    focus.y =
+      gsap.utils.clamp(
+        15,
+        85,
+        focus.y
+      );
+
+  }
+
+  gsap.set(camera, {
+    transformOrigin:
+      focus.x + "% " +
+      focus.y + "%"
+  });
+}
 
 
       // =====================================================

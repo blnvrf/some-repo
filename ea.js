@@ -5436,7 +5436,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // ---------------------------------
 
     gsap.matchMedia().add(
-      "(min-width: 992px)",
+      "(min-width: 2px)",
       function () {
         // -----------------------------
         // INITIAL STATES

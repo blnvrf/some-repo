@@ -11011,7 +11011,7 @@ function initFTX() {
     // DESKTOP
     // =========================================================
 
-    gsap.matchMedia().add("(min-width: 992px)", function () {
+    gsap.matchMedia().add("(min-width: 2px)", function () {
 
       // =====================================================
       // CAMERA

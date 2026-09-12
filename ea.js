@@ -4353,7 +4353,7 @@ function initClaudeSection() {
 
     var FINAL_HOLD = 0.8;
 
-    gsap.matchMedia().add('(min-width: 992px)', function () {
+    gsap.matchMedia().add('(min-width: 2px)', function () {
       gsap.set(lines, {
         opacity: DIM_OPACITY,
         x: 10,

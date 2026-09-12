@@ -4513,7 +4513,7 @@ var BEATS = {
   title: 0.18,
 
   // Quotes start basically immediately
-  slides: 0.42
+  slides: 0.24
 };
 
 var DUR = {

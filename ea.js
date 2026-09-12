@@ -18344,17 +18344,22 @@ document.addEventListener(
         var DESKTOP_COUNTER_TOP =
           "8%";
 
-        var MOBILE_COUNTER_TOP =
-          "10%";
+var MOBILE_COUNTER_TOP =
+  "5%";
 
 
         // VALUE SIZE
 
-        var COUNTER_LARGE_VALUE_SIZE =
-          "10rem";
+var COUNTER_LARGE_VALUE_SIZE =
+  "10rem";
 
-        var COUNTER_SMALL_VALUE_SIZE =
-          "6rem";
+var DESKTOP_COUNTER_SMALL_VALUE_SIZE =
+  "6rem";
+
+var MOBILE_COUNTER_SMALL_VALUE_SIZE =
+  "3rem";
+
+  
 
 
         // LABEL SIZE
@@ -18442,6 +18447,11 @@ document.addEventListener(
                 isMobile
                   ? MOBILE_COUNTER_TOP
                   : DESKTOP_COUNTER_TOP;
+
+              var counterSmallValueSize =
+  isMobile
+    ? MOBILE_COUNTER_SMALL_VALUE_SIZE
+    : DESKTOP_COUNTER_SMALL_VALUE_SIZE;
 
 
               var counterLargeLabelSize =
@@ -19130,7 +19140,7 @@ document.addEventListener(
                 counterValue,
                 {
                   fontSize:
-                    COUNTER_SMALL_VALUE_SIZE,
+                     counterSmallValueSize,
 
                   duration:
                     0.72,

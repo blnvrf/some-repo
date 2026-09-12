@@ -16488,9 +16488,17 @@ if (isMobile) {
 
 if (isMobile) {
 
+  // MOBILE:
+  // Image collapses DOWN toward
+  // its bottom edge.
+
   tl.to(
     transitionImage,
     {
+      top:
+        geometry.imageTop +
+        geometry.imageHeight,
+
       height: 0,
 
       duration:
@@ -16503,6 +16511,9 @@ if (isMobile) {
   );
 
 } else {
+
+  // DESKTOP:
+  // Existing horizontal contraction.
 
   tl.to(
     transitionImage,

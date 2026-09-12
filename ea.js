@@ -4508,10 +4508,10 @@ document.addEventListener(
 
         var BEATS = {
           land: 0.00,
-          blast: 0.04,
-          bits: 0.09,
-          title: 0.10,
-          slides: 0.15
+          blast: 0.02,
+          bits: 0.06,
+          title: 0.08,
+          slides: 0.12
         };
 
 

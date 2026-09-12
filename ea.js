@@ -13679,10 +13679,42 @@ document.addEventListener("DOMContentLoaded", function () {
           // 3. RAIL + BAND RISE
           // ---------------------------------
 
-          var ROW_AT =
-            QUOTE_AT +
-            TEXT_FADE +
-            0.08;
+var ROW_AT =
+  QUOTE_AT +
+  TEXT_FADE +
+  0.08;
+
+if (isMobile) {
+  familyTimeline.to(
+    quote,
+    {
+      opacity: 0,
+      duration: TEXT_FADE,
+      ease: TEXT_EASE
+    },
+    ROW_AT
+  );
+}
+
+familyTimeline.to(
+  rail,
+  {
+    y: 0,
+    duration: ROW_DURATION,
+    ease: "power3.out"
+  },
+  ROW_AT
+);
+
+familyTimeline.to(
+  band,
+  {
+    y: 0,
+    duration: ROW_DURATION,
+    ease: "power3.out"
+  },
+  ROW_AT
+);
 
           familyTimeline.to(
             rail,

@@ -13525,7 +13525,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var FINAL_HOLD = 0.2;
 
       gsap.matchMedia().add(
-        "(min-width: 992px)",
+        "(min-width: 2px)",
         function () {
           // ---------------------------------
           // INITIAL STATES

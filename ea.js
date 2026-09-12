@@ -3426,10 +3426,245 @@ document.addEventListener("DOMContentLoaded", function () {
 
 }); */
 
-
+gsap.fromTo(
+  ".scroll-progress-bar",
+  {
+    height: "8vh"
+  },
+  {
+    height: "100vh",
+    ease: "none",
+    scrollTrigger: {
+      trigger: ".page-wrapper",
+      start: "top top",
+      end: "bottom bottom",
+      scrub: 0.1
+    }
+  }
+);
 
 
 gsap.registerPlugin(ScrollTrigger);
+
+
+
+
+  // MADURO SECTION
+
+function initMaduroScroll() {
+  const maduroTrack =
+    document.querySelector(
+      '[data-maduro-track="true"]'
+    );
+
+  const maduroVisual =
+    document.querySelector(
+      '[data-maduro-visual="true"]'
+    );
+
+  const maduroMessages =
+    gsap.utils.toArray(
+      '[data-maduro-message]'
+    );
+
+  const maduroPoints =
+    [0.0, 0.15, 0.3, 0.45, 0.6, 0.85];
+
+
+  if (
+    !maduroTrack ||
+    !maduroVisual ||
+    !maduroMessages.length
+  ) {
+    return;
+  }
+
+
+  // Make absolutely sure the old intro lock
+  // cannot remain active.
+
+  delete document.body.dataset.maduroLock;
+
+
+  const takeAction =
+    document.querySelector(
+      '[data-take-action]'
+    );
+
+  if (takeAction) {
+    takeAction.classList.remove(
+      'display-none'
+    );
+  }
+
+
+  let maduroActive = 0;
+
+
+  function getAllTargets(message) {
+    return gsap.utils.toArray(
+      message.querySelectorAll(
+        '[data-fade], [data-maduro-date]'
+      )
+    );
+  }
+
+
+  function getVisibleTargets(message) {
+    return getAllTargets(message).filter(
+      function (element) {
+
+        if (
+          element.hasAttribute(
+            'data-maduro-date'
+          )
+        ) {
+          return (
+            element.dataset.maduroDate ===
+            'true'
+          );
+        }
+
+        return true;
+      }
+    );
+  }
+
+
+  // Hide all message content first.
+
+  maduroMessages.forEach(
+    function (message) {
+
+      gsap.set(
+        getAllTargets(message),
+        {
+          autoAlpha: 0
+        }
+      );
+    }
+  );
+
+
+  // First message fades in immediately.
+
+  fadeIn(
+    getVisibleTargets(
+      maduroMessages[0]
+    )
+  );
+
+
+  function showMaduroMessage(index) {
+
+    if (
+      index === maduroActive ||
+      !maduroMessages[index]
+    ) {
+      return;
+    }
+
+
+    const oldMessage =
+      maduroMessages[maduroActive];
+
+    const newMessage =
+      maduroMessages[index];
+
+
+    fadeOut(
+      getAllTargets(oldMessage)
+    );
+
+
+    fadeIn(
+      getVisibleTargets(newMessage)
+    );
+
+
+    const maduroIsFinalPhase =
+      index >=
+      maduroMessages.length - 2;
+
+
+    if (maduroIsFinalPhase) {
+
+      fadeOut(
+        maduroVisual,
+        MOTION.sceneFade
+      );
+
+    } else {
+
+      fadeIn(
+        maduroVisual,
+        MOTION.sceneFade
+      );
+    }
+
+
+    maduroActive = index;
+  }
+
+
+  ScrollTrigger.create({
+
+    trigger:
+      maduroTrack,
+
+    start:
+      'top top',
+
+    end:
+      'bottom bottom',
+
+    onUpdate(self) {
+
+      let maduroIndex = 0;
+
+
+      maduroPoints.forEach(
+        function (point, index) {
+
+          if (
+            self.progress >= point
+          ) {
+            maduroIndex = index;
+          }
+        }
+      );
+
+
+      showMaduroMessage(
+        maduroIndex
+      );
+    },
+  });
+
+
+  ScrollTrigger.refresh();
+}
+
+
+// START IMMEDIATELY
+
+if (
+  document.readyState ===
+  'loading'
+) {
+
+  document.addEventListener(
+    'DOMContentLoaded',
+    initMaduroScroll
+  );
+
+} else {
+
+  initMaduroScroll();
+}
+
+
+
 
 // GLOBAL MOTION SETTINGS
 

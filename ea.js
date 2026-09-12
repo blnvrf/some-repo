@@ -5405,11 +5405,17 @@ var ROWS =
       newLayer.style.position =
         "absolute";
 
-      newLayer.style.inset =
-        "0";
+newLayer.style.top =
+  "0";
 
-      newLayer.style.width =
-        "100%";
+newLayer.style.left =
+  "0";
+
+newLayer.style.width =
+  "100%";
+
+newLayer.style.height =
+  "auto";
 
       container.appendChild(
         oldLayer
@@ -5448,6 +5454,20 @@ gsap.set(capHead, {
         SUB_1,
         SUB_2
       );
+
+      var headOldHeight =
+  headLayers.old
+    .getBoundingClientRect()
+    .height;
+
+var headNewHeight =
+  headLayers.next
+    .getBoundingClientRect()
+    .height;
+
+gsap.set(capHead, {
+  height: headOldHeight
+});
 
     // ---------------------------------
     // DESKTOP
@@ -5612,6 +5632,16 @@ gsap.set(capHead, {
 
         // Old caption fades OUT
         // during dot transition
+
+        mathTimeline.to(
+  capHead,
+  {
+    height: headNewHeight,
+    duration: TEXT_FADE,
+    ease: TEXT_EASE
+  },
+  swapAt
+);
 
         mathTimeline.to(
           [

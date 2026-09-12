@@ -4506,41 +4506,41 @@ document.addEventListener(
         // WHEN THINGS HAPPEN
         // =========================================================
 
-var BEATS = {
-  land: 0.00,
-  blast: 0.04,
-  bits: 0.09,
-  title: 0.18,
+        var BEATS = {
+          land: 0.00,
+          blast: 0.04,
+          bits: 0.09,
+          title: 0.1,
 
-  // Quotes start basically immediately
-  slides: 0.24
-};
+          // Quotes start basically immediately
+          slides: 0.15
+        };
 
-var DUR = {
-  land: 0.07,
-  blast: 0.07,
-  bits: 0.09,
+        var DUR = {
+          land: 0.05,
+          blast: 0.05,
+          bits: 0.07,
 
-  // Fast card movement
-  slideMove: 0.06
-};
+          // Fast card movement
+          slideMove: 0.03
+        };
 
-var CFG = {
-  scrub: 0.12,
+        var CFG = {
+          scrub: 0.12,
 
-  landFrom: "100vh",
-  blastFrom: "100vh",
+          landFrom: "100vh",
+          blastFrom: "100vh",
 
-  textRise: 20,
+          textRise: 20,
 
-  // VERY tight quote sequence
-  slideStep: 0.16,
+          // VERY tight quote sequence
+          slideStep: 0.16,
 
-  slideFrom: "100vh",
-  slideTo: "-100vh",
+          slideFrom: "100vh",
+          slideTo: "-100vh",
 
-  endHold: 0.05
-};
+          endHold: 0.05
+        };
 
 
         // =========================================================
@@ -4553,10 +4553,10 @@ var CFG = {
             "(min-width: 2px)",
             function () {
 
-var isMobile =
-  window.matchMedia(
-    "(max-width: 991px)"
-  ).matches;
+              var isMobile =
+                window.matchMedia(
+                  "(max-width: 991px)"
+                ).matches;
               // =====================================================
               // INITIAL STATES
               // =====================================================
@@ -4600,33 +4600,33 @@ var isMobile =
               // BITS
               // -----------------------------------------------------
 
-if (isMobile) {
+              if (isMobile) {
 
-  gsap.set(
-    bits,
-    {
-      y: 0,
-      xPercent: -50,
-      opacity: 0,
-      clipPath: "none"
-    }
-  );
+                gsap.set(
+                  bits,
+                  {
+                    y: 0,
+                    xPercent: -50,
+                    opacity: 0,
+                    clipPath: "none"
+                  }
+                );
 
-} else {
+              } else {
 
-  gsap.set(
-    bits,
-    {
-      y: 0,
-      xPercent: -50,
-      opacity: 1,
+                gsap.set(
+                  bits,
+                  {
+                    y: 0,
+                    xPercent: -50,
+                    opacity: 1,
 
-      clipPath:
-        "polygon(0% 110%, 100% 92%, 100% 110%, 0% 110%)"
-    }
-  );
+                    clipPath:
+                      "polygon(0% 110%, 100% 92%, 100% 110%, 0% 110%)"
+                  }
+                );
 
-}
+              }
 
 
               // =====================================================
@@ -4749,20 +4749,20 @@ if (isMobile) {
               // =====================================================
               // 3. BITS
               // =====================================================
-nukeTimeline.to(
-  bits,
-  {
-    clipPath:
-      "polygon(0% -10%, 100% -28%, 100% 110%, 0% 110%)",
+              nukeTimeline.to(
+                bits,
+                {
+                  clipPath:
+                    "polygon(0% -10%, 100% -28%, 100% 110%, 0% 110%)",
 
-    duration:
-      DUR.bits,
+                  duration:
+                    DUR.bits,
 
-    ease:
-      "power2.inOut"
-  },
-  BEATS.bits
-);
+                  ease:
+                    "power2.inOut"
+                },
+                BEATS.bits
+              );
 
 
               // =====================================================
@@ -4871,9 +4871,9 @@ nukeTimeline.to(
 
                   if (!last) {
 
-var outAt =
-  at +
-  CFG.slideStep;
+                    var outAt =
+                      at +
+                      CFG.slideStep;
 
 
                     // ---------------------------------------------
@@ -8629,12 +8629,12 @@ document.addEventListener("DOMContentLoaded", function () {
       // How far title + body move upward
       // when quote enters.
 
-var TEXT_PUSH =
-  window.matchMedia(
-    "(max-width: 991px)"
-  ).matches
-    ? 0
-    : "-19vh";
+      var TEXT_PUSH =
+        window.matchMedia(
+          "(max-width: 991px)"
+        ).matches
+          ? 0
+          : "-19vh";
 
 
       // =========================================================
@@ -13636,10 +13636,10 @@ document.addEventListener("DOMContentLoaded", function () {
           // ---------------------------------
           // 3. RAIL + BAND RISE
           // ---------------------------------
-var isMobile =
-  window.matchMedia(
-    "(max-width: 991px)"
-  ).matches;
+          var isMobile =
+            window.matchMedia(
+              "(max-width: 991px)"
+            ).matches;
           var ROW_AT =
             QUOTE_AT +
             TEXT_FADE +

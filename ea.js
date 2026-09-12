@@ -16236,6 +16236,11 @@ if (isMobile) {
 
       function closeStory() {
 
+        var isMobile =
+  window.matchMedia(
+    "(max-width: 991px)"
+  ).matches;
+
         if (
           !isOpen ||
           isAnimating ||
@@ -16304,23 +16309,22 @@ if (isMobile) {
 
         // Ensure panel starts fully open.
 
-        gsap.set(
-          readerContent,
-          {
+gsap.set(
+  readerContent,
+  {
+    left:
+      geometry.contentLeft,
 
-            left:
-              geometry.contentLeft,
+    top:
+      geometry.contentTop,
 
-            top:
-              geometry.contentTop,
+    width:
+      geometry.contentWidth,
 
-            width:
-              geometry.contentWidth,
-
-            height:
-              geometry.contentHeight
-          }
-        );
+    height:
+      geometry.contentHeight
+  }
+);
 
 
         // =====================================================
@@ -16505,24 +16509,49 @@ if (isMobile) {
         // READER CONTRACTS
         // =====================================================
 
-        tl.to(
-          readerContent,
-          {
+if (isMobile) {
 
-            left:
-              geometry.sourceRight,
+  // MOBILE:
+  // collapse vertically upward
 
-            width:
-              0,
+  tl.to(
+    readerContent,
+    {
+      height: 0,
 
-            duration:
-              OPEN_DURATION,
+      duration:
+        OPEN_DURATION,
 
-            ease:
-              OPEN_EASE
-          },
-          0
-        );
+      ease:
+        OPEN_EASE
+    },
+    0
+  );
+
+} else {
+
+  // DESKTOP:
+  // existing horizontal close
+
+  tl.to(
+    readerContent,
+    {
+      left:
+        geometry.sourceRight,
+
+      width:
+        0,
+
+      duration:
+        OPEN_DURATION,
+
+      ease:
+        OPEN_EASE
+    },
+    0
+  );
+
+}
       }
 
 

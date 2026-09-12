@@ -4597,21 +4597,33 @@ var CFG = {
               // BITS
               // -----------------------------------------------------
 
-              gsap.set(
-                bits,
-                {
-                  y: 0,
+if (isMobile) {
 
-                  xPercent:
-                    -50,
+  gsap.set(
+    bits,
+    {
+      y: 0,
+      xPercent: -50,
+      opacity: 0,
+      clipPath: "none"
+    }
+  );
 
-                  opacity:
-                    1,
+} else {
 
-                  clipPath:
-                    "polygon(0% 110%, 100% 92%, 100% 110%, 0% 110%)"
-                }
-              );
+  gsap.set(
+    bits,
+    {
+      y: 0,
+      xPercent: -50,
+      opacity: 1,
+
+      clipPath:
+        "polygon(0% 110%, 100% 92%, 100% 110%, 0% 110%)"
+    }
+  );
+
+}
 
 
               // =====================================================
@@ -4734,21 +4746,20 @@ var CFG = {
               // =====================================================
               // 3. BITS
               // =====================================================
+nukeTimeline.to(
+  bits,
+  {
+    clipPath:
+      "polygon(0% -10%, 100% -28%, 100% 110%, 0% 110%)",
 
-              nukeTimeline.to(
-                bits,
-                {
-                  clipPath:
-                    "polygon(0% -10%, 100% -28%, 100% 110%, 0% 110%)",
+    duration:
+      DUR.bits,
 
-                  duration:
-                    DUR.bits,
-
-                  ease:
-                    "power2.inOut"
-                },
-                BEATS.bits
-              );
+    ease:
+      "power2.inOut"
+  },
+  BEATS.bits
+);
 
 
               // =====================================================

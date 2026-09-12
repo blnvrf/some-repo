@@ -19681,7 +19681,7 @@ function initMapSection() {
 
 
   gsap.matchMedia().add(
-    "(min-width: 992px)",
+    "(min-width: 2px)",
     function () {
 
       gsap.set(

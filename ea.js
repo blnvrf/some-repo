@@ -15742,6 +15742,11 @@ document.addEventListener("DOMContentLoaded", function () {
           sourceImage
             .getBoundingClientRect();
 
+var isMobile =
+  window.matchMedia(
+    "(max-width: 991px)"
+  ).matches;
+
 
         // =====================================================
         // FREEZE CURRENT FOUR-CARD GRID
@@ -15793,95 +15798,77 @@ document.addEventListener("DOMContentLoaded", function () {
         );
 
 
-        // =====================================================
-        // FINAL IMAGE WIDTH
-        //
-        // Use Designer width only.
-        // Final image left is always 0.
-        // =====================================================
+// =====================================================
+// FINAL DESIGNER GEOMETRY
+// =====================================================
 
-        var designerVisualRect =
-          readerVisual
-            .getBoundingClientRect();
+var designerVisualRect =
+  readerVisual
+    .getBoundingClientRect();
 
-
-        var finalImageWidth =
-          designerVisualRect.width;
+var designerContentRect =
+  readerContent
+    .getBoundingClientRect();
 
 
-        if (!finalImageWidth) {
+var geometry = {
 
-          finalImageWidth =
-            window.innerWidth * 0.5;
-        }
+  // SOURCE CARD
 
+  sourceLeft:
+    sourceRect.left,
 
-        finalImageWidth =
-          Math.min(
-            finalImageWidth,
-            window.innerWidth
-          );
+  sourceRight:
+    sourceRect.right,
 
+  sourceTop:
+    sourceRect.top,
 
-        // =====================================================
-        // GEOMETRY
-        // =====================================================
+  sourceBottom:
+    sourceRect.bottom,
 
-        var geometry = {
+  sourceWidth:
+    sourceRect.width,
 
-
-          // SOURCE
-
-          sourceLeft:
-            sourceRect.left,
-
-          sourceRight:
-            sourceRect.right,
-
-          sourceTop:
-            sourceRect.top,
-
-          sourceWidth:
-            sourceRect.width,
-
-          sourceHeight:
-            sourceRect.height,
+  sourceHeight:
+    sourceRect.height,
 
 
-          // FINAL IMAGE
+  // FINAL IMAGE
+  // Comes directly from Designer CSS.
 
-          imageLeft:
-            0,
+  imageLeft:
+    designerVisualRect.left,
 
-          imageTop:
-            sourceRect.top,
+  imageTop:
+    designerVisualRect.top,
 
-          imageWidth:
-            finalImageWidth,
+  imageWidth:
+    designerVisualRect.width,
 
-          imageHeight:
-            sourceRect.height,
-
-
-          // FINAL READER
-
-          contentLeft:
-            finalImageWidth,
-
-          contentTop:
-            sourceRect.top,
-
-          contentWidth:
-            window.innerWidth -
-            finalImageWidth,
-
-          contentHeight:
-            sourceRect.height
-        };
+  imageHeight:
+    designerVisualRect.height,
 
 
-        openGeometry =
-          geometry;
+  // FINAL CONTENT
+  // Also comes directly from Designer CSS.
+
+  contentLeft:
+    designerContentRect.left,
+
+  contentTop:
+    designerContentRect.top,
+
+  contentWidth:
+    designerContentRect.width,
+
+  contentHeight:
+    designerContentRect.height
+};
+
+
+openGeometry =
+  geometry;
 
 
         // =====================================================
@@ -15953,51 +15940,74 @@ document.addEventListener("DOMContentLoaded", function () {
         );
 
 
-        // =====================================================
-        // RIGHT PANEL
-        //
-        // Starts at clicked image's right edge with zero width.
-        // =====================================================
+if (isMobile) {
 
-        gsap.set(
-          readerContent,
-          {
+  // MOBILE:
+  // Reader starts collapsed vertically
+  // underneath the clicked card.
 
-            position:
-              "fixed",
+  gsap.set(
+    readerContent,
+    {
+      position: "fixed",
 
-            left:
-              geometry.sourceRight,
+      left:
+        geometry.contentLeft,
 
-            top:
-              geometry.contentTop,
+      top:
+        geometry.sourceBottom,
 
-            width:
-              0,
+      width:
+        geometry.contentWidth,
 
-            height:
-              geometry.contentHeight,
+      height: 0,
 
-            margin:
-              0,
+      margin: 0,
 
-            x:
-              0,
+      x: 0,
+      y: 0,
 
-            y:
-              0,
+      xPercent: 0,
+      yPercent: 0,
 
-            xPercent:
-              0,
+      overflow: "hidden"
+    }
+  );
 
-            yPercent:
-              0,
+} else {
 
-            overflow:
-              "hidden"
-          }
-        );
+  // DESKTOP:
+  // Existing horizontal behaviour.
 
+  gsap.set(
+    readerContent,
+    {
+      position: "fixed",
+
+      left:
+        geometry.sourceRight,
+
+      top:
+        geometry.contentTop,
+
+      width: 0,
+
+      height:
+        geometry.contentHeight,
+
+      margin: 0,
+
+      x: 0,
+      y: 0,
+
+      xPercent: 0,
+      yPercent: 0,
+
+      overflow: "hidden"
+    }
+  );
+
+}
 
         // =====================================================
         // KEEP INNER READER AT FINAL WIDTH
@@ -16097,48 +16107,81 @@ document.addEventListener("DOMContentLoaded", function () {
         // IMAGE EXPANDS LEFT
         // =====================================================
 
-        tl.to(
-          transitionImage,
-          {
+tl.to(
+  transitionImage,
+  {
+    left:
+      geometry.imageLeft,
 
-            left:
-              geometry.imageLeft,
+    top:
+      geometry.imageTop,
 
-            width:
-              geometry.imageWidth,
+    width:
+      geometry.imageWidth,
 
-            duration:
-              OPEN_DURATION,
+    height:
+      geometry.imageHeight,
 
-            ease:
-              OPEN_EASE
-          },
-          0
-        );
+    duration:
+      OPEN_DURATION,
+
+    ease:
+      OPEN_EASE
+  },
+  0
+);
 
 
         // =====================================================
         // READER EXPANDS RIGHT
         // =====================================================
+if (isMobile) {
 
-        tl.to(
-          readerContent,
-          {
+  // MOBILE:
+  // Reader opens DOWN.
 
-            left:
-              geometry.contentLeft,
+  tl.to(
+    readerContent,
+    {
+      top:
+        geometry.contentTop,
 
-            width:
-              geometry.contentWidth,
+      height:
+        geometry.contentHeight,
 
-            duration:
-              OPEN_DURATION,
+      duration:
+        OPEN_DURATION,
 
-            ease:
-              OPEN_EASE
-          },
-          0
-        );
+      ease:
+        OPEN_EASE
+    },
+    0
+  );
+
+} else {
+
+  // DESKTOP:
+  // Reader opens RIGHT.
+
+  tl.to(
+    readerContent,
+    {
+      left:
+        geometry.contentLeft,
+
+      width:
+        geometry.contentWidth,
+
+      duration:
+        OPEN_DURATION,
+
+      ease:
+        OPEN_EASE
+    },
+    0
+  );
+
+}
 
 
         // =====================================================

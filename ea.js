@@ -4503,27 +4503,28 @@ document.addEventListener(
 
 
         // =========================================================
-        // WHEN THINGS HAPPEN
+        // TIMING
         // =========================================================
 
         var BEATS = {
           land: 0.00,
           blast: 0.04,
           bits: 0.09,
-          title: 0.1,
-
-          // Quotes start basically immediately
+          title: 0.10,
           slides: 0.15
         };
+
 
         var DUR = {
           land: 0.05,
           blast: 0.05,
           bits: 0.07,
 
-          // Fast card movement
+          // Quote + body use this
+          // exact same duration.
           slideMove: 0.03
         };
+
 
         var CFG = {
           scrub: 0.12,
@@ -4531,9 +4532,6 @@ document.addEventListener(
           landFrom: "100vh",
           blastFrom: "100vh",
 
-          //textRise: 20,
-
-          // VERY tight quote sequence
           slideStep: 0.16,
 
           slideFrom: "100vh",
@@ -4557,14 +4555,14 @@ document.addEventListener(
                 window.matchMedia(
                   "(max-width: 991px)"
                 ).matches;
+
+
               // =====================================================
               // INITIAL STATES
               // =====================================================
 
 
-              // -----------------------------------------------------
               // LAND
-              // -----------------------------------------------------
 
               gsap.set(
                 land,
@@ -4577,9 +4575,7 @@ document.addEventListener(
               );
 
 
-              // -----------------------------------------------------
               // BLAST
-              // -----------------------------------------------------
 
               gsap.set(
                 blast,
@@ -4596,9 +4592,7 @@ document.addEventListener(
               );
 
 
-              // -----------------------------------------------------
               // BITS
-              // -----------------------------------------------------
 
               if (isMobile) {
 
@@ -4629,39 +4623,27 @@ document.addEventListener(
               }
 
 
-              // =====================================================
               // TITLE
-              // =====================================================
 
               gsap.set(
                 title,
                 {
-                  opacity: 0,
-
-                 // y:
-                //    CFG.textRise
+                  opacity: 0
                 }
               );
 
 
-              // =====================================================
               // BODY COPY
-              // =====================================================
 
               gsap.set(
                 bodies,
                 {
-                  opacity: 0,
-
-               //   y:
-              //      CFG.textRise
+                  opacity: 0
                 }
               );
 
 
-              // =====================================================
               // QUOTE CARDS
-              // =====================================================
 
               gsap.set(
                 slides,
@@ -4728,7 +4710,7 @@ document.addEventListener(
 
 
               // =====================================================
-              // 2. EXPLOSION
+              // 2. BLAST
               // =====================================================
 
               nukeTimeline.to(
@@ -4749,20 +4731,41 @@ document.addEventListener(
               // =====================================================
               // 3. BITS
               // =====================================================
-              nukeTimeline.to(
-                bits,
-                {
-                  clipPath:
-                    "polygon(0% -10%, 100% -28%, 100% 110%, 0% 110%)",
 
-                  duration:
-                    DUR.bits,
+              if (isMobile) {
 
-                  ease:
-                    "power2.inOut"
-                },
-                BEATS.bits
-              );
+                nukeTimeline.to(
+                  bits,
+                  {
+                    opacity: 1,
+
+                    duration:
+                      DUR.bits,
+
+                    ease:
+                      "none"
+                  },
+                  BEATS.bits
+                );
+
+              } else {
+
+                nukeTimeline.to(
+                  bits,
+                  {
+                    clipPath:
+                      "polygon(0% -10%, 100% -28%, 100% 110%, 0% 110%)",
+
+                    duration:
+                      DUR.bits,
+
+                    ease:
+                      "power2.inOut"
+                  },
+                  BEATS.bits
+                );
+
+              }
 
 
               // =====================================================
@@ -4772,11 +4775,7 @@ document.addEventListener(
               nukeTimeline.to(
                 title,
                 {
-                  opacity:
-                    1,
-
-                  y:
-                    0,
+                  opacity: 1,
 
                   duration:
                     TEXT_FADE,
@@ -4797,10 +4796,7 @@ document.addEventListener(
 
 
               slides.forEach(
-                function (
-                  slide,
-                  i
-                ) {
+                function (slide, i) {
 
                   var at =
                     BEATS.slides +
@@ -4810,8 +4806,7 @@ document.addEventListener(
 
                   var last =
                     i ===
-                    slides.length -
-                    1;
+                    slides.length - 1;
 
 
                   var body =
@@ -4820,6 +4815,7 @@ document.addEventListener(
 
                   // ===============================================
                   // BODY IN
+                  // SAME TIME + SAME DURATION AS QUOTE
                   // ===============================================
 
                   if (body) {
@@ -4827,17 +4823,13 @@ document.addEventListener(
                     nukeTimeline.to(
                       body,
                       {
-                        opacity:
-                          1,
-
-                        y:
-                          0,
+                        opacity: 1,
 
                         duration:
-                          TEXT_FADE,
+                          DUR.slideMove,
 
                         ease:
-                          TEXT_EASE
+                          "power3.out"
                       },
                       at
                     );
@@ -4852,8 +4844,7 @@ document.addEventListener(
                   nukeTimeline.to(
                     slide,
                     {
-                      y:
-                        0,
+                      y: 0,
 
                       duration:
                         DUR.slideMove,
@@ -4866,7 +4857,7 @@ document.addEventListener(
 
 
                   // ===============================================
-                  // BODY + QUOTE EXIT
+                  // BODY + QUOTE OUT
                   // ===============================================
 
                   if (!last) {
@@ -4876,9 +4867,7 @@ document.addEventListener(
                       CFG.slideStep;
 
 
-                    // ---------------------------------------------
                     // QUOTE OUT
-                    // ---------------------------------------------
 
                     nukeTimeline.to(
                       slide,
@@ -4896,26 +4885,21 @@ document.addEventListener(
                     );
 
 
-                    // ---------------------------------------------
                     // BODY OUT
-                    // ---------------------------------------------
+                    // EXACT SAME TIME + DURATION
 
                     if (body) {
 
                       nukeTimeline.to(
                         body,
                         {
-                          opacity:
-                            0,
-
-                    //      y:
-                  //          -CFG.textRise,
+                          opacity: 0,
 
                           duration:
                             DUR.slideMove,
 
                           ease:
-                            "power2.in"
+                            "power3.in"
                         },
                         outAt
                       );
@@ -4966,6 +4950,8 @@ document.addEventListener(
 
   }
 );
+
+
 document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-math-scene]").forEach(function (sec) {
     var q = gsap.utils.selector(sec);

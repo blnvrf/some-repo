@@ -5102,8 +5102,16 @@ document.addEventListener("DOMContentLoaded", function () {
     // DOT CONFIG
     // ---------------------------------
 
-    var COLS = 49;
-    var ROWS = 25;
+var isMobile =
+  window.matchMedia(
+    "(max-width: 991px)"
+  ).matches;
+
+var COLS =
+  isMobile ? 17 : 49;
+
+var ROWS =
+  isMobile ? 25 : 25;
 
     var DOT_SIZE_MIN = 10;
     var DOT_SIZE_MAX = 14;

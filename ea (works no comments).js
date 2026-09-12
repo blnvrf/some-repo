@@ -1,9 +1,4 @@
 gsap.registerPlugin(ScrollTrigger);
-
-function isMobile() {
-  return window.matchMedia('(max-width: 991px)').matches;
-}
-
 // GLOBAL MOTION SETTINGS
 const MOTION = {
   textFade: {
@@ -72,27 +67,25 @@ function createFloat(target, motion = MOTION.float, delay = 0) {
   return timeline;
 }
 
-function initScrollProgress() {
-  gsap.fromTo(
-    ".scroll-progress-bar",
-    {
-      height: "8vh"
-    },
-    {
-      height: "100vh",
-      ease: "none",
-      scrollTrigger: {
-        trigger: ".page-wrapper",
-        start: "top top",
-        end: "bottom bottom",
-        scrub: 0.1
-      }
+gsap.fromTo(
+  ".scroll-progress-bar",
+  {
+    height: "8vh"
+  },
+  {
+    height: "100vh",
+    ease: "none",
+    scrollTrigger: {
+      trigger: ".page-wrapper",
+      start: "top top",
+      end: "bottom bottom",
+      scrub: 0.1
     }
-  );
-}
+  }
+);
 
 
-// MADURO SECTION
+  // MADURO SECTION
 
 function initMaduroScroll() {
   const maduroTrack =
@@ -289,16 +282,29 @@ function initMaduroScroll() {
 }
 
 
+// START IMMEDIATELY
+
+if (
+  document.readyState ===
+  'loading'
+) {
+
+  document.addEventListener(
+    'DOMContentLoaded',
+    initMaduroScroll
+  );
+
+} else {
+
+  initMaduroScroll();
+}
 
 
 
 
 
 
-
-
-
-function initPig() {
+document.addEventListener('DOMContentLoaded', function () {
   gsap.utils.toArray('[data-pig]').forEach(function (sec) {
     var pq = gsap.utils.selector(sec);
 
@@ -391,10 +397,12 @@ function initPig() {
     var QUOTE_AFTER = 3;
 
     function cellSize(n) {
-      const mobile =
-        isMobile();
+      const isMobile =
+        window.matchMedia(
+          '(max-width: 991px)'
+        ).matches;
 
-      if (mobile && n === 10) {
+      if (isMobile && n === 10) {
         return {
           w: '50%',
           h: '20%',
@@ -928,7 +936,7 @@ function initPig() {
       );
     });
   });
-}
+});
 
 
 function initClaudeSection() {
@@ -1026,9 +1034,13 @@ function initClaudeSection() {
   ScrollTrigger.refresh();
 }
 
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initClaudeSection);
+} else {
+  initClaudeSection();
+}
 
-
-function initTakeAction() {
+document.addEventListener('DOMContentLoaded', function () {
   var actionScene = document.querySelector('[data-action-scene]');
   var takeAction = document.querySelector('[data-take-action]');
 
@@ -1048,381 +1060,406 @@ function initTakeAction() {
   );
 
   observer.observe(actionScene);
-}
+});
 
 
-function initNuke() {
+document.addEventListener(
+  "DOMContentLoaded",
+  function () {
 
-  gsap.utils
-    .toArray("[data-nuke-scene]")
-    .forEach(function (sec, index) {
+    gsap.utils
+      .toArray("[data-nuke-scene]")
+      .forEach(function (sec, index) {
 
-      var nq =
-        gsap.utils.selector(sec);
-
-
-      // =========================================================
-      // ELEMENTS
-      // =========================================================
-
-      var track =
-        nq("[data-nuke-track]")[0];
-
-      var land =
-        nq('[data-nuke="land"]');
-
-      var blast =
-        nq('[data-nuke="blast"]');
-
-      var bits =
-        nq('[data-nuke="bits"]');
-
-      var title =
-        nq("[data-nuke-title]");
-
-      var bodies =
-        nq("[data-nuke-body]");
-
-      var slides =
-        nq("[data-nuke-slide]");
+        var nq =
+          gsap.utils.selector(sec);
 
 
-      if (!track) {
-        return;
-      }
+        // =========================================================
+        // ELEMENTS
+        // =========================================================
+
+        var track =
+          nq("[data-nuke-track]")[0];
+
+        var land =
+          nq('[data-nuke="land"]');
+
+        var blast =
+          nq('[data-nuke="blast"]');
+
+        var bits =
+          nq('[data-nuke="bits"]');
+
+        var title =
+          nq("[data-nuke-title]");
+
+        var bodies =
+          nq("[data-nuke-body]");
+
+        var slides =
+          nq("[data-nuke-slide]");
 
 
-      // =========================================================
-      // GLOBAL MOTION
-      // =========================================================
-
-      var TEXT_FADE =
-        MOTION.textFade.duration;
-
-      var TEXT_EASE =
-        MOTION.textFade.ease;
+        if (!track) {
+          return;
+        }
 
 
-      // =========================================================
-      // TIMING
-      // =========================================================
+        // =========================================================
+        // GLOBAL MOTION
+        // =========================================================
 
-      var BEATS = {
-        land: 0.00,
-        blast: 0.02,
-        bits: 0.06,
-        title: 0.08,
-        slides: 0.12
-      };
+        var TEXT_FADE =
+          MOTION.textFade.duration;
+
+        var TEXT_EASE =
+          MOTION.textFade.ease;
 
 
-      var DUR = {
-        land: 0.05,
-        blast: 0.05,
-        bits: 0.07,
+        // =========================================================
+        // TIMING
+        // =========================================================
 
-        // Quote + body use this
-        // exact same duration.
-        slideMove: 0.03
-      };
-
-
-      var CFG = {
-        scrub: 0.04,
-
-        landFrom: "100vh",
-        blastFrom: "100vh",
-
-        slideStep: 0.07,
-
-        slideFrom: "100vh",
-        slideTo: "-100vh",
-
-        endHold: 0.05
-      };
+        var BEATS = {
+          land: 0.00,
+          blast: 0.02,
+          bits: 0.06,
+          title: 0.08,
+          slides: 0.12
+        };
 
 
-      // =========================================================
-      // ALL WIDTHS
-      // =========================================================
+        var DUR = {
+          land: 0.05,
+          blast: 0.05,
+          bits: 0.07,
 
-      gsap
-        .matchMedia()
-        .add(
-          "(min-width: 2px)",
-          function () {
-
-            var mobile =
-              isMobile();
+          // Quote + body use this
+          // exact same duration.
+          slideMove: 0.03
+        };
 
 
-            // =====================================================
-            // INITIAL STATES
-            // =====================================================
+        var CFG = {
+          scrub: 0.04,
+
+          landFrom: "100vh",
+          blastFrom: "100vh",
+
+          slideStep: 0.07,
+
+          slideFrom: "100vh",
+          slideTo: "-100vh",
+
+          endHold: 0.05
+        };
 
 
-            // LAND
+        // =========================================================
+        // ALL WIDTHS
+        // =========================================================
 
-            gsap.set(
-              land,
-              {
-                y:
-                  CFG.landFrom,
+        gsap
+          .matchMedia()
+          .add(
+            "(min-width: 2px)",
+            function () {
 
-                opacity: 1
-              }
-            );
-
-
-            // BLAST
-
-            gsap.set(
-              blast,
-              {
-                y:
-                  CFG.blastFrom,
-
-                xPercent:
-                  -50,
-
-                opacity:
-                  1
-              }
-            );
+              var isMobile =
+                window.matchMedia(
+                  "(max-width: 991px)"
+                ).matches;
 
 
-            // BITS
+              // =====================================================
+              // INITIAL STATES
+              // =====================================================
 
-            if (mobile) {
+
+              // LAND
 
               gsap.set(
-                bits,
+                land,
                 {
-                  y: 0,
-                  xPercent: -50,
-                  opacity: 0,
-                  clipPath: "none"
+                  y:
+                    CFG.landFrom,
+
+                  opacity: 1
                 }
               );
 
-            } else {
+
+              // BLAST
 
               gsap.set(
-                bits,
+                blast,
                 {
-                  y: 0,
-                  xPercent: -50,
-                  opacity: 1,
+                  y:
+                    CFG.blastFrom,
 
-                  clipPath:
-                    "polygon(0% 110%, 100% 92%, 100% 110%, 0% 110%)"
+                  xPercent:
+                    -50,
+
+                  opacity:
+                    1
                 }
               );
 
-            }
 
+              // BITS
 
-            // TITLE
+              if (isMobile) {
 
-            gsap.set(
-              title,
-              {
-                opacity: 0
+                gsap.set(
+                  bits,
+                  {
+                    y: 0,
+                    xPercent: -50,
+                    opacity: 0,
+                    clipPath: "none"
+                  }
+                );
+
+              } else {
+
+                gsap.set(
+                  bits,
+                  {
+                    y: 0,
+                    xPercent: -50,
+                    opacity: 1,
+
+                    clipPath:
+                      "polygon(0% 110%, 100% 92%, 100% 110%, 0% 110%)"
+                  }
+                );
+
               }
-            );
 
 
-            // BODY COPY
+              // TITLE
 
-            gsap.set(
-              bodies,
-              {
-                opacity: 0
-              }
-            );
-
-
-            // QUOTE CARDS
-
-            gsap.set(
-              slides,
-              {
-                y:
-                  CFG.slideFrom,
-
-                yPercent:
-                  -50,
-
-                opacity:
-                  1
-              }
-            );
-
-
-            // =====================================================
-            // MASTER TIMELINE
-            // =====================================================
-
-            var nukeTimeline =
-              gsap.timeline({
-
-                scrollTrigger: {
-
-                  id:
-                    "nuke-main-" +
-                    index,
-
-                  trigger:
-                    track,
-
-                  start:
-                    "top top",
-
-                  end:
-                    "bottom bottom",
-
-                  scrub:
-                    CFG.scrub
-
+              gsap.set(
+                title,
+                {
+                  opacity: 0
                 }
-
-              });
-
-
-            // =====================================================
-            // 1. LAND
-            // =====================================================
-
-            nukeTimeline.to(
-              land,
-              {
-                y: 0,
-
-                duration:
-                  DUR.land,
-
-                ease:
-                  "power3.out"
-              },
-              BEATS.land
-            );
+              );
 
 
-            // =====================================================
-            // 2. BLAST
-            // =====================================================
+              // BODY COPY
 
-            nukeTimeline.to(
-              blast,
-              {
-                y: 0,
-
-                duration:
-                  DUR.blast,
-
-                ease:
-                  "power3.out"
-              },
-              BEATS.blast
-            );
+              gsap.set(
+                bodies,
+                {
+                  opacity: 0
+                }
+              );
 
 
-            // =====================================================
-            // 3. BITS
-            // =====================================================
+              // QUOTE CARDS
 
-            if (mobile) {
+              gsap.set(
+                slides,
+                {
+                  y:
+                    CFG.slideFrom,
+
+                  yPercent:
+                    -50,
+
+                  opacity:
+                    1
+                }
+              );
+
+
+              // =====================================================
+              // MASTER TIMELINE
+              // =====================================================
+
+              var nukeTimeline =
+                gsap.timeline({
+
+                  scrollTrigger: {
+
+                    id:
+                      "nuke-main-" +
+                      index,
+
+                    trigger:
+                      track,
+
+                    start:
+                      "top top",
+
+                    end:
+                      "bottom bottom",
+
+                    scrub:
+                      CFG.scrub
+
+                  }
+
+                });
+
+
+              // =====================================================
+              // 1. LAND
+              // =====================================================
 
               nukeTimeline.to(
-                bits,
+                land,
+                {
+                  y: 0,
+
+                  duration:
+                    DUR.land,
+
+                  ease:
+                    "power3.out"
+                },
+                BEATS.land
+              );
+
+
+              // =====================================================
+              // 2. BLAST
+              // =====================================================
+
+              nukeTimeline.to(
+                blast,
+                {
+                  y: 0,
+
+                  duration:
+                    DUR.blast,
+
+                  ease:
+                    "power3.out"
+                },
+                BEATS.blast
+              );
+
+
+              // =====================================================
+              // 3. BITS
+              // =====================================================
+
+              if (isMobile) {
+
+                nukeTimeline.to(
+                  bits,
+                  {
+                    opacity: 1,
+
+                    duration:
+                      DUR.bits,
+
+                    ease:
+                      "none"
+                  },
+                  BEATS.bits
+                );
+
+              } else {
+
+                nukeTimeline.to(
+                  bits,
+                  {
+                    clipPath:
+                      "polygon(0% -10%, 100% -28%, 100% 110%, 0% 110%)",
+
+                    duration:
+                      DUR.bits,
+
+                    ease:
+                      "power2.inOut"
+                  },
+                  BEATS.bits
+                );
+
+              }
+
+
+              // =====================================================
+              // 4. TITLE
+              // =====================================================
+
+              nukeTimeline.to(
+                title,
                 {
                   opacity: 1,
 
                   duration:
-                    DUR.bits,
+                    TEXT_FADE,
 
                   ease:
-                    "none"
+                    TEXT_EASE
                 },
-                BEATS.bits
+                BEATS.title
               );
 
-            } else {
 
-              nukeTimeline.to(
-                bits,
-                {
-                  clipPath:
-                    "polygon(0% -10%, 100% -28%, 100% 110%, 0% 110%)",
+              // =====================================================
+              // 5. BODY + QUOTE PAIRS
+              // =====================================================
 
-                  duration:
-                    DUR.bits,
-
-                  ease:
-                    "power2.inOut"
-                },
-                BEATS.bits
-              );
-
-            }
+              var lastAt =
+                BEATS.slides;
 
 
-            // =====================================================
-            // 4. TITLE
-            // =====================================================
+              slides.forEach(
+                function (slide, i) {
 
-            nukeTimeline.to(
-              title,
-              {
-                opacity: 1,
-
-                duration:
-                  TEXT_FADE,
-
-                ease:
-                  TEXT_EASE
-              },
-              BEATS.title
-            );
+                  var at =
+                    BEATS.slides +
+                    i *
+                    CFG.slideStep;
 
 
-            // =====================================================
-            // 5. BODY + QUOTE PAIRS
-            // =====================================================
-
-            var lastAt =
-              BEATS.slides;
+                  var last =
+                    i ===
+                    slides.length - 1;
 
 
-            slides.forEach(
-              function (slide, i) {
-
-                var at =
-                  BEATS.slides +
-                  i *
-                  CFG.slideStep;
+                  var body =
+                    bodies[i];
 
 
-                var last =
-                  i ===
-                  slides.length - 1;
+                  // ===============================================
+                  // BODY IN
+                  // SAME TIME + SAME DURATION AS QUOTE
+                  // ===============================================
+
+                  if (body) {
+
+                    nukeTimeline.to(
+                      body,
+                      {
+                        opacity: 1,
+
+                        duration:
+                          DUR.slideMove,
+
+                        ease:
+                          "power3.out"
+                      },
+                      at
+                    );
+
+                  }
 
 
-                var body =
-                  bodies[i];
-
-
-                // ===============================================
-                // BODY IN
-                // SAME TIME + SAME DURATION AS QUOTE
-                // ===============================================
-
-                if (body) {
+                  // ===============================================
+                  // QUOTE IN
+                  // ===============================================
 
                   nukeTimeline.to(
-                    body,
+                    slide,
                     {
-                      opacity: 1,
+                      y: 0,
 
                       duration:
                         DUR.slideMove,
@@ -1433,66 +1470,25 @@ function initNuke() {
                     at
                   );
 
-                }
+
+                  // ===============================================
+                  // BODY + QUOTE OUT
+                  // ===============================================
+
+                  if (!last) {
+
+                    var outAt =
+                      at +
+                      CFG.slideStep;
 
 
-                // ===============================================
-                // QUOTE IN
-                // ===============================================
-
-                nukeTimeline.to(
-                  slide,
-                  {
-                    y: 0,
-
-                    duration:
-                      DUR.slideMove,
-
-                    ease:
-                      "power3.out"
-                  },
-                  at
-                );
-
-
-                // ===============================================
-                // BODY + QUOTE OUT
-                // ===============================================
-
-                if (!last) {
-
-                  var outAt =
-                    at +
-                    CFG.slideStep;
-
-
-                  // QUOTE OUT
-
-                  nukeTimeline.to(
-                    slide,
-                    {
-                      y:
-                        CFG.slideTo,
-
-                      duration:
-                        DUR.slideMove,
-
-                      ease:
-                        "power3.in"
-                    },
-                    outAt
-                  );
-
-
-                  // BODY OUT
-                  // EXACT SAME TIME + DURATION
-
-                  if (body) {
+                    // QUOTE OUT
 
                     nukeTimeline.to(
-                      body,
+                      slide,
                       {
-                        opacity: 0,
+                        y:
+                          CFG.slideTo,
 
                         duration:
                           DUR.slideMove,
@@ -1503,54 +1499,75 @@ function initNuke() {
                       outAt
                     );
 
+
+                    // BODY OUT
+                    // EXACT SAME TIME + DURATION
+
+                    if (body) {
+
+                      nukeTimeline.to(
+                        body,
+                        {
+                          opacity: 0,
+
+                          duration:
+                            DUR.slideMove,
+
+                          ease:
+                            "power3.in"
+                        },
+                        outAt
+                      );
+
+                    }
+
                   }
 
+
+                  lastAt =
+                    at;
+
                 }
+              );
 
 
-                lastAt =
-                  at;
+              // =====================================================
+              // 6. FINAL HOLD
+              // =====================================================
 
-              }
-            );
-
-
-            // =====================================================
-            // 6. FINAL HOLD
-            // =====================================================
-
-            nukeTimeline.to(
-              {},
-              {
-                duration:
-                  CFG.endHold
-              },
-              lastAt +
-              DUR.slideMove
-            );
+              nukeTimeline.to(
+                {},
+                {
+                  duration:
+                    CFG.endHold
+                },
+                lastAt +
+                DUR.slideMove
+              );
 
 
-            // =====================================================
-            // REFRESH
-            // =====================================================
+              // =====================================================
+              // REFRESH
+              // =====================================================
 
-            requestAnimationFrame(
-              function () {
+              requestAnimationFrame(
+                function () {
 
-                ScrollTrigger.refresh();
+                  ScrollTrigger.refresh();
 
-              }
-            );
+                }
+              );
 
-          }
-        );
+            }
+          );
 
-    });
+      });
 
-}
+  }
+);
 
 
-function initMath() {
+document.addEventListener("DOMContentLoaded", function () {
   gsap.utils.toArray("[data-math-scene]").forEach(function (sec) {
     var q = gsap.utils.selector(sec);
 
@@ -1640,14 +1657,16 @@ function initMath() {
     // DOT CONFIG
     // ---------------------------------
 
-    var mobile =
-      isMobile();
+    var isMobile =
+      window.matchMedia(
+        "(max-width: 991px)"
+      ).matches;
 
     var COLS =
-      mobile ? 17 : 49;
+      isMobile ? 17 : 49;
 
     var ROWS =
-      mobile ? 25 : 25;
+      isMobile ? 25 : 25;
 
     var DOT_SIZE_MIN = 10;
     var DOT_SIZE_MAX = 14;
@@ -2049,16 +2068,16 @@ function initMath() {
           }
         );
 
-        gsap.set(burst, {
-          opacity: 0,
-          scale: 0.005,
+gsap.set(burst, {
+  opacity: 0,
+  scale: 0.005,
 
-          xPercent: -50,
-          yPercent: -50,
+  xPercent: -50,
+  yPercent: -50,
 
-          marginTop: 0,
-          marginLeft: 0
-        });
+  marginTop: 0,
+  marginLeft: 0
+});
 
         alignBurst();
 
@@ -2247,17 +2266,17 @@ function initMath() {
           burstAt
         );
 
-        mathTimeline.to(
-          burst,
-          {
-            scale: 1,
+mathTimeline.to(
+  burst,
+  {
+    scale: 1,
 
-            duration: 0.24,
+    duration: 0.24,
 
-            ease: "power2.in"
-          },
-          burstAt + 0.02
-        );
+    ease: "power2.in"
+  },
+  burstAt + 0.02
+);
 
         mathTimeline.to(
           [
@@ -2311,13 +2330,13 @@ function initMath() {
       }
     );
   });
-}
+});
 
 function initLiberty() {
   var scenes = gsap.utils.toArray('[data-liberty-scene]');
   if (!scenes.length) return;
 
-
+  
 
   window.addEventListener('load', function () {
     document.fonts.ready.then(function () {
@@ -2846,9 +2865,9 @@ function initLiberty() {
   });
 }
 
+initLiberty();
 
-
-function initIdeology() {
+document.addEventListener("DOMContentLoaded", function () {
 
   gsap.utils
     .toArray("[data-ideology]")
@@ -3206,9 +3225,9 @@ function initIdeology() {
 
     });
 
-}
+});
 
-function initOPT() {
+document.addEventListener("DOMContentLoaded", function () {
 
 
 
@@ -3310,7 +3329,9 @@ function initOPT() {
       // when quote enters.
 
       var TEXT_PUSH =
-        isMobile()
+        window.matchMedia(
+          "(max-width: 991px)"
+        ).matches
           ? 0
           : "-19vh";
 
@@ -3712,10 +3733,10 @@ function initOPT() {
 
     });
 
-}
+});
 
 function initFTX() {
-
+ 
 
   gsap.utils.toArray(".section_ftx").forEach(function (sec, index) {
 
@@ -3845,36 +3866,38 @@ function initFTX() {
       }
 
 
-      function applyCameraFocus() {
-        var focus = getCameraFocus();
+function applyCameraFocus() {
+  var focus = getCameraFocus();
 
-        var mobile =
-          isMobile();
+  var mobile =
+    window.matchMedia(
+      "(max-width: 991px)"
+    ).matches;
 
-        if (mobile) {
+  if (mobile) {
 
-          focus.x =
-            gsap.utils.clamp(
-              15,
-              85,
-              focus.x
-            );
+    focus.x =
+      gsap.utils.clamp(
+        15,
+        85,
+        focus.x
+      );
 
-          focus.y =
-            gsap.utils.clamp(
-              15,
-              85,
-              focus.y
-            );
+    focus.y =
+      gsap.utils.clamp(
+        15,
+        85,
+        focus.y
+      );
 
-        }
+  }
 
-        gsap.set(camera, {
-          transformOrigin:
-            focus.x + "% " +
-            focus.y + "%"
-        });
-      }
+  gsap.set(camera, {
+    transformOrigin:
+      focus.x + "% " +
+      focus.y + "%"
+  });
+}
 
 
       // =====================================================
@@ -4907,11 +4930,21 @@ function initFTX() {
 }
 
 
+if (document.readyState === "loading") {
 
+  document.addEventListener(
+    "DOMContentLoaded",
+    initFTX
+  );
+
+} else {
+
+  initFTX();
+}
 
 // ftx end
 
-function initAskell() {
+document.addEventListener("DOMContentLoaded", function () {
 
 
 
@@ -5666,10 +5699,10 @@ function initAskell() {
 
     });
 
-}
+});
 // - where is claude
 
-function initFamily() {
+document.addEventListener("DOMContentLoaded", function () {
 
 
   gsap.utils
@@ -5929,14 +5962,16 @@ function initFamily() {
           // ---------------------------------
           // 3. RAIL + BAND RISE
           // ---------------------------------
-          var mobile =
-            isMobile();
+          var isMobile =
+            window.matchMedia(
+              "(max-width: 991px)"
+            ).matches;
           var ROW_AT =
             QUOTE_AT +
             TEXT_FADE +
             0.08;
 
-          if (mobile) {
+          if (isMobile) {
             familyTimeline.to(
               quote,
               {
@@ -6063,9 +6098,9 @@ function initFamily() {
         }
       );
     });
-}
+});
 
-function initScandals() {
+document.addEventListener("DOMContentLoaded", function () {
 
 
 
@@ -6742,8 +6777,10 @@ function initScandals() {
           sourceImage
             .getBoundingClientRect();
 
-        var mobile =
-          isMobile();
+var isMobile =
+  window.matchMedia(
+    "(max-width: 991px)"
+  ).matches;
 
 
         // =====================================================
@@ -6796,77 +6833,77 @@ function initScandals() {
         );
 
 
-        // =====================================================
-        // FINAL DESIGNER GEOMETRY
-        // =====================================================
+// =====================================================
+// FINAL DESIGNER GEOMETRY
+// =====================================================
 
-        var designerVisualRect =
-          readerVisual
-            .getBoundingClientRect();
+var designerVisualRect =
+  readerVisual
+    .getBoundingClientRect();
 
-        var designerContentRect =
-          readerContent
-            .getBoundingClientRect();
-
-
-        var geometry = {
-
-          // SOURCE CARD
-
-          sourceLeft:
-            sourceRect.left,
-
-          sourceRight:
-            sourceRect.right,
-
-          sourceTop:
-            sourceRect.top,
-
-          sourceBottom:
-            sourceRect.bottom,
-
-          sourceWidth:
-            sourceRect.width,
-
-          sourceHeight:
-            sourceRect.height,
+var designerContentRect =
+  readerContent
+    .getBoundingClientRect();
 
 
-          // FINAL IMAGE
-          // Comes directly from Designer CSS.
+var geometry = {
 
-          imageLeft:
-            designerVisualRect.left,
+  // SOURCE CARD
 
-          imageTop:
-            designerVisualRect.top,
+  sourceLeft:
+    sourceRect.left,
 
-          imageWidth:
-            designerVisualRect.width,
+  sourceRight:
+    sourceRect.right,
 
-          imageHeight:
-            designerVisualRect.height,
+  sourceTop:
+    sourceRect.top,
 
+  sourceBottom:
+    sourceRect.bottom,
 
-          // FINAL CONTENT
-          // Also comes directly from Designer CSS.
+  sourceWidth:
+    sourceRect.width,
 
-          contentLeft:
-            designerContentRect.left,
-
-          contentTop:
-            designerContentRect.top,
-
-          contentWidth:
-            designerContentRect.width,
-
-          contentHeight:
-            designerContentRect.height
-        };
+  sourceHeight:
+    sourceRect.height,
 
 
-        openGeometry =
-          geometry;
+  // FINAL IMAGE
+  // Comes directly from Designer CSS.
+
+  imageLeft:
+    designerVisualRect.left,
+
+  imageTop:
+    designerVisualRect.top,
+
+  imageWidth:
+    designerVisualRect.width,
+
+  imageHeight:
+    designerVisualRect.height,
+
+
+  // FINAL CONTENT
+  // Also comes directly from Designer CSS.
+
+  contentLeft:
+    designerContentRect.left,
+
+  contentTop:
+    designerContentRect.top,
+
+  contentWidth:
+    designerContentRect.width,
+
+  contentHeight:
+    designerContentRect.height
+};
+
+
+openGeometry =
+  geometry;
 
 
         // =====================================================
@@ -6938,74 +6975,74 @@ function initScandals() {
         );
 
 
-        if (mobile) {
+if (isMobile) {
 
-          // MOBILE:
-          // Reader starts collapsed vertically
-          // underneath the clicked card.
+  // MOBILE:
+  // Reader starts collapsed vertically
+  // underneath the clicked card.
 
-          gsap.set(
-            readerContent,
-            {
-              position: "fixed",
+  gsap.set(
+    readerContent,
+    {
+      position: "fixed",
 
-              left:
-                geometry.contentLeft,
+      left:
+        geometry.contentLeft,
 
-              top:
-                geometry.sourceBottom,
+      top:
+        geometry.sourceBottom,
 
-              width:
-                geometry.contentWidth,
+      width:
+        geometry.contentWidth,
 
-              height: 0,
+      height: 0,
 
-              margin: 0,
+      margin: 0,
 
-              x: 0,
-              y: 0,
+      x: 0,
+      y: 0,
 
-              xPercent: 0,
-              yPercent: 0,
+      xPercent: 0,
+      yPercent: 0,
 
-              overflow: "hidden"
-            }
-          );
+      overflow: "hidden"
+    }
+  );
 
-        } else {
+} else {
 
-          // DESKTOP:
-          // Existing horizontal behaviour.
+  // DESKTOP:
+  // Existing horizontal behaviour.
 
-          gsap.set(
-            readerContent,
-            {
-              position: "fixed",
+  gsap.set(
+    readerContent,
+    {
+      position: "fixed",
 
-              left:
-                geometry.sourceRight,
+      left:
+        geometry.sourceRight,
 
-              top:
-                geometry.contentTop,
+      top:
+        geometry.contentTop,
 
-              width: 0,
+      width: 0,
 
-              height:
-                geometry.contentHeight,
+      height:
+        geometry.contentHeight,
 
-              margin: 0,
+      margin: 0,
 
-              x: 0,
-              y: 0,
+      x: 0,
+      y: 0,
 
-              xPercent: 0,
-              yPercent: 0,
+      xPercent: 0,
+      yPercent: 0,
 
-              overflow: "hidden"
-            }
-          );
+      overflow: "hidden"
+    }
+  );
 
-        }
+}
 
         // =====================================================
         // KEEP INNER READER AT FINAL WIDTH
@@ -7105,81 +7142,81 @@ function initScandals() {
         // IMAGE EXPANDS LEFT
         // =====================================================
 
-        tl.to(
-          transitionImage,
-          {
-            left:
-              geometry.imageLeft,
+tl.to(
+  transitionImage,
+  {
+    left:
+      geometry.imageLeft,
 
-            top:
-              geometry.imageTop,
+    top:
+      geometry.imageTop,
 
-            width:
-              geometry.imageWidth,
+    width:
+      geometry.imageWidth,
 
-            height:
-              geometry.imageHeight,
+    height:
+      geometry.imageHeight,
 
-            duration:
-              OPEN_DURATION,
+    duration:
+      OPEN_DURATION,
 
-            ease:
-              OPEN_EASE
-          },
-          0
-        );
+    ease:
+      OPEN_EASE
+  },
+  0
+);
 
 
         // =====================================================
         // READER EXPANDS RIGHT
         // =====================================================
-        if (mobile) {
+if (isMobile) {
 
-          // MOBILE:
-          // Reader opens DOWN.
+  // MOBILE:
+  // Reader opens DOWN.
 
-          tl.to(
-            readerContent,
-            {
-              top:
-                geometry.contentTop,
+  tl.to(
+    readerContent,
+    {
+      top:
+        geometry.contentTop,
 
-              height:
-                geometry.contentHeight,
+      height:
+        geometry.contentHeight,
 
-              duration:
-                OPEN_DURATION,
+      duration:
+        OPEN_DURATION,
 
-              ease:
-                OPEN_EASE
-            },
-            0
-          );
+      ease:
+        OPEN_EASE
+    },
+    0
+  );
 
-        } else {
+} else {
 
-          // DESKTOP:
-          // Reader opens RIGHT.
+  // DESKTOP:
+  // Reader opens RIGHT.
 
-          tl.to(
-            readerContent,
-            {
-              left:
-                geometry.contentLeft,
+  tl.to(
+    readerContent,
+    {
+      left:
+        geometry.contentLeft,
 
-              width:
-                geometry.contentWidth,
+      width:
+        geometry.contentWidth,
 
-              duration:
-                OPEN_DURATION,
+      duration:
+        OPEN_DURATION,
 
-              ease:
-                OPEN_EASE
-            },
-            0
-          );
+      ease:
+        OPEN_EASE
+    },
+    0
+  );
 
-        }
+}
 
 
         // =====================================================
@@ -7234,8 +7271,10 @@ function initScandals() {
 
       function closeStory() {
 
-        var mobile =
-          isMobile();
+        var isMobile =
+  window.matchMedia(
+    "(max-width: 991px)"
+  ).matches;
 
         if (
           !isOpen ||
@@ -7482,103 +7521,103 @@ function initScandals() {
         // IMAGE CONTRACTS
         // =====================================================
 
-        if (mobile) {
+if (isMobile) {
 
-          // MOBILE:
-          // Image collapses DOWN toward
-          // its bottom edge.
+  // MOBILE:
+  // Image collapses DOWN toward
+  // its bottom edge.
 
-          tl.to(
-            transitionImage,
-            {
-              top:
-                geometry.imageTop +
-                geometry.imageHeight,
+  tl.to(
+    transitionImage,
+    {
+      top:
+        geometry.imageTop +
+        geometry.imageHeight,
 
-              height: 0,
+      height: 0,
 
-              duration:
-                OPEN_DURATION,
+      duration:
+        OPEN_DURATION,
 
-              ease:
-                OPEN_EASE
-            },
-            0
-          );
+      ease:
+        OPEN_EASE
+    },
+    0
+  );
 
-        } else {
+} else {
 
-          // DESKTOP:
-          // Existing horizontal contraction.
+  // DESKTOP:
+  // Existing horizontal contraction.
 
-          tl.to(
-            transitionImage,
-            {
-              left:
-                geometry.sourceLeft,
+  tl.to(
+    transitionImage,
+    {
+      left:
+        geometry.sourceLeft,
 
-              width:
-                geometry.sourceWidth,
+      width:
+        geometry.sourceWidth,
 
-              duration:
-                OPEN_DURATION,
+      duration:
+        OPEN_DURATION,
 
-              ease:
-                OPEN_EASE
-            },
-            0
-          );
+      ease:
+        OPEN_EASE
+    },
+    0
+  );
 
-        }
+}
 
 
         // =====================================================
         // READER CONTRACTS
         // =====================================================
 
-        if (mobile) {
+if (isMobile) {
 
-          // MOBILE:
-          // collapse vertically upward
+  // MOBILE:
+  // collapse vertically upward
 
-          tl.to(
-            readerContent,
-            {
-              height: 0,
+  tl.to(
+    readerContent,
+    {
+      height: 0,
 
-              duration:
-                OPEN_DURATION,
+      duration:
+        OPEN_DURATION,
 
-              ease:
-                OPEN_EASE
-            },
-            0
-          );
+      ease:
+        OPEN_EASE
+    },
+    0
+  );
 
-        } else {
+} else {
 
-          // DESKTOP:
-          // existing horizontal close
+  // DESKTOP:
+  // existing horizontal close
 
-          tl.to(
-            readerContent,
-            {
-              left:
-                geometry.sourceRight,
+  tl.to(
+    readerContent,
+    {
+      left:
+        geometry.sourceRight,
 
-              width:
-                0,
+      width:
+        0,
 
-              duration:
-                OPEN_DURATION,
+      duration:
+        OPEN_DURATION,
 
-              ease:
-                OPEN_EASE
-            },
-            0
-          );
+      ease:
+        OPEN_EASE
+    },
+    0
+  );
 
-        }
+}
       }
 
 
@@ -7977,1321 +8016,1326 @@ function initScandals() {
 
     });
 
-}
+});
 
-function initWashington() {
+document.addEventListener(
+  "DOMContentLoaded",
+  function () {
 
-
-
-
-  gsap.utils
-    .toArray("[data-wash-scene]")
-    .forEach(function (sec) {
-
-      var q =
-        gsap.utils.selector(sec);
+  
 
 
-      // =========================================================
-      // ELEMENTS
-      // =========================================================
+    gsap.utils
+      .toArray("[data-wash-scene]")
+      .forEach(function (sec) {
 
-      var track =
-        q("[data-wash-track]")[0];
-
-      var claude =
-        q("[data-wash-claude]")[0];
-
-      var capitol =
-        q("[data-wash-capitol]")[0];
-
-      var bills =
-        q("[data-wash-bill]");
-
-      var intro =
-        q("[data-wash-intro]")[0];
-
-      var title =
-        q("[data-wash-title]")[0];
-
-      var counter =
-        q("[data-wash-counter]")[0];
-
-      var counterValue =
-        q("[data-wash-counter-value]")[0];
-
-      var counterLabel =
-        q("[data-wash-counter-label]")[0];
-
-      var scaleGroup =
-        q("[data-wash-scale]")[0];
-
-      var scalePrimary =
-        q("[data-wash-scale-primary]")[0];
-
-      var scaleSecondary =
-        q("[data-wash-scale-secondary]")[0];
-
-      var question =
-        q("[data-wash-question]")[0];
-
-      var fellows =
-        q(
-          '[data-wash-stat="fellows"]'
-        )[0];
-
-      var pac =
-        q(
-          '[data-wash-stat="pac"]'
-        )[0];
-
-      var pledged =
-        q(
-          '[data-wash-stat="pledged"]'
-        )[0];
+        var q =
+          gsap.utils.selector(sec);
 
 
-      if (
-        !track ||
-        !intro ||
-        !title ||
-        !counter ||
-        !counterValue ||
-        !counterLabel ||
-        !scalePrimary ||
-        !scaleSecondary ||
-        !question ||
-        !fellows ||
-        !pac ||
-        !pledged
-      ) {
+        // =========================================================
+        // ELEMENTS
+        // =========================================================
 
-        console.warn(
-          "Washington section: missing required elements."
-        );
+        var track =
+          q("[data-wash-track]")[0];
 
-        return;
-      }
+        var claude =
+          q("[data-wash-claude]")[0];
 
+        var capitol =
+          q("[data-wash-capitol]")[0];
 
-      // =========================================================
-      // COUNTER CONFIG
-      // =========================================================
+        var bills =
+          q("[data-wash-bill]");
 
+        var intro =
+          q("[data-wash-intro]")[0];
 
-      // INITIAL POSITION
+        var title =
+          q("[data-wash-title]")[0];
 
-      var COUNTER_CENTER_LEFT =
-        "50%";
+        var counter =
+          q("[data-wash-counter]")[0];
 
-      var COUNTER_CENTER_TOP =
-        "42%";
+        var counterValue =
+          q("[data-wash-counter-value]")[0];
 
+        var counterLabel =
+          q("[data-wash-counter-label]")[0];
 
-      // RELOCATED POSITION
+        var scaleGroup =
+          q("[data-wash-scale]")[0];
 
-      var DESKTOP_COUNTER_TOP =
-        "8%";
+        var scalePrimary =
+          q("[data-wash-scale-primary]")[0];
 
-      var MOBILE_COUNTER_TOP =
-        "5%";
+        var scaleSecondary =
+          q("[data-wash-scale-secondary]")[0];
 
+        var question =
+          q("[data-wash-question]")[0];
 
-      // VALUE SIZE
+        var fellows =
+          q(
+            '[data-wash-stat="fellows"]'
+          )[0];
 
-      var COUNTER_LARGE_VALUE_SIZE =
-        "10rem";
+        var pac =
+          q(
+            '[data-wash-stat="pac"]'
+          )[0];
 
-      var DESKTOP_COUNTER_SMALL_VALUE_SIZE =
-        "6rem";
-
-      var MOBILE_COUNTER_SMALL_VALUE_SIZE =
-        "3rem";
-
-
-
-
-      // LABEL SIZE
-
-      var DESKTOP_LABEL_SIZE =
-        "1.25rem";
-
-      var MOBILE_LABEL_LARGE_SIZE =
-        "1.25rem";
-
-      var MOBILE_LABEL_SMALL_SIZE =
-        "1rem";
+        var pledged =
+          q(
+            '[data-wash-stat="pledged"]'
+          )[0];
 
 
-      // COUNTER RATE
+        if (
+          !track ||
+          !intro ||
+          !title ||
+          !counter ||
+          !counterValue ||
+          !counterLabel ||
+          !scalePrimary ||
+          !scaleSecondary ||
+          !question ||
+          !fellows ||
+          !pac ||
+          !pledged
+        ) {
 
-      var RATE_PER_SECOND =
-        32;
+          console.warn(
+            "Washington section: missing required elements."
+          );
+
+          return;
+        }
 
 
-      // =========================================================
-      // LIVE COUNTER
-      // =========================================================
-
-      var pageOpenedAt =
-        performance.now();
+        // =========================================================
+        // COUNTER CONFIG
+        // =========================================================
 
 
-      function updateCounter() {
+        // INITIAL POSITION
 
-        var elapsedSeconds =
-          Math.floor(
-            (
-              performance.now() -
-              pageOpenedAt
-            ) / 1000
+        var COUNTER_CENTER_LEFT =
+          "50%";
+
+        var COUNTER_CENTER_TOP =
+          "42%";
+
+
+        // RELOCATED POSITION
+
+        var DESKTOP_COUNTER_TOP =
+          "8%";
+
+var MOBILE_COUNTER_TOP =
+  "5%";
+
+
+        // VALUE SIZE
+
+var COUNTER_LARGE_VALUE_SIZE =
+  "10rem";
+
+var DESKTOP_COUNTER_SMALL_VALUE_SIZE =
+  "6rem";
+
+var MOBILE_COUNTER_SMALL_VALUE_SIZE =
+  "3rem";
+
+  
+
+
+        // LABEL SIZE
+
+        var DESKTOP_LABEL_SIZE =
+          "1.25rem";
+
+        var MOBILE_LABEL_LARGE_SIZE =
+          "1.25rem";
+
+        var MOBILE_LABEL_SMALL_SIZE =
+          "1rem";
+
+
+        // COUNTER RATE
+
+        var RATE_PER_SECOND =
+          32;
+
+
+        // =========================================================
+        // LIVE COUNTER
+        // =========================================================
+
+        var pageOpenedAt =
+          performance.now();
+
+
+        function updateCounter() {
+
+          var elapsedSeconds =
+            Math.floor(
+              (
+                performance.now() -
+                pageOpenedAt
+              ) / 1000
+            );
+
+
+          var amount =
+            elapsedSeconds *
+            RATE_PER_SECOND;
+
+
+          counterValue.textContent =
+            "$" +
+            amount.toLocaleString(
+              "en-US"
+            );
+        }
+
+
+        updateCounter();
+
+
+        var counterInterval =
+          setInterval(
+            updateCounter,
+            100
           );
 
 
-        var amount =
-          elapsedSeconds *
-          RATE_PER_SECOND;
+        // =========================================================
+        // ALL WIDTHS
+        // =========================================================
+
+        gsap
+          .matchMedia()
+          .add(
+            "(min-width: 2px)",
+            function () {
 
 
-        counterValue.textContent =
-          "$" +
-          amount.toLocaleString(
-            "en-US"
-          );
-      }
+              var isMobile =
+                window.matchMedia(
+                  "(max-width: 991px)"
+                ).matches;
 
 
-      updateCounter();
+              // =====================================================
+              // RESPONSIVE COUNTER VALUES
+              // =====================================================
+
+              var counterSmallTop =
+                isMobile
+                  ? MOBILE_COUNTER_TOP
+                  : DESKTOP_COUNTER_TOP;
+
+              var counterSmallValueSize =
+  isMobile
+    ? MOBILE_COUNTER_SMALL_VALUE_SIZE
+    : DESKTOP_COUNTER_SMALL_VALUE_SIZE;
 
 
-      var counterInterval =
-        setInterval(
-          updateCounter,
-          100
-        );
+              var counterLargeLabelSize =
+                isMobile
+                  ? MOBILE_LABEL_LARGE_SIZE
+                  : DESKTOP_LABEL_SIZE;
 
 
-      // =========================================================
-      // ALL WIDTHS
-      // =========================================================
-
-      gsap
-        .matchMedia()
-        .add(
-          "(min-width: 2px)",
-          function () {
+              var counterSmallLabelSize =
+                isMobile
+                  ? MOBILE_LABEL_SMALL_SIZE
+                  : DESKTOP_LABEL_SIZE;
 
 
-            var mobile =
-              isMobile();
+              var counterTextAlign =
+                isMobile
+                  ? "center"
+                  : "left";
 
 
-            // =====================================================
-            // RESPONSIVE COUNTER VALUES
-            // =====================================================
+              // =====================================================
+              // TIMING
+              // =====================================================
 
-            var counterSmallTop =
-              mobile
-                ? MOBILE_COUNTER_TOP
-                : DESKTOP_COUNTER_TOP;
+              var TEXT_FADE =
+                0.34;
 
-            var counterSmallValueSize =
-              mobile
-                ? MOBILE_COUNTER_SMALL_VALUE_SIZE
-                : DESKTOP_COUNTER_SMALL_VALUE_SIZE;
+              var INTRO_HOLD =
+                0.55;
 
+              var COUNTER_IN =
+                0.55;
 
-            var counterLargeLabelSize =
-              mobile
-                ? MOBILE_LABEL_LARGE_SIZE
-                : DESKTOP_LABEL_SIZE;
+              var COUNTER_HOLD =
+                0.85;
 
+              var VISUAL_IN =
+                0.75;
 
-            var counterSmallLabelSize =
-              mobile
-                ? MOBILE_LABEL_SMALL_SIZE
-                : DESKTOP_LABEL_SIZE;
+              var VISUAL_HOLD =
+                0.65;
 
+              var SCALE_HOLD =
+                1.25;
 
-            var counterTextAlign =
-              mobile
-                ? "center"
-                : "left";
+              var QUESTION_HOLD =
+                0.80;
 
+              var STAT_IN =
+                0.45;
 
-            // =====================================================
-            // TIMING
-            // =====================================================
+              var STAT_HOLD =
+                0.90;
 
-            var TEXT_FADE =
-              0.34;
-
-            var INTRO_HOLD =
-              0.55;
-
-            var COUNTER_IN =
-              0.55;
-
-            var COUNTER_HOLD =
-              0.85;
-
-            var VISUAL_IN =
-              0.75;
-
-            var VISUAL_HOLD =
-              0.65;
-
-            var SCALE_HOLD =
-              1.25;
-
-            var QUESTION_HOLD =
-              0.80;
-
-            var STAT_IN =
-              0.45;
-
-            var STAT_HOLD =
-              0.90;
-
-            var FINAL_HOLD =
-              1.40;
+              var FINAL_HOLD =
+                1.40;
 
 
-            // =====================================================
-            // DESKTOP COUNTER DESTINATION
-            //
-            // Reads scalePrimary's CSS position.
-            // =====================================================
+              // =====================================================
+              // DESKTOP COUNTER DESTINATION
+              //
+              // Reads scalePrimary's CSS position.
+              // =====================================================
 
-            function getComparisonLeft() {
+              function getComparisonLeft() {
 
-              // MOBILE:
-              // always center.
+                // MOBILE:
+                // always center.
 
-              if (mobile) {
-                return "50%";
+                if (isMobile) {
+                  return "50%";
+                }
+
+
+                // DESKTOP:
+                // line up with scalePrimary.
+
+                var scaleRect =
+                  scalePrimary
+                    .getBoundingClientRect();
+
+
+                var counterParent =
+                  counter.offsetParent;
+
+
+                if (!counterParent) {
+
+                  return (
+                    scaleRect.left +
+                    "px"
+                  );
+                }
+
+
+                var parentRect =
+                  counterParent
+                    .getBoundingClientRect();
+
+
+                return (
+                  scaleRect.left -
+                  parentRect.left
+                ) + "px";
               }
 
 
-              // DESKTOP:
-              // line up with scalePrimary.
-
-              var scaleRect =
-                scalePrimary
-                  .getBoundingClientRect();
+              // =====================================================
+              // INITIAL STATES
+              // =====================================================
 
 
-              var counterParent =
-                counter.offsetParent;
+              // TITLE
+
+              gsap.set(
+                title,
+                {
+                  autoAlpha: 0
+                }
+              );
 
 
-              if (!counterParent) {
+              // =====================================================
+              // COUNTER WRAPPER
+              //
+              // IMPORTANT:
+              // NO width / max-width /
+              // display / wrapping manipulation.
+              //
+              // Only animated positioning.
+              // =====================================================
 
-                return (
-                  scaleRect.left +
-                  "px"
+              gsap.set(
+                counter,
+                {
+                  autoAlpha:
+                    0,
+
+                  left:
+                    COUNTER_CENTER_LEFT,
+
+                  top:
+                    COUNTER_CENTER_TOP,
+
+                  x:
+                    0,
+
+                  y:
+                    0,
+
+                  xPercent:
+                    -50,
+
+                  yPercent:
+                    -50
+                }
+              );
+
+
+              // =====================================================
+              // COUNTER VALUE
+              //
+              // Starts 10rem.
+              // =====================================================
+
+              gsap.set(
+                counterValue,
+                {
+                  fontSize:
+                    COUNTER_LARGE_VALUE_SIZE
+                }
+              );
+
+
+              // =====================================================
+              // COUNTER LABEL
+              //
+              // Desktop = LEFT forever.
+              // Mobile  = CENTER forever.
+              // =====================================================
+
+              gsap.set(
+                counterLabel,
+                {
+                  fontSize:
+                    counterLargeLabelSize,
+
+                  textAlign:
+                    counterTextAlign
+                }
+              );
+
+
+              // =====================================================
+              // CAPITOL
+              // =====================================================
+
+              if (capitol) {
+
+                gsap.set(
+                  capitol,
+                  {
+                    yPercent:
+                      100,
+
+                    autoAlpha:
+                      0
+                  }
                 );
               }
 
 
-              var parentRect =
-                counterParent
-                  .getBoundingClientRect();
+              // =====================================================
+              // CLAUDE
+              // =====================================================
 
+              if (claude) {
 
-              return (
-                scaleRect.left -
-                parentRect.left
-              ) + "px";
-            }
+                gsap.set(
+                  claude,
+                  {
+                    autoAlpha:
+                      0,
 
+                    scale:
+                      0.72,
 
-            // =====================================================
-            // INITIAL STATES
-            // =====================================================
-
-
-            // TITLE
-
-            gsap.set(
-              title,
-              {
-                autoAlpha: 0
+                    rotation:
+                      -8
+                  }
+                );
               }
-            );
 
 
-            // =====================================================
-            // COUNTER WRAPPER
-            //
-            // IMPORTANT:
-            // NO width / max-width /
-            // display / wrapping manipulation.
-            //
-            // Only animated positioning.
-            // =====================================================
+              // =====================================================
+              // BILLS
+              // =====================================================
 
-            gsap.set(
-              counter,
-              {
-                autoAlpha:
-                  0,
+              bills.forEach(
+                function (
+                  bill,
+                  i
+                ) {
 
-                left:
-                  COUNTER_CENTER_LEFT,
+                  var rotations =
+                    [
+                      -16,
+                      13,
+                      -8
+                    ];
 
-                top:
-                  COUNTER_CENTER_TOP,
 
-                x:
-                  0,
+                  var xs =
+                    [
+                      -70,
+                      45,
+                      80
+                    ];
 
-                y:
-                  0,
 
-                xPercent:
-                  -50,
+                  gsap.set(
+                    bill,
+                    {
+                      autoAlpha:
+                        0,
 
-                yPercent:
-                  -50
+                      y:
+                        "-40vh",
+
+                      x:
+                        xs[
+                          i %
+                          xs.length
+                        ],
+
+                      rotation:
+                        rotations[
+                          i %
+                          rotations.length
+                        ]
+                    }
+                  );
+                }
+              );
+
+
+              // =====================================================
+              // SCALE GROUP
+              // =====================================================
+
+              if (scaleGroup) {
+
+                gsap.set(
+                  scaleGroup,
+                  {
+                    autoAlpha:
+                      1
+                  }
+                );
               }
-            );
 
 
-            // =====================================================
-            // COUNTER VALUE
-            //
-            // Starts 10rem.
-            // =====================================================
-
-            gsap.set(
-              counterValue,
-              {
-                fontSize:
-                  COUNTER_LARGE_VALUE_SIZE
-              }
-            );
-
-
-            // =====================================================
-            // COUNTER LABEL
-            //
-            // Desktop = LEFT forever.
-            // Mobile  = CENTER forever.
-            // =====================================================
-
-            gsap.set(
-              counterLabel,
-              {
-                fontSize:
-                  counterLargeLabelSize,
-
-                textAlign:
-                  counterTextAlign
-              }
-            );
-
-
-            // =====================================================
-            // CAPITOL
-            // =====================================================
-
-            if (capitol) {
+              // =====================================================
+              // SCALE VALUES
+              //
+              // Their resting position comes from CSS.
+              // Only animation offsets here.
+              // =====================================================
 
               gsap.set(
-                capitol,
+                scalePrimary,
                 {
-                  yPercent:
-                    100,
+                  autoAlpha:
+                    0,
 
+                  y:
+                    35
+                }
+              );
+
+
+              gsap.set(
+                scaleSecondary,
+                {
+                  autoAlpha:
+                    0,
+
+                  y:
+                    35
+                }
+              );
+
+
+              // =====================================================
+              // QUESTION
+              //
+              // Position comes from CSS.
+              // =====================================================
+
+              gsap.set(
+                question,
+                {
                   autoAlpha:
                     0
                 }
               );
-            }
 
 
-            // =====================================================
-            // CLAUDE
-            // =====================================================
-
-            if (claude) {
+              // =====================================================
+              // STATS
+              //
+              // Position comes from CSS.
+              // =====================================================
 
               gsap.set(
-                claude,
+                [
+                  fellows,
+                  pac,
+                  pledged
+                ],
                 {
                   autoAlpha:
                     0,
 
-                  scale:
-                    0.72,
-
-                  rotation:
-                    -8
+                  y:
+                    45
                 }
               );
-            }
 
 
-            // =====================================================
-            // BILLS
-            // =====================================================
+              // =====================================================
+              // BILL FLOAT
+              // =====================================================
 
-            bills.forEach(
-              function (
-                bill,
-                i
-              ) {
-
-                var rotations =
-                  [
-                    -16,
-                    13,
-                    -8
-                  ];
+              var floatTweens =
+                [];
 
 
-                var xs =
-                  [
-                    -70,
-                    45,
-                    80
-                  ];
-
-
-                gsap.set(
+              bills.forEach(
+                function (
                   bill,
-                  {
-                    autoAlpha:
-                      0,
+                  i
+                ) {
 
-                    y:
-                      "-40vh",
+                  var img =
+                    bill.querySelector(
+                      "img"
+                    );
 
-                    x:
-                      xs[
-                      i %
-                      xs.length
-                      ],
 
-                    rotation:
-                      rotations[
-                      i %
-                      rotations.length
-                      ]
+                  if (!img) {
+                    return;
                   }
-                );
-              }
-            );
 
 
-            // =====================================================
-            // SCALE GROUP
-            // =====================================================
+                  var tween =
+                    gsap.to(
+                      img,
+                      {
+                        x:
+                          i % 2 === 0
+                            ? 8
+                            : -8,
 
-            if (scaleGroup) {
+                        y:
+                          -10 -
+                          i * 2,
 
-              gsap.set(
-                scaleGroup,
-                {
-                  autoAlpha:
-                    1
+                        rotation:
+                          i % 2 === 0
+                            ? 2
+                            : -2,
+
+                        duration:
+                          2.8 +
+                          i * 0.35,
+
+                        ease:
+                          "sine.inOut",
+
+                        repeat:
+                          -1,
+
+                        yoyo:
+                          true
+                      }
+                    );
+
+
+                  floatTweens.push(
+                    tween
+                  );
                 }
               );
-            }
 
 
-            // =====================================================
-            // SCALE VALUES
-            //
-            // Their resting position comes from CSS.
-            // Only animation offsets here.
-            // =====================================================
+              // =====================================================
+              // MASTER TIMELINE
+              // =====================================================
 
-            gsap.set(
-              scalePrimary,
-              {
-                autoAlpha:
-                  0,
+              var tl =
+                gsap.timeline({
 
-                y:
-                  35
-              }
-            );
+                  scrollTrigger: {
 
+                    trigger:
+                      track,
 
-            gsap.set(
-              scaleSecondary,
-              {
-                autoAlpha:
-                  0,
+                    start:
+                      "top top",
 
-                y:
-                  35
-              }
-            );
+                    end:
+                      "bottom bottom",
 
+                    scrub:
+                      0.55,
 
-            // =====================================================
-            // QUESTION
-            //
-            // Position comes from CSS.
-            // =====================================================
+                    invalidateOnRefresh:
+                      true
 
-            gsap.set(
-              question,
-              {
-                autoAlpha:
-                  0
-              }
-            );
+                  }
 
+                });
 
-            // =====================================================
-            // STATS
-            //
-            // Position comes from CSS.
-            // =====================================================
 
-            gsap.set(
-              [
-                fellows,
-                pac,
-                pledged
-              ],
-              {
-                autoAlpha:
-                  0,
-
-                y:
-                  45
-              }
-            );
-
-
-            // =====================================================
-            // BILL FLOAT
-            // =====================================================
-
-            var floatTweens =
-              [];
-
-
-            bills.forEach(
-              function (
-                bill,
-                i
-              ) {
-
-                var img =
-                  bill.querySelector(
-                    "img"
-                  );
-
-
-                if (!img) {
-                  return;
-                }
-
-
-                var tween =
-                  gsap.to(
-                    img,
-                    {
-                      x:
-                        i % 2 === 0
-                          ? 8
-                          : -8,
-
-                      y:
-                        -10 -
-                        i * 2,
-
-                      rotation:
-                        i % 2 === 0
-                          ? 2
-                          : -2,
-
-                      duration:
-                        2.8 +
-                        i * 0.35,
-
-                      ease:
-                        "sine.inOut",
-
-                      repeat:
-                        -1,
-
-                      yoyo:
-                        true
-                    }
-                  );
-
-
-                floatTweens.push(
-                  tween
-                );
-              }
-            );
-
-
-            // =====================================================
-            // MASTER TIMELINE
-            // =====================================================
-
-            var tl =
-              gsap.timeline({
-
-                scrollTrigger: {
-
-                  trigger:
-                    track,
-
-                  start:
-                    "top top",
-
-                  end:
-                    "bottom bottom",
-
-                  scrub:
-                    0.55,
-
-                  invalidateOnRefresh:
-                    true
-
-                }
-
-              });
-
-
-            // =====================================================
-            // 01 — TITLE
-            // =====================================================
-
-            tl.to(
-              title,
-              {
-                autoAlpha:
-                  1,
-
-                duration:
-                  TEXT_FADE,
-
-                ease:
-                  "power2.out"
-              }
-            );
-
-
-            tl.to(
-              {},
-              {
-                duration:
-                  INTRO_HOLD
-              }
-            );
-
-
-            // =====================================================
-            // 02 — INTRO OUT
-            // =====================================================
-
-            tl.to(
-              intro,
-              {
-                autoAlpha:
-                  0,
-
-                y:
-                  "-18vh",
-
-                duration:
-                  0.50,
-
-                ease:
-                  "power3.in"
-              }
-            );
-
-
-            // =====================================================
-            // 03 — COUNTER IN
-            // =====================================================
-
-            tl.to(
-              counter,
-              {
-                autoAlpha:
-                  1,
-
-                duration:
-                  COUNTER_IN,
-
-                ease:
-                  "power3.out"
-              },
-
-              "<0.15"
-            );
-
-
-            tl.to(
-              {},
-              {
-                duration:
-                  COUNTER_HOLD
-              }
-            );
-
-
-            // =====================================================
-            // 04 — CAPITOL + BILLS + CLAUDE
-            // =====================================================
-
-            if (capitol) {
+              // =====================================================
+              // 01 — TITLE
+              // =====================================================
 
               tl.to(
-                capitol,
+                title,
                 {
                   autoAlpha:
                     1,
 
-                  yPercent:
+                  duration:
+                    TEXT_FADE,
+
+                  ease:
+                    "power2.out"
+                }
+              );
+
+
+              tl.to(
+                {},
+                {
+                  duration:
+                    INTRO_HOLD
+                }
+              );
+
+
+              // =====================================================
+              // 02 — INTRO OUT
+              // =====================================================
+
+              tl.to(
+                intro,
+                {
+                  autoAlpha:
                     0,
 
+                  y:
+                    "-18vh",
+
                   duration:
-                    VISUAL_IN,
+                    0.50,
+
+                  ease:
+                    "power3.in"
+                }
+              );
+
+
+              // =====================================================
+              // 03 — COUNTER IN
+              // =====================================================
+
+              tl.to(
+                counter,
+                {
+                  autoAlpha:
+                    1,
+
+                  duration:
+                    COUNTER_IN,
 
                   ease:
                     "power3.out"
+                },
+
+                "<0.15"
+              );
+
+
+              tl.to(
+                {},
+                {
+                  duration:
+                    COUNTER_HOLD
                 }
               );
-            }
 
 
-            bills.forEach(
-              function (
-                bill,
-                i
-              ) {
+              // =====================================================
+              // 04 — CAPITOL + BILLS + CLAUDE
+              // =====================================================
+
+              if (capitol) {
 
                 tl.to(
-                  bill,
+                  capitol,
                   {
                     autoAlpha:
                       1,
 
-                    y:
+                    yPercent:
                       0,
 
-                    x:
-                      0,
+                    duration:
+                      VISUAL_IN,
+
+                    ease:
+                      "power3.out"
+                  }
+                );
+              }
+
+
+              bills.forEach(
+                function (
+                  bill,
+                  i
+                ) {
+
+                  tl.to(
+                    bill,
+                    {
+                      autoAlpha:
+                        1,
+
+                      y:
+                        0,
+
+                      x:
+                        0,
+
+                      rotation:
+                        0,
+
+                      duration:
+                        0.65,
+
+                      ease:
+                        "power3.out"
+                    },
+
+                    capitol
+                      ? "<" +
+                        (
+                          0.08 +
+                          i * 0.09
+                        )
+                      : "<" +
+                        (
+                          i * 0.09
+                        )
+                  );
+                }
+              );
+
+
+              if (claude) {
+
+                tl.to(
+                  claude,
+                  {
+                    autoAlpha:
+                      1,
+
+                    scale:
+                      1,
 
                     rotation:
                       0,
 
                     duration:
-                      0.65,
+                      0.60,
 
                     ease:
                       "power3.out"
                   },
 
-                  capitol
-                    ? "<" +
-                    (
-                      0.08 +
-                      i * 0.09
-                    )
-                    : "<" +
-                    (
-                      i * 0.09
-                    )
+                  "<0.18"
                 );
               }
-            );
 
-
-            if (claude) {
 
               tl.to(
-                claude,
+                {},
+                {
+                  duration:
+                    VISUAL_HOLD
+                }
+              );
+
+
+              // =====================================================
+              // 05 — COUNTER REPOSITION
+              // =====================================================
+
+              tl.to(
+                counter,
+                {
+                  left:
+                    getComparisonLeft,
+
+                  top:
+                    counterSmallTop,
+
+                  xPercent:
+                    isMobile
+                      ? -50
+                      : 0,
+
+                  yPercent:
+                    0,
+
+                  duration:
+                    0.72,
+
+                  ease:
+                    "power4.inOut"
+                }
+              );
+
+
+              // =====================================================
+              // COUNTER VALUE
+              //
+              // 10rem → 6rem
+              // =====================================================
+
+              tl.to(
+                counterValue,
+                {
+                  fontSize:
+                     counterSmallValueSize,
+
+                  duration:
+                    0.72,
+
+                  ease:
+                    "power4.inOut"
+                },
+
+                "<"
+              );
+
+
+              // =====================================================
+              // LABEL
+              //
+              // Alignment NEVER changes.
+              //
+              // Desktop:
+              // left → left
+              //
+              // Mobile:
+              // center → center
+              //
+              // Mobile size:
+              // 1.25rem → 1rem
+              // =====================================================
+
+              tl.to(
+                counterLabel,
+                {
+                  fontSize:
+                    counterSmallLabelSize,
+
+                  duration:
+                    0.72,
+
+                  ease:
+                    "power4.inOut"
+                },
+
+                "<"
+              );
+
+
+              // =====================================================
+              // $7.5B
+              // =====================================================
+
+              tl.to(
+                scalePrimary,
                 {
                   autoAlpha:
                     1,
 
-                  scale:
+                  y:
+                    0,
+
+                  duration:
+                    0.55,
+
+                  ease:
+                    "power3.out"
+                },
+
+                "<0.25"
+              );
+
+
+              // =====================================================
+              // $1B
+              // =====================================================
+
+              tl.to(
+                scaleSecondary,
+                {
+                  autoAlpha:
                     1,
 
-                  rotation:
+                  y:
+                    0,
+
+                  duration:
+                    0.48,
+
+                  ease:
+                    "power3.out"
+                },
+
+                "<0.20"
+              );
+
+
+              tl.to(
+                {},
+                {
+                  duration:
+                    SCALE_HOLD
+                }
+              );
+
+
+              tl.to(
+                [
+                  scalePrimary,
+                  scaleSecondary
+                ],
+                {
+                  autoAlpha:
+                    0,
+
+                  y:
+                    -30,
+
+                  duration:
+                    0.35,
+
+                  ease:
+                    "power2.in"
+                }
+              );
+
+
+              // =====================================================
+              // 06 — QUESTION
+              // =====================================================
+
+              tl.to(
+                question,
+                {
+                  autoAlpha:
+                    1,
+
+                  duration:
+                    TEXT_FADE,
+
+                  ease:
+                    "power2.out"
+                }
+              );
+
+
+              tl.to(
+                {},
+                {
+                  duration:
+                    QUESTION_HOLD
+                }
+              );
+
+
+              tl.to(
+                question,
+                {
+                  autoAlpha:
+                    0,
+
+                  duration:
+                    0.28,
+
+                  ease:
+                    "power2.in"
+                }
+              );
+
+
+              // =====================================================
+              // 07 — FELLOWS
+              // =====================================================
+
+              tl.to(
+                fellows,
+                {
+                  autoAlpha:
+                    1,
+
+                  y:
+                    0,
+
+                  duration:
+                    STAT_IN,
+
+                  ease:
+                    "power3.out"
+                }
+              );
+
+
+              tl.to(
+                {},
+                {
+                  duration:
+                    STAT_HOLD
+                }
+              );
+
+
+              tl.to(
+                fellows,
+                {
+                  autoAlpha:
+                    0,
+
+                  y:
+                    -40,
+
+                  duration:
+                    0.35,
+
+                  ease:
+                    "power2.in"
+                }
+              );
+
+
+              // =====================================================
+              // 08 — PAC
+              // =====================================================
+
+              tl.to(
+                pac,
+                {
+                  autoAlpha:
+                    1,
+
+                  y:
+                    0,
+
+                  duration:
+                    STAT_IN,
+
+                  ease:
+                    "power3.out"
+                }
+              );
+
+
+              tl.to(
+                {},
+                {
+                  duration:
+                    STAT_HOLD
+                }
+              );
+
+
+              tl.to(
+                pac,
+                {
+                  autoAlpha:
+                    0,
+
+                  y:
+                    -40,
+
+                  duration:
+                    0.35,
+
+                  ease:
+                    "power2.in"
+                }
+              );
+
+
+              // =====================================================
+              // 09 — PLEDGED
+              // =====================================================
+
+              tl.to(
+                pledged,
+                {
+                  autoAlpha:
+                    1,
+
+                  y:
                     0,
 
                   duration:
                     0.60,
 
                   ease:
-                    "power3.out"
-                },
-
-                "<0.18"
+                    "power4.out"
+                }
               );
-            }
 
 
-            tl.to(
-              {},
-              {
-                duration:
-                  VISUAL_HOLD
-              }
-            );
+              // =====================================================
+              // FINAL
+              // =====================================================
 
+              bills.forEach(
+                function (
+                  bill,
+                  i
+                ) {
 
-            // =====================================================
-            // 05 — COUNTER REPOSITION
-            // =====================================================
+                  tl.to(
+                    bill,
+                    {
+                      y:
+                        45 +
+                        i * 12,
 
-            tl.to(
-              counter,
-              {
-                left:
-                  getComparisonLeft,
+                      x:
+                        (
+                          i - 1
+                        ) * 30,
 
-                top:
-                  counterSmallTop,
+                      duration:
+                        0.65,
 
-                xPercent:
-                  mobile
-                    ? -50
-                    : 0,
+                      ease:
+                        "power2.inOut"
+                    },
 
-                yPercent:
-                  0,
+                    "<"
+                  );
+                }
+              );
 
-                duration:
-                  0.72,
 
-                ease:
-                  "power4.inOut"
-              }
-            );
-
-
-            // =====================================================
-            // COUNTER VALUE
-            //
-            // 10rem → 6rem
-            // =====================================================
-
-            tl.to(
-              counterValue,
-              {
-                fontSize:
-                  counterSmallValueSize,
-
-                duration:
-                  0.72,
-
-                ease:
-                  "power4.inOut"
-              },
-
-              "<"
-            );
-
-
-            // =====================================================
-            // LABEL
-            //
-            // Alignment NEVER changes.
-            //
-            // Desktop:
-            // left → left
-            //
-            // Mobile:
-            // center → center
-            //
-            // Mobile size:
-            // 1.25rem → 1rem
-            // =====================================================
-
-            tl.to(
-              counterLabel,
-              {
-                fontSize:
-                  counterSmallLabelSize,
-
-                duration:
-                  0.72,
-
-                ease:
-                  "power4.inOut"
-              },
-
-              "<"
-            );
-
-
-            // =====================================================
-            // $7.5B
-            // =====================================================
-
-            tl.to(
-              scalePrimary,
-              {
-                autoAlpha:
-                  1,
-
-                y:
-                  0,
-
-                duration:
-                  0.55,
-
-                ease:
-                  "power3.out"
-              },
-
-              "<0.25"
-            );
-
-
-            // =====================================================
-            // $1B
-            // =====================================================
-
-            tl.to(
-              scaleSecondary,
-              {
-                autoAlpha:
-                  1,
-
-                y:
-                  0,
-
-                duration:
-                  0.48,
-
-                ease:
-                  "power3.out"
-              },
-
-              "<0.20"
-            );
-
-
-            tl.to(
-              {},
-              {
-                duration:
-                  SCALE_HOLD
-              }
-            );
-
-
-            tl.to(
-              [
-                scalePrimary,
-                scaleSecondary
-              ],
-              {
-                autoAlpha:
-                  0,
-
-                y:
-                  -30,
-
-                duration:
-                  0.35,
-
-                ease:
-                  "power2.in"
-              }
-            );
-
-
-            // =====================================================
-            // 06 — QUESTION
-            // =====================================================
-
-            tl.to(
-              question,
-              {
-                autoAlpha:
-                  1,
-
-                duration:
-                  TEXT_FADE,
-
-                ease:
-                  "power2.out"
-              }
-            );
-
-
-            tl.to(
-              {},
-              {
-                duration:
-                  QUESTION_HOLD
-              }
-            );
-
-
-            tl.to(
-              question,
-              {
-                autoAlpha:
-                  0,
-
-                duration:
-                  0.28,
-
-                ease:
-                  "power2.in"
-              }
-            );
-
-
-            // =====================================================
-            // 07 — FELLOWS
-            // =====================================================
-
-            tl.to(
-              fellows,
-              {
-                autoAlpha:
-                  1,
-
-                y:
-                  0,
-
-                duration:
-                  STAT_IN,
-
-                ease:
-                  "power3.out"
-              }
-            );
-
-
-            tl.to(
-              {},
-              {
-                duration:
-                  STAT_HOLD
-              }
-            );
-
-
-            tl.to(
-              fellows,
-              {
-                autoAlpha:
-                  0,
-
-                y:
-                  -40,
-
-                duration:
-                  0.35,
-
-                ease:
-                  "power2.in"
-              }
-            );
-
-
-            // =====================================================
-            // 08 — PAC
-            // =====================================================
-
-            tl.to(
-              pac,
-              {
-                autoAlpha:
-                  1,
-
-                y:
-                  0,
-
-                duration:
-                  STAT_IN,
-
-                ease:
-                  "power3.out"
-              }
-            );
-
-
-            tl.to(
-              {},
-              {
-                duration:
-                  STAT_HOLD
-              }
-            );
-
-
-            tl.to(
-              pac,
-              {
-                autoAlpha:
-                  0,
-
-                y:
-                  -40,
-
-                duration:
-                  0.35,
-
-                ease:
-                  "power2.in"
-              }
-            );
-
-
-            // =====================================================
-            // 09 — PLEDGED
-            // =====================================================
-
-            tl.to(
-              pledged,
-              {
-                autoAlpha:
-                  1,
-
-                y:
-                  0,
-
-                duration:
-                  0.60,
-
-                ease:
-                  "power4.out"
-              }
-            );
-
-
-            // =====================================================
-            // FINAL
-            // =====================================================
-
-            bills.forEach(
-              function (
-                bill,
-                i
-              ) {
+              if (claude) {
 
                 tl.to(
-                  bill,
+                  claude,
                   {
-                    y:
-                      45 +
-                      i * 12,
-
-                    x:
-                      (
-                        i - 1
-                      ) * 30,
+                    scale:
+                      1.08,
 
                     duration:
-                      0.65,
+                      0.55,
 
                     ease:
-                      "power2.inOut"
+                      "power2.out"
                   },
 
                   "<"
                 );
               }
-            );
 
-
-            if (claude) {
 
               tl.to(
-                claude,
+                {},
                 {
-                  scale:
-                    1.08,
-
                   duration:
-                    0.55,
-
-                  ease:
-                    "power2.out"
-                },
-
-                "<"
+                    FINAL_HOLD
+                }
               );
-            }
 
 
-            tl.to(
-              {},
-              {
-                duration:
-                  FINAL_HOLD
-              }
-            );
+              // =====================================================
+              // REFRESH
+              // =====================================================
 
+              requestAnimationFrame(
+                function () {
 
-            // =====================================================
-            // REFRESH
-            // =====================================================
-
-            requestAnimationFrame(
-              function () {
-
-                ScrollTrigger.refresh();
-
-              }
-            );
-
-
-            // =====================================================
-            // CLEANUP
-            // =====================================================
-
-            return function () {
-
-              floatTweens.forEach(
-                function (
-                  tween
-                ) {
-
-                  tween.kill();
+                  ScrollTrigger.refresh();
 
                 }
               );
 
-            };
+
+              // =====================================================
+              // CLEANUP
+              // =====================================================
+
+              return function () {
+
+                floatTweens.forEach(
+                  function (
+                    tween
+                  ) {
+
+                    tween.kill();
+
+                  }
+                );
+
+              };
+
+            }
+          );
+
+
+        // =========================================================
+        // PAGE CLEANUP
+        // =========================================================
+
+        window.addEventListener(
+          "beforeunload",
+          function () {
+
+            clearInterval(
+              counterInterval
+            );
 
           }
         );
 
+      });
 
-      // =========================================================
-      // PAGE CLEANUP
-      // =========================================================
+  }
+);
 
-      window.addEventListener(
-        "beforeunload",
-        function () {
-
-          clearInterval(
-            counterInterval
-          );
-
-        }
-      );
-
-    });
-
-}
-
-function initNews() {
+document.addEventListener("DOMContentLoaded", function () {
 
 
 
@@ -9505,7 +9549,7 @@ function initNews() {
 
     });
 
-}
+});
 
 
 function initMapSection() {
@@ -10269,7 +10313,7 @@ function initMapLens() {
     function (event) {
 
       if (
-        isMobile()
+        mobileQuery.matches
       ) {
         return;
       }
@@ -10290,7 +10334,7 @@ function initMapLens() {
     function () {
 
       if (
-        isMobile()
+        mobileQuery.matches
       ) {
         return;
       }
@@ -10320,7 +10364,7 @@ function initMapLens() {
     function (event) {
 
       if (
-        !isMobile() ||
+        !mobileQuery.matches ||
         !event.touches.length
       ) {
         return;
@@ -10349,7 +10393,7 @@ function initMapLens() {
     function (event) {
 
       if (
-        !isMobile() ||
+        !mobileQuery.matches ||
         !event.touches.length
       ) {
         return;
@@ -10376,7 +10420,7 @@ function initMapLens() {
   function hideMobileLens() {
 
     if (
-      !isMobile()
+      !mobileQuery.matches
     ) {
       return;
     }
@@ -10435,39 +10479,18 @@ function initEAmap() {
 
 
 
+if (
+  document.readyState ===
+  "loading"
+) {
 
-
-function initEA() {
-  [
-    initScrollProgress,
-    initLiberty,
-    initMaduroScroll,
-    initPig,
-    initClaudeSection,
-    initTakeAction,
-    initNuke,
-    initMath,
-    initIdeology,
-    initOPT,
-    initFTX,
-    initAskell,
-    initFamily,
-    initScandals,
-    initWashington,
-    initNews,
+  document.addEventListener(
+    "DOMContentLoaded",
     initEAmap
-  ].forEach(function (init) {
-    // Keep a section error from blocking the remaining initializers.
-    try {
-      init();
-    } catch (error) {
-      setTimeout(function () { throw error; }, 0);
-    }
-  });
-}
+  );
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initEA, { once: true });
 } else {
-  initEA();
+
+  initEAmap();
+
 }

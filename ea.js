@@ -19957,23 +19957,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function initMapSection() {
 
-  gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(
+    ScrollTrigger
+  );
+
 
   var track =
-    document.querySelector("[data-map-track]");
+    document.querySelector(
+      "[data-map-track]"
+    );
 
   var introText =
-    document.querySelector("[data-map-intro-text]");
+    document.querySelector(
+      "[data-map-intro-text]"
+    );
 
   var visualWrapper =
-    document.querySelector("[data-map-visual-wrapper]");
-
-
-  console.log("MAP INIT", {
-    track,
-    introText,
-    visualWrapper
-  });
+    document.querySelector(
+      "[data-map-visual-wrapper]"
+    );
 
 
   if (
@@ -20004,12 +20006,23 @@ function initMapSection() {
 
       var mapTimeline =
         gsap.timeline({
+
           scrollTrigger: {
-            trigger: track,
-            start: "top top",
-            end: "bottom bottom",
-            scrub: 0.55,
+
+            trigger:
+              track,
+
+            start:
+              "top top",
+
+            end:
+              "bottom bottom",
+
+            scrub:
+              0.55
+
           }
+
         });
 
 
@@ -20041,18 +20054,6 @@ function initMapSection() {
 }
 
 
-if (document.readyState === "loading") {
-
-  document.addEventListener(
-    "DOMContentLoaded",
-    initMapSection
-  );
-
-} else {
-
-  initMapSection();
-
-}
 
 function initMapLens() {
 
@@ -20091,22 +20092,100 @@ function initMapLens() {
   }
 
 
-  var ZOOM = 1.5;
+  // =========================================================
+  // SETTINGS
+  // =========================================================
 
-  var LENS_SIZE =
+  var ZOOM =
+    1.5;
+
+
+  var DESKTOP_LENS_SIZE =
     180;
 
 
+  var MOBILE_LENS_SIZE =
+    150;
+
+
+  // Mobile lens sits ABOVE
+  // the finger so your thumb
+  // doesn't cover what you're viewing.
+
+  var MOBILE_LENS_LIFT =
+    115;
+
+
+  var mobileQuery =
+    window.matchMedia(
+      "(max-width: 991px)"
+    );
+
+
+  // =========================================================
+  // CREATE LENS
+  // =========================================================
+
   var lens =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
+
 
   lens.className =
     "map-lens";
+
+
+  lens.style.pointerEvents =
+    "none";
+
+
+  lens.style.overflow =
+    "hidden";
+
 
   wrapper.appendChild(
     lens
   );
 
+
+  // =========================================================
+  // INNER IMAGE
+  //
+  // Separate inner element allows us
+  // to rotate the magnified image
+  // without rotating the actual lens.
+  // =========================================================
+
+  var lensImage =
+    document.createElement(
+      "div"
+    );
+
+
+  Object.assign(
+    lensImage.style,
+    {
+      position: "absolute",
+      inset: "0",
+      width: "100%",
+      height: "100%",
+      borderRadius: "inherit",
+      backgroundRepeat: "no-repeat",
+      pointerEvents: "none",
+      transformOrigin: "50% 50%"
+    }
+  );
+
+
+  lens.appendChild(
+    lensImage
+  );
+
+
+  // =========================================================
+  // IMAGE SOURCE
+  // =========================================================
 
   function updateSource() {
 
@@ -20114,12 +20193,15 @@ function initMapLens() {
       image.currentSrc ||
       image.src;
 
+
     if (!src) {
       return;
     }
 
-    lens.style.backgroundImage =
+
+    lensImage.style.backgroundImage =
       'url("' + src + '")';
+
   }
 
 
@@ -20132,98 +20214,518 @@ function initMapLens() {
       "load",
       updateSource
     );
+
   }
 
+
+  // =========================================================
+  // DETECT IMAGE ROTATION
+  // =========================================================
+
+  function getImageRotation() {
+
+    var transform =
+      getComputedStyle(
+        image
+      ).transform;
+
+
+    if (
+      !transform ||
+      transform === "none"
+    ) {
+      return 0;
+    }
+
+
+    var values;
+
+
+    if (
+      transform.startsWith(
+        "matrix3d("
+      )
+    ) {
+
+      values =
+        transform
+          .slice(9, -1)
+          .split(",")
+          .map(Number);
+
+    } else if (
+      transform.startsWith(
+        "matrix("
+      )
+    ) {
+
+      values =
+        transform
+          .slice(7, -1)
+          .split(",")
+          .map(Number);
+
+    }
+
+
+    if (
+      !values ||
+      values.length < 2
+    ) {
+      return 0;
+    }
+
+
+    var angle =
+      Math.atan2(
+        values[1],
+        values[0]
+      ) *
+      180 /
+      Math.PI;
+
+
+    angle =
+      (
+        angle %
+        360 +
+        360
+      ) %
+      360;
+
+
+    // Snap to nearest
+    // quarter turn.
+
+    if (
+      angle < 45 ||
+      angle >= 315
+    ) {
+      return 0;
+    }
+
+
+    if (angle < 135) {
+      return 90;
+    }
+
+
+    if (angle < 225) {
+      return 180;
+    }
+
+
+    return 270;
+
+  }
+
+
+  // =========================================================
+  // CONVERT SCREEN POSITION
+  // INTO ORIGINAL IMAGE POSITION
+  // =========================================================
+
+  function getImagePoint(
+    clientX,
+    clientY
+  ) {
+
+    var rect =
+      image
+        .getBoundingClientRect();
+
+
+    if (
+      clientX < rect.left ||
+      clientX > rect.right ||
+      clientY < rect.top ||
+      clientY > rect.bottom
+    ) {
+
+      return null;
+
+    }
+
+
+    var nx =
+      (
+        clientX -
+        rect.left
+      ) /
+      rect.width;
+
+
+    var ny =
+      (
+        clientY -
+        rect.top
+      ) /
+      rect.height;
+
+
+    var width =
+      image.offsetWidth ||
+      rect.width;
+
+
+    var height =
+      image.offsetHeight ||
+      rect.height;
+
+
+    var rotation =
+      getImageRotation();
+
+
+    var x;
+    var y;
+
+
+    // ---------------------------------
+    // NORMAL
+    // ---------------------------------
+
+    if (rotation === 0) {
+
+      x =
+        nx *
+        width;
+
+      y =
+        ny *
+        height;
+
+    }
+
+
+    // ---------------------------------
+    // 90°
+    // ---------------------------------
+
+    else if (
+      rotation === 90
+    ) {
+
+      x =
+        ny *
+        width;
+
+      y =
+        (
+          1 -
+          nx
+        ) *
+        height;
+
+    }
+
+
+    // ---------------------------------
+    // 180°
+    // ---------------------------------
+
+    else if (
+      rotation === 180
+    ) {
+
+      x =
+        (
+          1 -
+          nx
+        ) *
+        width;
+
+      y =
+        (
+          1 -
+          ny
+        ) *
+        height;
+
+    }
+
+
+    // ---------------------------------
+    // 270° / -90°
+    // ---------------------------------
+
+    else {
+
+      x =
+        (
+          1 -
+          ny
+        ) *
+        width;
+
+      y =
+        nx *
+        height;
+
+    }
+
+
+    return {
+
+      x: x,
+      y: y,
+
+      width: width,
+      height: height,
+
+      rotation:
+        rotation
+
+    };
+
+  }
+
+
+  // =========================================================
+  // POSITION + UPDATE LENS
+  // =========================================================
+
+  function updateLens(
+    clientX,
+    clientY,
+    isTouch
+  ) {
+
+    var point =
+      getImagePoint(
+        clientX,
+        clientY
+      );
+
+
+    if (!point) {
+
+      lens.classList.remove(
+        "is-visible"
+      );
+
+      return;
+
+    }
+
+
+    var wrapperRect =
+      wrapper
+        .getBoundingClientRect();
+
+
+    var lensSize =
+      isTouch
+        ? MOBILE_LENS_SIZE
+        : DESKTOP_LENS_SIZE;
+
+
+    var lensLeft =
+      clientX -
+      wrapperRect.left -
+      lensSize / 2;
+
+
+    var lensTop =
+      clientY -
+      wrapperRect.top -
+      lensSize / 2;
+
+
+    // Mobile:
+    // lift magnifier above finger.
+
+    if (isTouch) {
+
+      lensTop -=
+        MOBILE_LENS_LIFT;
+
+    }
+
+
+    // =====================================================
+    // KEEP LENS INSIDE WRAPPER
+    // =====================================================
+
+    lensLeft =
+      Math.max(
+        0,
+        Math.min(
+          wrapperRect.width -
+          lensSize,
+          lensLeft
+        )
+      );
+
+
+    lensTop =
+      Math.max(
+        0,
+        Math.min(
+          wrapperRect.height -
+          lensSize,
+          lensTop
+        )
+      );
+
+
+    lens.style.width =
+      lensSize + "px";
+
+
+    lens.style.height =
+      lensSize + "px";
+
+
+    lens.style.left =
+      lensLeft + "px";
+
+
+    lens.style.top =
+      lensTop + "px";
+
+
+    // =====================================================
+    // MAGNIFIED IMAGE
+    // =====================================================
+
+    lensImage.style.backgroundSize =
+      (
+        point.width *
+        ZOOM
+      ) +
+      "px " +
+      (
+        point.height *
+        ZOOM
+      ) +
+      "px";
+
+
+    lensImage.style.backgroundPosition =
+      (
+        lensSize / 2 -
+        point.x *
+        ZOOM
+      ) +
+      "px " +
+      (
+        lensSize / 2 -
+        point.y *
+        ZOOM
+      ) +
+      "px";
+
+
+    // Match map rotation.
+
+    var rotation =
+      point.rotation;
+
+
+    if (rotation === 270) {
+
+      lensImage.style.transform =
+        "rotate(-90deg)";
+
+    } else {
+
+      lensImage.style.transform =
+        "rotate(" +
+        rotation +
+        "deg)";
+
+    }
+
+
+    lens.classList.add(
+      "is-visible"
+    );
+
+  }
+
+
+  // =========================================================
+  // RAF THROTTLE
+  //
+  // Prevent ridiculous number
+  // of updates on mobile.
+  // =========================================================
+
+  var pendingPoint =
+    null;
+
+
+  var rafId =
+    null;
+
+
+  function queueLensUpdate(
+    x,
+    y,
+    isTouch
+  ) {
+
+    pendingPoint = {
+      x: x,
+      y: y,
+      isTouch: isTouch
+    };
+
+
+    if (rafId) {
+      return;
+    }
+
+
+    rafId =
+      requestAnimationFrame(
+        function () {
+
+          rafId =
+            null;
+
+
+          if (!pendingPoint) {
+            return;
+          }
+
+
+          updateLens(
+            pendingPoint.x,
+            pendingPoint.y,
+            pendingPoint.isTouch
+          );
+
+
+          pendingPoint =
+            null;
+
+        }
+      );
+
+  }
+
+
+  // =========================================================
+  // DESKTOP — MOUSE HOVER
+  // =========================================================
 
   wrapper.addEventListener(
     "mousemove",
     function (event) {
 
-      var imageRect =
-        image.getBoundingClientRect();
-
-      var wrapperRect =
-        wrapper.getBoundingClientRect();
-
-
-      // Only activate while mouse is over actual image.
-
       if (
-        event.clientX < imageRect.left ||
-        event.clientX > imageRect.right ||
-        event.clientY < imageRect.top ||
-        event.clientY > imageRect.bottom
+        mobileQuery.matches
       ) {
-
-        lens.classList.remove(
-          "is-visible"
-        );
-
         return;
       }
 
 
-      var imageX =
-        event.clientX -
-        imageRect.left;
-
-      var imageY =
-        event.clientY -
-        imageRect.top;
-
-
-      // Lens position.
-
-      var lensX =
-        event.clientX -
-        wrapperRect.left -
-        LENS_SIZE / 2;
-
-      var lensY =
-        event.clientY -
-        wrapperRect.top -
-        LENS_SIZE / 2;
-
-
-      lens.style.left =
-        lensX + "px";
-
-      lens.style.top =
-        lensY + "px";
-
-
-      // Enlarged copy of image.
-
-      lens.style.backgroundSize =
-        (
-          imageRect.width *
-          ZOOM
-        ) +
-        "px " +
-        (
-          imageRect.height *
-          ZOOM
-        ) +
-        "px";
-
-
-      // Place hovered coordinate in center of lens.
-
-      lens.style.backgroundPosition =
-        (
-          LENS_SIZE / 2 -
-          imageX * ZOOM
-        ) +
-        "px " +
-        (
-          LENS_SIZE / 2 -
-          imageY * ZOOM
-        ) +
-        "px";
-
-
-      lens.classList.add(
-        "is-visible"
+      queueLensUpdate(
+        event.clientX,
+        event.clientY,
+        false
       );
 
     }
@@ -20232,6 +20734,132 @@ function initMapLens() {
 
   wrapper.addEventListener(
     "mouseleave",
+    function () {
+
+      if (
+        mobileQuery.matches
+      ) {
+        return;
+      }
+
+
+      lens.classList.remove(
+        "is-visible"
+      );
+
+    }
+  );
+
+
+  // =========================================================
+  // MOBILE — TOUCH / DRAG
+  //
+  // Press + drag over map.
+  // Lens appears ABOVE finger.
+  //
+  // We DO NOT preventDefault(),
+  // so vertical page scrolling
+  // remains available.
+  // =========================================================
+
+  wrapper.addEventListener(
+    "touchstart",
+    function (event) {
+
+      if (
+        !mobileQuery.matches ||
+        !event.touches.length
+      ) {
+        return;
+      }
+
+
+      var touch =
+        event.touches[0];
+
+
+      queueLensUpdate(
+        touch.clientX,
+        touch.clientY,
+        true
+      );
+
+    },
+    {
+      passive: true
+    }
+  );
+
+
+  wrapper.addEventListener(
+    "touchmove",
+    function (event) {
+
+      if (
+        !mobileQuery.matches ||
+        !event.touches.length
+      ) {
+        return;
+      }
+
+
+      var touch =
+        event.touches[0];
+
+
+      queueLensUpdate(
+        touch.clientX,
+        touch.clientY,
+        true
+      );
+
+    },
+    {
+      passive: true
+    }
+  );
+
+
+  function hideMobileLens() {
+
+    if (
+      !mobileQuery.matches
+    ) {
+      return;
+    }
+
+
+    lens.classList.remove(
+      "is-visible"
+    );
+
+  }
+
+
+  wrapper.addEventListener(
+    "touchend",
+    hideMobileLens,
+    {
+      passive: true
+    }
+  );
+
+
+  wrapper.addEventListener(
+    "touchcancel",
+    hideMobileLens,
+    {
+      passive: true
+    }
+  );
+
+
+  // =========================================================
+  // BREAKPOINT CHANGE
+  // =========================================================
+
+  mobileQuery.addEventListener(
+    "change",
     function () {
 
       lens.classList.remove(
@@ -20244,15 +20872,28 @@ function initMapLens() {
 }
 
 
-if (document.readyState === "loading") {
+
+function initEAmap() {
+
+  initMapSection();
+  initMapLens();
+
+}
+
+
+
+if (
+  document.readyState ===
+  "loading"
+) {
 
   document.addEventListener(
     "DOMContentLoaded",
-    initMapLens
+    initEAmap
   );
 
 } else {
 
-  initMapLens();
+  initEAmap();
 
 }

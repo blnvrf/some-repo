@@ -8629,8 +8629,12 @@ document.addEventListener("DOMContentLoaded", function () {
       // How far title + body move upward
       // when quote enters.
 
-      var TEXT_PUSH =
-        "-19vh";
+var TEXT_PUSH =
+  window.matchMedia(
+    "(max-width: 991px)"
+  ).matches
+    ? 0
+    : "-19vh";
 
 
       // =========================================================

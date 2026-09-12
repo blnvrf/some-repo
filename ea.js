@@ -4527,12 +4527,12 @@ document.addEventListener(
 
 
         var CFG = {
-          scrub: 0.12,
+          scrub: 0.04,
 
           landFrom: "100vh",
           blastFrom: "100vh",
 
-          slideStep: 0.16,
+          slideStep: 0.07,
 
           slideFrom: "100vh",
           slideTo: "-100vh",

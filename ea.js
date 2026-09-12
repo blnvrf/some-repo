@@ -4531,7 +4531,7 @@ document.addEventListener(
           landFrom: "100vh",
           blastFrom: "100vh",
 
-          textRise: 20,
+          //textRise: 20,
 
           // VERY tight quote sequence
           slideStep: 0.16,
@@ -4638,8 +4638,8 @@ document.addEventListener(
                 {
                   opacity: 0,
 
-                  y:
-                    CFG.textRise
+                 // y:
+                //    CFG.textRise
                 }
               );
 
@@ -4653,8 +4653,8 @@ document.addEventListener(
                 {
                   opacity: 0,
 
-                  y:
-                    CFG.textRise
+               //   y:
+              //      CFG.textRise
                 }
               );
 
@@ -4908,8 +4908,8 @@ document.addEventListener(
                           opacity:
                             0,
 
-                          y:
-                            -CFG.textRise,
+                    //      y:
+                  //          -CFG.textRise,
 
                           duration:
                             DUR.slideMove,

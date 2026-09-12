@@ -18232,1374 +18232,1305 @@ document.addEventListener(
   "DOMContentLoaded",
   function () {
 
-    gsap.registerPlugin(
-      ScrollTrigger
-    );
+    gsap.registerPlugin(ScrollTrigger);
 
 
     gsap.utils
-      .toArray(
-        "[data-wash-scene]"
-      )
-      .forEach(
-        function (sec) {
+      .toArray("[data-wash-scene]")
+      .forEach(function (sec) {
 
-          var q =
-            gsap.utils.selector(
-              sec
+        var q =
+          gsap.utils.selector(sec);
+
+
+        // =========================================================
+        // ELEMENTS
+        // =========================================================
+
+        var track =
+          q("[data-wash-track]")[0];
+
+        var claude =
+          q("[data-wash-claude]")[0];
+
+        var capitol =
+          q("[data-wash-capitol]")[0];
+
+        var bills =
+          q("[data-wash-bill]");
+
+        var intro =
+          q("[data-wash-intro]")[0];
+
+        var title =
+          q("[data-wash-title]")[0];
+
+        var counter =
+          q("[data-wash-counter]")[0];
+
+        var counterValue =
+          q("[data-wash-counter-value]")[0];
+
+        var counterLabel =
+          q("[data-wash-counter-label]")[0];
+
+        var scaleGroup =
+          q("[data-wash-scale]")[0];
+
+        var scalePrimary =
+          q("[data-wash-scale-primary]")[0];
+
+        var scaleSecondary =
+          q("[data-wash-scale-secondary]")[0];
+
+        var question =
+          q("[data-wash-question]")[0];
+
+        var fellows =
+          q(
+            '[data-wash-stat="fellows"]'
+          )[0];
+
+        var pac =
+          q(
+            '[data-wash-stat="pac"]'
+          )[0];
+
+        var pledged =
+          q(
+            '[data-wash-stat="pledged"]'
+          )[0];
+
+
+        if (
+          !track ||
+          !intro ||
+          !title ||
+          !counter ||
+          !counterValue ||
+          !counterLabel ||
+          !scalePrimary ||
+          !scaleSecondary ||
+          !question ||
+          !fellows ||
+          !pac ||
+          !pledged
+        ) {
+
+          console.warn(
+            "Washington section: missing required elements."
+          );
+
+          return;
+        }
+
+
+        // =========================================================
+        // COUNTER CONFIG
+        // =========================================================
+
+
+        // INITIAL POSITION
+
+        var COUNTER_CENTER_LEFT =
+          "50%";
+
+        var COUNTER_CENTER_TOP =
+          "42%";
+
+
+        // RELOCATED POSITION
+
+        var DESKTOP_COUNTER_TOP =
+          "8%";
+
+        var MOBILE_COUNTER_TOP =
+          "10%";
+
+
+        // VALUE SIZE
+
+        var COUNTER_LARGE_VALUE_SIZE =
+          "10rem";
+
+        var COUNTER_SMALL_VALUE_SIZE =
+          "6rem";
+
+
+        // LABEL SIZE
+
+        var DESKTOP_LABEL_SIZE =
+          "1.25rem";
+
+        var MOBILE_LABEL_LARGE_SIZE =
+          "1.25rem";
+
+        var MOBILE_LABEL_SMALL_SIZE =
+          "1rem";
+
+
+        // COUNTER RATE
+
+        var RATE_PER_SECOND =
+          32;
+
+
+        // =========================================================
+        // LIVE COUNTER
+        // =========================================================
+
+        var pageOpenedAt =
+          performance.now();
+
+
+        function updateCounter() {
+
+          var elapsedSeconds =
+            Math.floor(
+              (
+                performance.now() -
+                pageOpenedAt
+              ) / 1000
             );
 
 
-          // =========================================================
-          // ELEMENTS
-          // =========================================================
+          var amount =
+            elapsedSeconds *
+            RATE_PER_SECOND;
 
-          var track =
-            q(
-              "[data-wash-track]"
-            )[0];
 
-          var claude =
-            q(
-              "[data-wash-claude]"
-            )[0];
-
-          var capitol =
-            q(
-              "[data-wash-capitol]"
-            )[0];
-
-          var bills =
-            q(
-              "[data-wash-bill]"
+          counterValue.textContent =
+            "$" +
+            amount.toLocaleString(
+              "en-US"
             );
+        }
 
-          var intro =
-            q(
-              "[data-wash-intro]"
-            )[0];
-
-          var title =
-            q(
-              "[data-wash-title]"
-            )[0];
 
-          var counter =
-            q(
-              "[data-wash-counter]"
-            )[0];
+        updateCounter();
 
-          var counterValue =
-            q(
-              "[data-wash-counter-value]"
-            )[0];
 
-          var counterLabel =
-            q(
-              "[data-wash-counter-label]"
-            )[0];
+        var counterInterval =
+          setInterval(
+            updateCounter,
+            100
+          );
 
-          var scaleGroup =
-            q(
-              "[data-wash-scale]"
-            )[0];
 
-          var scalePrimary =
-            q(
-              "[data-wash-scale-primary]"
-            )[0];
+        // =========================================================
+        // ALL WIDTHS
+        // =========================================================
 
-          var scaleSecondary =
-            q(
-              "[data-wash-scale-secondary]"
-            )[0];
+        gsap
+          .matchMedia()
+          .add(
+            "(min-width: 2px)",
+            function () {
 
-          var question =
-            q(
-              "[data-wash-question]"
-            )[0];
 
-          var fellows =
-            q(
-              '[data-wash-stat="fellows"]'
-            )[0];
+              var isMobile =
+                window.matchMedia(
+                  "(max-width: 991px)"
+                ).matches;
 
-          var pac =
-            q(
-              '[data-wash-stat="pac"]'
-            )[0];
 
-          var pledged =
-            q(
-              '[data-wash-stat="pledged"]'
-            )[0];
+              // =====================================================
+              // RESPONSIVE COUNTER VALUES
+              // =====================================================
 
+              var counterSmallTop =
+                isMobile
+                  ? MOBILE_COUNTER_TOP
+                  : DESKTOP_COUNTER_TOP;
 
-          if (
-            !track ||
-            !intro ||
-            !title ||
-            !counter ||
-            !counterValue ||
-            !counterLabel ||
-            !scalePrimary ||
-            !scaleSecondary ||
-            !question ||
-            !fellows ||
-            !pac ||
-            !pledged
-          ) {
 
-            console.warn(
-              "Washington section: missing required elements."
-            );
+              var counterLargeLabelSize =
+                isMobile
+                  ? MOBILE_LABEL_LARGE_SIZE
+                  : DESKTOP_LABEL_SIZE;
 
-            return;
-          }
 
+              var counterSmallLabelSize =
+                isMobile
+                  ? MOBILE_LABEL_SMALL_SIZE
+                  : DESKTOP_LABEL_SIZE;
 
-          // =========================================================
-          // COUNTER SETTINGS
-          // =========================================================
 
-          var COUNTER_CENTER_LEFT =
-            "50%";
+              var counterTextAlign =
+                isMobile
+                  ? "center"
+                  : "left";
 
-          var COUNTER_CENTER_TOP =
-            "42%";
 
+              // =====================================================
+              // TIMING
+              // =====================================================
 
-          // Initial state
+              var TEXT_FADE =
+                0.34;
 
-          var COUNTER_LARGE_VALUE_SIZE =
-            "8rem";
+              var INTRO_HOLD =
+                0.55;
 
-          var COUNTER_LARGE_LABEL_SIZE =
-            "1.25rem";
+              var COUNTER_IN =
+                0.55;
 
+              var COUNTER_HOLD =
+                0.85;
 
-          // Desktop relocated state
+              var VISUAL_IN =
+                0.75;
 
-          var DESKTOP_COUNTER_TOP =
-            "8%";
+              var VISUAL_HOLD =
+                0.65;
 
-          var DESKTOP_COUNTER_VALUE_SIZE =
-            "5rem";
+              var SCALE_HOLD =
+                1.25;
 
-          var DESKTOP_COUNTER_LABEL_SIZE =
-            "1.25rem";
+              var QUESTION_HOLD =
+                0.80;
 
+              var STAT_IN =
+                0.45;
 
-          // Mobile relocated state
+              var STAT_HOLD =
+                0.90;
 
-          var MOBILE_COUNTER_TOP =
-            "10%";
+              var FINAL_HOLD =
+                1.40;
 
-          var MOBILE_COUNTER_VALUE_SIZE =
-            "4rem";
 
-          var MOBILE_COUNTER_LABEL_SIZE =
-            "1rem";
+              // =====================================================
+              // DESKTOP COUNTER DESTINATION
+              //
+              // Reads scalePrimary's CSS position.
+              // =====================================================
 
+              function getComparisonLeft() {
 
-          var RATE_PER_SECOND =
-            32;
+                // MOBILE:
+                // always center.
 
-
-          // =========================================================
-          // COUNTER WIDTH
-          //
-          // Wrapper width ALWAYS follows the
-          // rendered width of the dollar value.
-          //
-          // Label gets exactly that width and
-          // wraps if necessary.
-          // =========================================================
-
-          function syncCounterWidth() {
-
-            var valueWidth =
-              counterValue
-                .getBoundingClientRect()
-                .width;
-
-
-            if (!valueWidth) {
-              return;
-            }
-
-
-            counter.style.width =
-              valueWidth + "px";
-
-
-            counterLabel.style.width =
-              "100%";
-
-            counterLabel.style.maxWidth =
-              "100%";
-          }
-
-
-          // =========================================================
-          // LIVE COUNTER
-          // =========================================================
-
-          var pageOpenedAt =
-            performance.now();
-
-
-          function updateCounter() {
-
-            var elapsedSeconds =
-              Math.floor(
-                (
-                  performance.now() -
-                  pageOpenedAt
-                ) / 1000
-              );
-
-
-            var amount =
-              elapsedSeconds *
-              RATE_PER_SECOND;
-
-
-            counterValue.textContent =
-              "$" +
-              amount.toLocaleString(
-                "en-US"
-              );
-
-
-            requestAnimationFrame(
-              syncCounterWidth
-            );
-          }
-
-
-          updateCounter();
-
-
-          var counterInterval =
-            setInterval(
-              updateCounter,
-              100
-            );
-
-
-          // =========================================================
-          // ALL WIDTHS
-          // =========================================================
-
-          gsap
-            .matchMedia()
-            .add(
-              "(min-width: 2px)",
-              function () {
-
-
-                var isMobile =
-                  window.matchMedia(
-                    "(max-width: 991px)"
-                  ).matches;
-
-
-                // =====================================================
-                // RESPONSIVE COUNTER VALUES
-                // =====================================================
-
-                var counterSmallTop =
-                  isMobile
-                    ? MOBILE_COUNTER_TOP
-                    : DESKTOP_COUNTER_TOP;
-
-
-                var counterSmallValueSize =
-                  isMobile
-                    ? MOBILE_COUNTER_VALUE_SIZE
-                    : DESKTOP_COUNTER_VALUE_SIZE;
-
-
-                var counterSmallLabelSize =
-                  isMobile
-                    ? MOBILE_COUNTER_LABEL_SIZE
-                    : DESKTOP_COUNTER_LABEL_SIZE;
-
-
-                // =====================================================
-                // TIMING
-                // =====================================================
-
-                var TEXT_FADE =
-                  0.34;
-
-                var INTRO_HOLD =
-                  0.55;
-
-                var COUNTER_IN =
-                  0.55;
-
-                var COUNTER_HOLD =
-                  0.85;
-
-                var VISUAL_IN =
-                  0.75;
-
-                var VISUAL_HOLD =
-                  0.65;
-
-                var SCALE_HOLD =
-                  1.25;
-
-                var QUESTION_HOLD =
-                  0.80;
-
-                var STAT_IN =
-                  0.45;
-
-                var STAT_HOLD =
-                  0.90;
-
-                var FINAL_HOLD =
-                  1.40;
-
-
-                // =====================================================
-                // COUNTER DESTINATION
-                // =====================================================
-
-                function getComparisonLeft() {
-
-                  // MOBILE
-                  //
-                  // Keep counter centered.
-
-                  if (isMobile) {
-                    return "50%";
-                  }
-
-
-                  // DESKTOP
-                  //
-                  // Align to comparison
-                  // element from Designer.
-
-                  var scaleRect =
-                    scalePrimary
-                      .getBoundingClientRect();
-
-
-                  var counterParent =
-                    counter.offsetParent;
-
-
-                  if (!counterParent) {
-
-                    return (
-                      scaleRect.left +
-                      "px"
-                    );
-                  }
-
-
-                  var parentRect =
-                    counterParent
-                      .getBoundingClientRect();
-
-
-                  return (
-                    scaleRect.left -
-                    parentRect.left
-                  ) + "px";
+                if (isMobile) {
+                  return "50%";
                 }
 
 
-                // =====================================================
-                // INITIAL COUNTER LAYOUT
-                // =====================================================
+                // DESKTOP:
+                // line up with scalePrimary.
 
-                gsap.set(
-                  counter,
-                  {
-                    autoAlpha: 0,
-
-                    left:
-                      COUNTER_CENTER_LEFT,
-
-                    top:
-                      COUNTER_CENTER_TOP,
-
-                    x: 0,
-                    y: 0,
-
-                    xPercent:
-                      -50,
-
-                    yPercent:
-                      -50
-                  }
-                );
+                var scaleRect =
+                  scalePrimary
+                    .getBoundingClientRect();
 
 
-                // Initial value:
-                // 8rem on all widths.
-
-                gsap.set(
-                  counterValue,
-                  {
-                    fontSize:
-                      COUNTER_LARGE_VALUE_SIZE,
-
-                    whiteSpace:
-                      "nowrap",
-
-                    display:
-                      "block"
-                  }
-                );
+                var counterParent =
+                  counter.offsetParent;
 
 
-                // Initial label:
-                // centered.
+                if (!counterParent) {
 
-                gsap.set(
-                  counterLabel,
-                  {
-                    fontSize:
-                      COUNTER_LARGE_LABEL_SIZE,
-
-                    textAlign:
-                      "center",
-
-                    whiteSpace:
-                      "normal",
-
-                    overflowWrap:
-                      "normal",
-
-                    wordBreak:
-                      "normal",
-
-                    display:
-                      "block",
-
-                    width:
-                      "100%",
-
-                    maxWidth:
-                      "100%"
-                  }
-                );
-
-
-                requestAnimationFrame(
-                  syncCounterWidth
-                );
-
-
-                // =====================================================
-                // OTHER INITIAL STATES
-                // =====================================================
-
-                gsap.set(
-                  title,
-                  {
-                    autoAlpha:
-                      0
-                  }
-                );
-
-
-                if (capitol) {
-
-                  gsap.set(
-                    capitol,
-                    {
-                      yPercent:
-                        100,
-
-                      autoAlpha:
-                        0
-                    }
+                  return (
+                    scaleRect.left +
+                    "px"
                   );
                 }
 
 
-                if (claude) {
+                var parentRect =
+                  counterParent
+                    .getBoundingClientRect();
+
+
+                return (
+                  scaleRect.left -
+                  parentRect.left
+                ) + "px";
+              }
+
+
+              // =====================================================
+              // INITIAL STATES
+              // =====================================================
+
+
+              // TITLE
+
+              gsap.set(
+                title,
+                {
+                  autoAlpha: 0
+                }
+              );
+
+
+              // =====================================================
+              // COUNTER WRAPPER
+              //
+              // IMPORTANT:
+              // NO width / max-width /
+              // display / wrapping manipulation.
+              //
+              // Only animated positioning.
+              // =====================================================
+
+              gsap.set(
+                counter,
+                {
+                  autoAlpha:
+                    0,
+
+                  left:
+                    COUNTER_CENTER_LEFT,
+
+                  top:
+                    COUNTER_CENTER_TOP,
+
+                  x:
+                    0,
+
+                  y:
+                    0,
+
+                  xPercent:
+                    -50,
+
+                  yPercent:
+                    -50
+                }
+              );
+
+
+              // =====================================================
+              // COUNTER VALUE
+              //
+              // Starts 10rem.
+              // =====================================================
+
+              gsap.set(
+                counterValue,
+                {
+                  fontSize:
+                    COUNTER_LARGE_VALUE_SIZE
+                }
+              );
+
+
+              // =====================================================
+              // COUNTER LABEL
+              //
+              // Desktop = LEFT forever.
+              // Mobile  = CENTER forever.
+              // =====================================================
+
+              gsap.set(
+                counterLabel,
+                {
+                  fontSize:
+                    counterLargeLabelSize,
+
+                  textAlign:
+                    counterTextAlign
+                }
+              );
+
+
+              // =====================================================
+              // CAPITOL
+              // =====================================================
+
+              if (capitol) {
+
+                gsap.set(
+                  capitol,
+                  {
+                    yPercent:
+                      100,
+
+                    autoAlpha:
+                      0
+                  }
+                );
+              }
+
+
+              // =====================================================
+              // CLAUDE
+              // =====================================================
+
+              if (claude) {
+
+                gsap.set(
+                  claude,
+                  {
+                    autoAlpha:
+                      0,
+
+                    scale:
+                      0.72,
+
+                    rotation:
+                      -8
+                  }
+                );
+              }
+
+
+              // =====================================================
+              // BILLS
+              // =====================================================
+
+              bills.forEach(
+                function (
+                  bill,
+                  i
+                ) {
+
+                  var rotations =
+                    [
+                      -16,
+                      13,
+                      -8
+                    ];
+
+
+                  var xs =
+                    [
+                      -70,
+                      45,
+                      80
+                    ];
+
 
                   gsap.set(
-                    claude,
+                    bill,
                     {
                       autoAlpha:
                         0,
 
-                      scale:
-                        0.72,
+                      y:
+                        "-40vh",
+
+                      x:
+                        xs[
+                          i %
+                          xs.length
+                        ],
 
                       rotation:
-                        -8
+                        rotations[
+                          i %
+                          rotations.length
+                        ]
                     }
                   );
                 }
+              );
 
 
-                bills.forEach(
-                  function (
-                    bill,
-                    i
-                  ) {
+              // =====================================================
+              // SCALE GROUP
+              // =====================================================
 
-                    var rotations =
-                      [
-                        -16,
-                        13,
-                        -8
-                      ];
+              if (scaleGroup) {
 
-
-                    var xs =
-                      [
-                        -70,
-                        45,
-                        80
-                      ];
+                gsap.set(
+                  scaleGroup,
+                  {
+                    autoAlpha:
+                      1
+                  }
+                );
+              }
 
 
-                    gsap.set(
-                      bill,
+              // =====================================================
+              // SCALE VALUES
+              //
+              // Their resting position comes from CSS.
+              // Only animation offsets here.
+              // =====================================================
+
+              gsap.set(
+                scalePrimary,
+                {
+                  autoAlpha:
+                    0,
+
+                  y:
+                    35
+                }
+              );
+
+
+              gsap.set(
+                scaleSecondary,
+                {
+                  autoAlpha:
+                    0,
+
+                  y:
+                    35
+                }
+              );
+
+
+              // =====================================================
+              // QUESTION
+              //
+              // Position comes from CSS.
+              // =====================================================
+
+              gsap.set(
+                question,
+                {
+                  autoAlpha:
+                    0
+                }
+              );
+
+
+              // =====================================================
+              // STATS
+              //
+              // Position comes from CSS.
+              // =====================================================
+
+              gsap.set(
+                [
+                  fellows,
+                  pac,
+                  pledged
+                ],
+                {
+                  autoAlpha:
+                    0,
+
+                  y:
+                    45
+                }
+              );
+
+
+              // =====================================================
+              // BILL FLOAT
+              // =====================================================
+
+              var floatTweens =
+                [];
+
+
+              bills.forEach(
+                function (
+                  bill,
+                  i
+                ) {
+
+                  var img =
+                    bill.querySelector(
+                      "img"
+                    );
+
+
+                  if (!img) {
+                    return;
+                  }
+
+
+                  var tween =
+                    gsap.to(
+                      img,
                       {
-                        autoAlpha:
-                          0,
+                        x:
+                          i % 2 === 0
+                            ? 8
+                            : -8,
 
                         y:
-                          "-40vh",
-
-                        x:
-                          xs[
-                            i %
-                            xs.length
-                          ],
+                          -10 -
+                          i * 2,
 
                         rotation:
-                          rotations[
-                            i %
-                            rotations.length
-                          ]
+                          i % 2 === 0
+                            ? 2
+                            : -2,
+
+                        duration:
+                          2.8 +
+                          i * 0.35,
+
+                        ease:
+                          "sine.inOut",
+
+                        repeat:
+                          -1,
+
+                        yoyo:
+                          true
                       }
                     );
-                  }
-                );
 
 
-                if (scaleGroup) {
-
-                  gsap.set(
-                    scaleGroup,
-                    {
-                      autoAlpha:
-                        1
-                    }
+                  floatTweens.push(
+                    tween
                   );
                 }
+              );
 
 
-                gsap.set(
-                  scalePrimary,
-                  {
-                    autoAlpha:
-                      0,
+              // =====================================================
+              // MASTER TIMELINE
+              // =====================================================
 
-                    y:
-                      35
+              var tl =
+                gsap.timeline({
+
+                  scrollTrigger: {
+
+                    trigger:
+                      track,
+
+                    start:
+                      "top top",
+
+                    end:
+                      "bottom bottom",
+
+                    scrub:
+                      0.55,
+
+                    invalidateOnRefresh:
+                      true
+
                   }
-                );
+
+                });
 
 
-                gsap.set(
-                  scaleSecondary,
-                  {
-                    autoAlpha:
-                      0,
+              // =====================================================
+              // 01 — TITLE
+              // =====================================================
 
-                    y:
-                      35
-                  }
-                );
+              tl.to(
+                title,
+                {
+                  autoAlpha:
+                    1,
 
+                  duration:
+                    TEXT_FADE,
 
-                gsap.set(
-                  question,
-                  {
-                    autoAlpha:
-                      0
-                  }
-                );
+                  ease:
+                    "power2.out"
+                }
+              );
 
 
-                gsap.set(
-                  [
-                    fellows,
-                    pac,
-                    pledged
-                  ],
-                  {
-                    autoAlpha:
-                      0,
-
-                    y:
-                      45
-                  }
-                );
+              tl.to(
+                {},
+                {
+                  duration:
+                    INTRO_HOLD
+                }
+              );
 
 
-                // =====================================================
-                // BILL FLOAT
-                // =====================================================
+              // =====================================================
+              // 02 — INTRO OUT
+              // =====================================================
 
-                var floatTweens =
-                  [];
+              tl.to(
+                intro,
+                {
+                  autoAlpha:
+                    0,
 
+                  y:
+                    "-18vh",
 
-                bills.forEach(
-                  function (
-                    bill,
-                    i
-                  ) {
+                  duration:
+                    0.50,
 
-                    var img =
-                      bill.querySelector(
-                        "img"
-                      );
-
-
-                    if (!img) {
-                      return;
-                    }
+                  ease:
+                    "power3.in"
+                }
+              );
 
 
-                    var tween =
-                      gsap.to(
-                        img,
-                        {
-                          x:
-                            i % 2 === 0
-                              ? 8
-                              : -8,
+              // =====================================================
+              // 03 — COUNTER IN
+              // =====================================================
 
-                          y:
-                            -10 -
-                            i * 2,
+              tl.to(
+                counter,
+                {
+                  autoAlpha:
+                    1,
 
-                          rotation:
-                            i % 2 === 0
-                              ? 2
-                              : -2,
+                  duration:
+                    COUNTER_IN,
 
-                          duration:
-                            2.8 +
-                            i * 0.35,
+                  ease:
+                    "power3.out"
+                },
 
-                          ease:
-                            "sine.inOut",
-
-                          repeat:
-                            -1,
-
-                          yoyo:
-                            true
-                        }
-                      );
+                "<0.15"
+              );
 
 
-                    floatTweens.push(
-                      tween
-                    );
-                  }
-                );
+              tl.to(
+                {},
+                {
+                  duration:
+                    COUNTER_HOLD
+                }
+              );
 
 
-                // =====================================================
-                // MASTER TIMELINE
-                // =====================================================
+              // =====================================================
+              // 04 — CAPITOL + BILLS + CLAUDE
+              // =====================================================
 
-                var tl =
-                  gsap.timeline({
-
-                    scrollTrigger: {
-
-                      trigger:
-                        track,
-
-                      start:
-                        "top top",
-
-                      end:
-                        "bottom bottom",
-
-                      scrub:
-                        0.55,
-
-                      invalidateOnRefresh:
-                        true
-
-                    }
-
-                  });
-
-
-                // =====================================================
-                // 01 — TITLE
-                // =====================================================
+              if (capitol) {
 
                 tl.to(
-                  title,
+                  capitol,
                   {
                     autoAlpha:
                       1,
 
-                    duration:
-                      TEXT_FADE,
-
-                    ease:
-                      "power2.out"
-                  }
-                );
-
-
-                tl.to(
-                  {},
-                  {
-                    duration:
-                      INTRO_HOLD
-                  }
-                );
-
-
-                // =====================================================
-                // 02 — INTRO OUT
-                // =====================================================
-
-                tl.to(
-                  intro,
-                  {
-                    autoAlpha:
+                    yPercent:
                       0,
 
-                    y:
-                      "-18vh",
-
                     duration:
-                      0.50,
-
-                    ease:
-                      "power3.in"
-                  }
-                );
-
-
-                // =====================================================
-                // 03 — COUNTER IN
-                // =====================================================
-
-                tl.to(
-                  counter,
-                  {
-                    autoAlpha:
-                      1,
-
-                    duration:
-                      COUNTER_IN,
+                      VISUAL_IN,
 
                     ease:
                       "power3.out"
-                  },
-
-                  "<0.15"
-                );
-
-
-                tl.to(
-                  {},
-                  {
-                    duration:
-                      COUNTER_HOLD
                   }
                 );
+              }
 
 
-                // =====================================================
-                // 04 — CAPITOL + BILLS + CLAUDE
-                // =====================================================
-
-                if (capitol) {
+              bills.forEach(
+                function (
+                  bill,
+                  i
+                ) {
 
                   tl.to(
-                    capitol,
+                    bill,
                     {
                       autoAlpha:
                         1,
 
-                      yPercent:
+                      y:
                         0,
 
-                      duration:
-                        VISUAL_IN,
-
-                      ease:
-                        "power3.out"
-                    }
-                  );
-                }
-
-
-                bills.forEach(
-                  function (
-                    bill,
-                    i
-                  ) {
-
-                    tl.to(
-                      bill,
-                      {
-                        autoAlpha:
-                          1,
-
-                        y:
-                          0,
-
-                        x:
-                          0,
-
-                        rotation:
-                          0,
-
-                        duration:
-                          0.65,
-
-                        ease:
-                          "power3.out"
-                      },
-
-                      capitol
-                        ? "<" +
-                          (
-                            0.08 +
-                            i * 0.09
-                          )
-                        : "<" +
-                          (
-                            i * 0.09
-                          )
-                    );
-                  }
-                );
-
-
-                if (claude) {
-
-                  tl.to(
-                    claude,
-                    {
-                      autoAlpha:
-                        1,
-
-                      scale:
-                        1,
+                      x:
+                        0,
 
                       rotation:
                         0,
 
                       duration:
-                        0.60,
+                        0.65,
 
                       ease:
                         "power3.out"
                     },
 
-                    "<0.18"
+                    capitol
+                      ? "<" +
+                        (
+                          0.08 +
+                          i * 0.09
+                        )
+                      : "<" +
+                        (
+                          i * 0.09
+                        )
                   );
                 }
+              );
 
 
-                tl.to(
-                  {},
-                  {
-                    duration:
-                      VISUAL_HOLD
-                  }
-                );
-
-
-                // =====================================================
-                // 05 — COUNTER REPOSITION
-                // =====================================================
+              if (claude) {
 
                 tl.to(
-                  counter,
-                  {
-                    left:
-                      getComparisonLeft,
-
-                    top:
-                      counterSmallTop,
-
-                    xPercent:
-                      isMobile
-                        ? -50
-                        : 0,
-
-                    yPercent:
-                      0,
-
-                    duration:
-                      0.72,
-
-                    ease:
-                      "power4.inOut"
-                  }
-                );
-
-
-                // =====================================================
-                // VALUE SIZE
-                //
-                // Desktop: 8rem → 5rem
-                // Mobile:  8rem → 4rem
-                // =====================================================
-
-                tl.to(
-                  counterValue,
-                  {
-                    fontSize:
-                      counterSmallValueSize,
-
-                    duration:
-                      0.72,
-
-                    ease:
-                      "power4.inOut",
-
-                    onUpdate:
-                      syncCounterWidth,
-
-                    onComplete:
-                      syncCounterWidth
-                  },
-
-                  "<"
-                );
-
-
-                // =====================================================
-                // LABEL
-                //
-                // Desktop:
-                // center → left
-                // 1.25rem
-                //
-                // Mobile:
-                // stays centered
-                // → 1rem
-                // =====================================================
-
-                tl.to(
-                  counterLabel,
-                  {
-                    fontSize:
-                      counterSmallLabelSize,
-
-                    textAlign:
-                      isMobile
-                        ? "center"
-                        : "left",
-
-                    duration:
-                      0.72,
-
-                    ease:
-                      "power4.inOut"
-                  },
-
-                  "<"
-                );
-
-
-                // =====================================================
-                // $7.5B
-                // =====================================================
-
-                tl.to(
-                  scalePrimary,
+                  claude,
                   {
                     autoAlpha:
                       1,
 
-                    y:
-                      0,
-
-                    duration:
-                      0.55,
-
-                    ease:
-                      "power3.out"
-                  },
-
-                  "<0.25"
-                );
-
-
-                // =====================================================
-                // $1B
-                // =====================================================
-
-                tl.to(
-                  scaleSecondary,
-                  {
-                    autoAlpha:
+                    scale:
                       1,
 
-                    y:
-                      0,
-
-                    duration:
-                      0.48,
-
-                    ease:
-                      "power3.out"
-                  },
-
-                  "<0.20"
-                );
-
-
-                tl.to(
-                  {},
-                  {
-                    duration:
-                      SCALE_HOLD
-                  }
-                );
-
-
-                tl.to(
-                  [
-                    scalePrimary,
-                    scaleSecondary
-                  ],
-                  {
-                    autoAlpha:
-                      0,
-
-                    y:
-                      -30,
-
-                    duration:
-                      0.35,
-
-                    ease:
-                      "power2.in"
-                  }
-                );
-
-
-                // =====================================================
-                // 06 — QUESTION
-                // =====================================================
-
-                tl.to(
-                  question,
-                  {
-                    autoAlpha:
-                      1,
-
-                    duration:
-                      TEXT_FADE,
-
-                    ease:
-                      "power2.out"
-                  }
-                );
-
-
-                tl.to(
-                  {},
-                  {
-                    duration:
-                      QUESTION_HOLD
-                  }
-                );
-
-
-                tl.to(
-                  question,
-                  {
-                    autoAlpha:
-                      0,
-
-                    duration:
-                      0.28,
-
-                    ease:
-                      "power2.in"
-                  }
-                );
-
-
-                // =====================================================
-                // 07 — FELLOWS
-                // =====================================================
-
-                tl.to(
-                  fellows,
-                  {
-                    autoAlpha:
-                      1,
-
-                    y:
-                      0,
-
-                    duration:
-                      STAT_IN,
-
-                    ease:
-                      "power3.out"
-                  }
-                );
-
-
-                tl.to(
-                  {},
-                  {
-                    duration:
-                      STAT_HOLD
-                  }
-                );
-
-
-                tl.to(
-                  fellows,
-                  {
-                    autoAlpha:
-                      0,
-
-                    y:
-                      -40,
-
-                    duration:
-                      0.35,
-
-                    ease:
-                      "power2.in"
-                  }
-                );
-
-
-                // =====================================================
-                // 08 — PAC
-                // =====================================================
-
-                tl.to(
-                  pac,
-                  {
-                    autoAlpha:
-                      1,
-
-                    y:
-                      0,
-
-                    duration:
-                      STAT_IN,
-
-                    ease:
-                      "power3.out"
-                  }
-                );
-
-
-                tl.to(
-                  {},
-                  {
-                    duration:
-                      STAT_HOLD
-                  }
-                );
-
-
-                tl.to(
-                  pac,
-                  {
-                    autoAlpha:
-                      0,
-
-                    y:
-                      -40,
-
-                    duration:
-                      0.35,
-
-                    ease:
-                      "power2.in"
-                  }
-                );
-
-
-                // =====================================================
-                // 09 — PLEDGED
-                // =====================================================
-
-                tl.to(
-                  pledged,
-                  {
-                    autoAlpha:
-                      1,
-
-                    y:
+                    rotation:
                       0,
 
                     duration:
                       0.60,
 
                     ease:
-                      "power4.out"
-                  }
+                      "power3.out"
+                  },
+
+                  "<0.18"
                 );
+              }
 
 
-                // =====================================================
-                // FINAL
-                // =====================================================
-
-                bills.forEach(
-                  function (
-                    bill,
-                    i
-                  ) {
-
-                    tl.to(
-                      bill,
-                      {
-                        y:
-                          45 +
-                          i * 12,
-
-                        x:
-                          (
-                            i - 1
-                          ) * 30,
-
-                        duration:
-                          0.65,
-
-                        ease:
-                          "power2.inOut"
-                      },
-
-                      "<"
-                    );
-                  }
-                );
+              tl.to(
+                {},
+                {
+                  duration:
+                    VISUAL_HOLD
+                }
+              );
 
 
-                if (claude) {
+              // =====================================================
+              // 05 — COUNTER REPOSITION
+              // =====================================================
+
+              tl.to(
+                counter,
+                {
+                  left:
+                    getComparisonLeft,
+
+                  top:
+                    counterSmallTop,
+
+                  xPercent:
+                    isMobile
+                      ? -50
+                      : 0,
+
+                  yPercent:
+                    0,
+
+                  duration:
+                    0.72,
+
+                  ease:
+                    "power4.inOut"
+                }
+              );
+
+
+              // =====================================================
+              // COUNTER VALUE
+              //
+              // 10rem → 6rem
+              // =====================================================
+
+              tl.to(
+                counterValue,
+                {
+                  fontSize:
+                    COUNTER_SMALL_VALUE_SIZE,
+
+                  duration:
+                    0.72,
+
+                  ease:
+                    "power4.inOut"
+                },
+
+                "<"
+              );
+
+
+              // =====================================================
+              // LABEL
+              //
+              // Alignment NEVER changes.
+              //
+              // Desktop:
+              // left → left
+              //
+              // Mobile:
+              // center → center
+              //
+              // Mobile size:
+              // 1.25rem → 1rem
+              // =====================================================
+
+              tl.to(
+                counterLabel,
+                {
+                  fontSize:
+                    counterSmallLabelSize,
+
+                  duration:
+                    0.72,
+
+                  ease:
+                    "power4.inOut"
+                },
+
+                "<"
+              );
+
+
+              // =====================================================
+              // $7.5B
+              // =====================================================
+
+              tl.to(
+                scalePrimary,
+                {
+                  autoAlpha:
+                    1,
+
+                  y:
+                    0,
+
+                  duration:
+                    0.55,
+
+                  ease:
+                    "power3.out"
+                },
+
+                "<0.25"
+              );
+
+
+              // =====================================================
+              // $1B
+              // =====================================================
+
+              tl.to(
+                scaleSecondary,
+                {
+                  autoAlpha:
+                    1,
+
+                  y:
+                    0,
+
+                  duration:
+                    0.48,
+
+                  ease:
+                    "power3.out"
+                },
+
+                "<0.20"
+              );
+
+
+              tl.to(
+                {},
+                {
+                  duration:
+                    SCALE_HOLD
+                }
+              );
+
+
+              tl.to(
+                [
+                  scalePrimary,
+                  scaleSecondary
+                ],
+                {
+                  autoAlpha:
+                    0,
+
+                  y:
+                    -30,
+
+                  duration:
+                    0.35,
+
+                  ease:
+                    "power2.in"
+                }
+              );
+
+
+              // =====================================================
+              // 06 — QUESTION
+              // =====================================================
+
+              tl.to(
+                question,
+                {
+                  autoAlpha:
+                    1,
+
+                  duration:
+                    TEXT_FADE,
+
+                  ease:
+                    "power2.out"
+                }
+              );
+
+
+              tl.to(
+                {},
+                {
+                  duration:
+                    QUESTION_HOLD
+                }
+              );
+
+
+              tl.to(
+                question,
+                {
+                  autoAlpha:
+                    0,
+
+                  duration:
+                    0.28,
+
+                  ease:
+                    "power2.in"
+                }
+              );
+
+
+              // =====================================================
+              // 07 — FELLOWS
+              // =====================================================
+
+              tl.to(
+                fellows,
+                {
+                  autoAlpha:
+                    1,
+
+                  y:
+                    0,
+
+                  duration:
+                    STAT_IN,
+
+                  ease:
+                    "power3.out"
+                }
+              );
+
+
+              tl.to(
+                {},
+                {
+                  duration:
+                    STAT_HOLD
+                }
+              );
+
+
+              tl.to(
+                fellows,
+                {
+                  autoAlpha:
+                    0,
+
+                  y:
+                    -40,
+
+                  duration:
+                    0.35,
+
+                  ease:
+                    "power2.in"
+                }
+              );
+
+
+              // =====================================================
+              // 08 — PAC
+              // =====================================================
+
+              tl.to(
+                pac,
+                {
+                  autoAlpha:
+                    1,
+
+                  y:
+                    0,
+
+                  duration:
+                    STAT_IN,
+
+                  ease:
+                    "power3.out"
+                }
+              );
+
+
+              tl.to(
+                {},
+                {
+                  duration:
+                    STAT_HOLD
+                }
+              );
+
+
+              tl.to(
+                pac,
+                {
+                  autoAlpha:
+                    0,
+
+                  y:
+                    -40,
+
+                  duration:
+                    0.35,
+
+                  ease:
+                    "power2.in"
+                }
+              );
+
+
+              // =====================================================
+              // 09 — PLEDGED
+              // =====================================================
+
+              tl.to(
+                pledged,
+                {
+                  autoAlpha:
+                    1,
+
+                  y:
+                    0,
+
+                  duration:
+                    0.60,
+
+                  ease:
+                    "power4.out"
+                }
+              );
+
+
+              // =====================================================
+              // FINAL
+              // =====================================================
+
+              bills.forEach(
+                function (
+                  bill,
+                  i
+                ) {
 
                   tl.to(
-                    claude,
+                    bill,
                     {
-                      scale:
-                        1.08,
+                      y:
+                        45 +
+                        i * 12,
+
+                      x:
+                        (
+                          i - 1
+                        ) * 30,
 
                       duration:
-                        0.55,
+                        0.65,
 
                       ease:
-                        "power2.out"
+                        "power2.inOut"
                     },
 
                     "<"
                   );
                 }
+              );
 
+
+              if (claude) {
 
                 tl.to(
-                  {},
+                  claude,
                   {
+                    scale:
+                      1.08,
+
                     duration:
-                      FINAL_HOLD
-                  }
+                      0.55,
+
+                    ease:
+                      "power2.out"
+                  },
+
+                  "<"
                 );
+              }
 
 
-                // =====================================================
-                // RESIZE
-                // =====================================================
+              tl.to(
+                {},
+                {
+                  duration:
+                    FINAL_HOLD
+                }
+              );
 
-                function onResize() {
 
-                  syncCounterWidth();
+              // =====================================================
+              // REFRESH
+              // =====================================================
+
+              requestAnimationFrame(
+                function () {
 
                   ScrollTrigger.refresh();
+
                 }
+              );
 
 
-                window.addEventListener(
-                  "resize",
-                  onResize
-                );
+              // =====================================================
+              // CLEANUP
+              // =====================================================
 
+              return function () {
 
-                requestAnimationFrame(
-                  function () {
+                floatTweens.forEach(
+                  function (
+                    tween
+                  ) {
 
-                    syncCounterWidth();
+                    tween.kill();
 
-                    ScrollTrigger.refresh();
                   }
                 );
 
+              };
 
-                // =====================================================
-                // CLEANUP
-                // =====================================================
-
-                return function () {
-
-                  window.removeEventListener(
-                    "resize",
-                    onResize
-                  );
-
-
-                  floatTweens.forEach(
-                    function (
-                      tween
-                    ) {
-
-                      tween.kill();
-                    }
-                  );
-                };
-
-              }
-            );
-
-
-          // =========================================================
-          // PAGE CLEANUP
-          // =========================================================
-
-          window.addEventListener(
-            "beforeunload",
-            function () {
-
-              clearInterval(
-                counterInterval
-              );
             }
           );
 
-        }
-      );
+
+        // =========================================================
+        // PAGE CLEANUP
+        // =========================================================
+
+        window.addEventListener(
+          "beforeunload",
+          function () {
+
+            clearInterval(
+              counterInterval
+            );
+
+          }
+        );
+
+      });
 
   }
 );

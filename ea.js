@@ -16309,22 +16309,23 @@ if (isMobile) {
 
         // Ensure panel starts fully open.
 
-gsap.set(
-  readerContent,
-  {
-    left:
-      geometry.contentLeft,
+        gsap.set(
+          readerContent,
+          {
 
-    top:
-      geometry.contentTop,
+            left:
+              geometry.contentLeft,
 
-    width:
-      geometry.contentWidth,
+            top:
+              geometry.contentTop,
 
-    height:
-      geometry.contentHeight
-  }
-);
+            width:
+              geometry.contentWidth,
+
+            height:
+              geometry.contentHeight
+          }
+        );
 
 
         // =====================================================
@@ -16485,24 +16486,43 @@ gsap.set(
         // IMAGE CONTRACTS
         // =====================================================
 
-        tl.to(
-          transitionImage,
-          {
+if (isMobile) {
 
-            left:
-              geometry.sourceLeft,
+  tl.to(
+    transitionImage,
+    {
+      height: 0,
 
-            width:
-              geometry.sourceWidth,
+      duration:
+        OPEN_DURATION,
 
-            duration:
-              OPEN_DURATION,
+      ease:
+        OPEN_EASE
+    },
+    0
+  );
 
-            ease:
-              OPEN_EASE
-          },
-          0
-        );
+} else {
+
+  tl.to(
+    transitionImage,
+    {
+      left:
+        geometry.sourceLeft,
+
+      width:
+        geometry.sourceWidth,
+
+      duration:
+        OPEN_DURATION,
+
+      ease:
+        OPEN_EASE
+    },
+    0
+  );
+
+}
 
 
         // =====================================================
